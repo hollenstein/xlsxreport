@@ -125,7 +125,13 @@ conditional_formats:
   count: {
     "type": "2_color_scale",
     "min_type": "num", "min_value": 0, "min_color": "#ffffbf",
-    "max_type": "percentile", "max_value": 99.9, "max_color": "#f25540"
+    "max_type": "percentile", "max_value": 99.5, "max_color": "#f25540"
+  }
+  pvalue: {
+    "type": "3_color_scale",
+    "min_type": "num", "min_value": 0.01, "min_color": "#a1d76a",
+    "mid_type": "num", "mid_value": 0.05, "mid_color": "#ffffbf",
+    "max_type": "num", "max_value": 0.10, "max_color": "#fefefe",
   }
   data_bar: {
     "type": "data_bar", "bar_direction": "left",
