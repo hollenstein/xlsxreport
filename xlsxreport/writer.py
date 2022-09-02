@@ -310,7 +310,7 @@ class Datasheet:
             # Prepare new config file for each comparison group
             sub_config = config.copy()
             sub_config["columns"] = columns
-            sub_config["supheader"] = comparison_group
+            sub_config["supheader"] = supheader
             sub_config["tag"] = comparison_group
             sub_config["column_conditional"] = {}
             for tag, conditional in config["column_conditional"].items():
