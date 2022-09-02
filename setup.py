@@ -13,7 +13,9 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "xlsxreport = xlsxreport.scripts.report:cli",
+            "xlsx_report_setup = xlsxreport:setup_data_dir",
+            "xlsx_report = xlsxreport.scripts.report:cli",
+            "cassiopeia_report = xlsxreport.scripts.cassiopeia_report:cli",
         ],
     },
     keywords=["excel", "report", "mass spectrometry", "proteomics"],

@@ -20,7 +20,7 @@ As the package is still in early development, it is recommended to create a virt
 environment for installing XlsxReport and testing it. 
 
 When using the Anaconda Python distribution, you can create a new environment by
-opening a terminal and entering the following command:
+opening a terminal, entering the following command and following the instructions:
 
 $ conda create -n xlsxreport python=3.9
 
@@ -38,3 +38,23 @@ $ pip install --editable .
 To uninstall the XlsxReport package type:
 
 $ pip uninstall xlsxreport
+
+
+Run a script
+------------
+
+Running the "xlsx_report_setup" script creates a folder at User/AppData/Local/XlsxReport
+for the yaml config files, and copies the default config files there.
+
+$ xlsx_report_setup
+
+
+To generate a simple excel protein report, run the "xlsx_report" script with an input and config file. Here is an example with the default maxquant.yaml config file.
+
+$ xlsx_report C:/proteinGroups.txt maxquant.yaml
+
+
+The script "cassiopeia_report" can be used to generate an excel protein report from the
+Matrix_Export_proteinGroups.txt output of the Cassiopeia R script. 
+
+$ cassiopeia_report C:/Matrix_Export_proteinGroups.txt

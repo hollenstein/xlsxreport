@@ -9,7 +9,7 @@ describe the content of a result table and the format of the excel report.
 
 
 from .writer import Reportbook
-from .appdir import locate_data_dir, get_config_file
+from .appdir import locate_data_dir, get_config_file, setup_data_dir
 
 
 __author__ = "David M. Hollenstein"

@@ -1,0 +1,126 @@
+%YAML 1.2
+# column_format: overrides the format for individual columns
+# Three types of groups
+# - feature_group: is the default group. No special changes to the arguments
+#   - "columns" list of column names of this group
+#   - "format" is the default format applied for all columns of a group
+#   - "column_format" allows specifying a different format for individual columns
+#   - "column_conditional" apply a conditional format to individual columns
+#   - "width" sets column widhts for this group
+#   - "supheader" is added to the first row and columns of the group are merged
+#   - "header_format" extends the default "header" format
+#   - "supheader_format" extends the default "supheader" format
+#   - "border" adds a border to the first and last column of the group
+#
+# - comparison_group: if "comparison_group": True is added
+#   - Uses "tag" as the filler between two experiments e.g. " vs "
+#   - "columns" are used as tags for each comparison e.g. "P-value" or "logFC"
+#     but should not contain the sample comparison e.g. "ExpA vs ExpB"
+#   - "column_conditional" is applied to each entry from columns e.g. "P-value"
+#
+# - sample_group: if "tag" is set and its not a comparison group
+#   - "tag" is used to extract all columns containing the tag
+#   - Use "conditional" to apply a conditional format to all columns of a group
+#   - "remove_tag" removes the "tag" string from all column headers, 
+#     use together with supheader
+#   - "log2" applies a log2 transformation to the columns, if they seem not to
+#     be already in log space (all values < 64)
+---
+
+groups:
+  protein_features: {
+    format: "str", width: 70,
+    columns: ["Representative protein", "Leading proteins", "Protein entry name",
+              "Gene name", "Fasta header", "Protein length", "Total peptides",
+              "Sequence coverage", "Valid", "Potential contaminant"],
+    column_format: {
+      "Sequence coverage": "float",
+      "Protein length": "int", 
+      "Total peptides": "int",
+      "Valid": "int",
+      "Potential contaminant": "int"
+    },
+    column_conditional: {"Sequence coverage": "data_bar"},
+  }
+  spectral_count: {
+    tag: "Spectral count", format: "int", width: 45,
+    conditional: "count", header_format: {"rotation": 90},
+    supheader: "Spectral count", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, border: True,
+  }
+  intensity: {
+    tag: "Intensity", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "Intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  ibaq_intensity: {
+    tag: "iBAQ intensity", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "iBAQ intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  expression: {
+    tag: "Expression", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "Imputed LFQ intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  differential_expression: {
+    comparison_group: True, tag: " vs. ", replace_comparison_tag: " / ",
+    columns: ["P-value", "Adjusted p-value", "logFC", "Average expression"],
+    column_conditional: {
+        "P-value": "pvalue",
+        "Adjusted p-value": "pvalue",
+        "logFC": "intensity",
+        "Average expression": "intensity",
+    },
+    header_format: {"rotation": 90}, supheader_format: {"fg_color": "#ADD8E6"},
+    format: "float", width: 45, remove_tag: True, border: True,
+  }
+
+formats:
+  int: {"align": "center", "num_format": "0"}
+  float: {"align": "center", "num_format": "0.00"}
+  str: {"align": "left", "num_format": "0"}
+  header: {"bold": True, "align": "center", "valign": "vcenter",
+           "top": 2, "bottom": 2, "left": 0, "right": 0, "text_wrap": True}
+  supheader: {"bold": True, "align": "center", "valign": "vcenter",
+              "top": 0, "bottom": 2, "left": 2, "right": 2, "text_wrap": True}
+
+
+conditional_formats:
+  intensity: {
+    "type": "3_color_scale",
+    "min_type": "min", "min_color": "#2c7bb6",
+    "mid_type": "percentile", "mid_value": 50, "mid_color": "#ffffbf",
+    "max_type": "max", "max_color": "#f25540"
+  }
+  count: {
+    "type": "2_color_scale",
+    "min_type": "num", "min_value": 0, "min_color": "#ffffbf",
+    "max_type": "percentile", "max_value": 99.5, "max_color": "#f25540"
+  }
+  pvalue: {
+    "type": "3_color_scale",
+    "min_type": "num", "min_value": 0.01, "min_color": "#a1d76a",
+    "mid_type": "num", "mid_value": 0.05, "mid_color": "#ffffbf",
+    "max_type": "num", "max_value": 0.10, "max_color": "#fefefe",
+  }
+  data_bar: {
+    "type": "data_bar", "bar_direction": "left",
+    "bar_color": "#abd9e9", "bar_border_color": "#2c7bb6",
+    "bar_solid": True, "data_bar_2010": True,
+    "min_value": 0, "min_type": "num",
+    "max_value": 100, "max_type": "num",
+  }
+
+
+args:
+  border_weight: 2
+  supheader_height: 30
+  header_height: 95
+  column_width: 70
+  nan_symbol: "-" # Replace nan values with this symbol
+  log2_tag: "[log2]" # Add to supheader or header if column is log2 transformed
+  sample_extraction_tag: "Expression"

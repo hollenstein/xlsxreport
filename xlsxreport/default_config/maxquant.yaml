@@ -1,0 +1,85 @@
+%YAML 1.2
+---
+groups:
+  features: {
+    format: "str", width: 70,
+    columns: [
+      "Majority protein IDs", "Protein names", "Gene names", "Fasta headers",
+      "Number of proteins", "Mol. weight [kDa]", "Sequence length", "Sequence coverage [%]",
+      "Q-value", "Score", "iBAQ peptides", "Peptide counts (razor+unique)"],
+    column_format: {
+      "Number of proteins": "int", "Mol. weight [kDa]": "int", "Sequence length": "int",
+      "Sequence coverage [%]": "float", "Q-value": "float", "Score": "float",
+      "Peptide counts (razor+unique)": "int", "iBAQ peptides": "int"},
+    column_conditional: {"Sequence coverage [%]": "data_bar"},
+  }
+  spectral_count: {
+    tag: "MS/MS count", format: "int", width: 45,
+    conditional: "count", header_format: {"rotation": 90},
+    supheader: "MS/MS count", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, border: True,
+  }
+  ibaq_intensity: {
+    tag: "iBAQ", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "iBAQ intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  intensity: {
+    tag: "Intensity", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "Intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  lfq_intensity: {
+    tag: "LFQ intensity", format: "float", width: 45,
+    conditional: "intensity", header_format: {"rotation": 90},
+    supheader: "LFQ intensity", supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True, log2: True, border: True,
+  }
+  quality_filter: {
+    format: "int", width: 70, border: True,
+    columns: ["Only identified by site", "Reverse", "Potential contaminant"],
+    supheader: "Quality filter", supheader_format: {"fg_color": "#ffffb3"},
+  }
+
+
+formats:
+  int: {"align": "center", "num_format": "0"}
+  float: {"align": "center", "num_format": "0.00"}
+  str: {"align": "left", "num_format": "0"}
+  header: {"bold": True, "align": "center", "valign": "vcenter",
+           "top": 2, "bottom": 2, "left": 0, "right": 0, "text_wrap": True}
+  supheader: {"bold": True, "align": "center", "valign": "vcenter",
+              "top": 0, "bottom": 2, "left": 2, "right": 2, "text_wrap": True}
+
+
+conditional_formats:
+  intensity: {
+    "type": "3_color_scale",
+    "min_type": "min", "min_color": "#2c7bb6",
+    "mid_type": "percentile", "mid_value": 50, "mid_color": "#ffffbf",
+    "max_type": "max", "max_color": "#f25540"
+  }
+  count: {
+    "type": "2_color_scale",
+    "min_type": "num", "min_value": 0, "min_color": "#ffffbf",
+    "max_type": "percentile", "max_value": 99.9, "max_color": "#f25540"
+  }
+  data_bar: {
+    "type": "data_bar", "bar_direction": "left",
+    "bar_color": "#abd9e9", "bar_border_color": "#2c7bb6",
+    "bar_solid": True, "data_bar_2010": True,
+    "min_value": 0, "min_type": "num",
+    "max_value": 100, "max_type": "num",
+  }
+
+
+args:
+  border_weight: 2
+  supheader_height: 40
+  header_height: 95
+  column_width: 64
+  nan_symbol: "-" # Replaces nan values with this symbol
+  log2_tag: "[log2]" # Added to supheader or header if column is log2 transformed
+  sample_extraction_tag: "Intensity"
