@@ -58,3 +58,13 @@ The script "cassiopeia_report" can be used to generate an excel protein report f
 Matrix_Export_proteinGroups.txt output of the Cassiopeia R script. 
 
 $ cassiopeia_report C:/Matrix_Export_proteinGroups.txt
+
+
+Planned features
+----------------
+- Add option to append all remaining columns (and hide them)
+- Add option to specify sample order
+    - Requires that samples are specified by user
+    - Adapt _find_sample_group_columns() to sort columns
+- Add column comments
+- Add option to sort the table before writing data

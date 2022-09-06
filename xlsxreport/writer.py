@@ -1,22 +1,3 @@
-"""
-Description of YAML config file:
-- One or multiple columns are always defined as a group
-- The order of groups if specified by the order in the config file
-- Each group has a name
-- There are three types of groups: feature, tag, comparison
-    - feature: directly specify a sequence of columns
-    - tag: quantitative columns that all contain a specific tag, e.g. "Intensity"
-    - comparison: Columns that contain a quantitative comparison between
-        multiple experiments.
-
-TODOs
-- Add option to append all remaining columns (and hide them)
-- Add option to specify sample order
-    - Requires that samples are specified by user
-    - Adapt _find_sample_group_columns() to sort columns
-- Add column comments
-- Add option to sort the table before writing data
-"""
 from typing import Iterable, Optional, Union
 
 import numpy as np
@@ -29,7 +10,7 @@ class Reportbook(xlsxwriter.Workbook):
     """Subclass of the XlsxWriter Workbook class."""
 
     def add_infosheet(self):
-        worksheet = self.add_worksheet("info")
+        worksheet = self.add_worksheet("Info")
         return worksheet
 
     def add_datasheet(self, name: Optional[str] = None):
@@ -43,12 +24,12 @@ class Datasheet:
         self, workbook: xlsxwriter.Workbook, worksheet: xlsxwriter.worksheet.Worksheet
     ):
         self._args = {
+            "column_width": 64,
+            "header_height": 90,
+            "supheader_height": 30,
             "border_weight": 2,
             "log2_tag": "[log2]",
             "nan_symbol": "n.a.",
-            "supheader_height": 30,
-            "header_height": 90,
-            "column_width": 64,
             "sample_extraction_tag": "Intensity",
         }
 
@@ -82,7 +63,7 @@ class Datasheet:
         'sample_extraction_tag' from the config.
         """
         self._table = table.copy()
-        # Replace NaN in string columns with an empty string
+        # Replaces NaN in string columns with an empty string
         str_cols = self._table.select_dtypes(include=["object"]).columns
         self._table.loc[:, str_cols] = self._table.loc[:, str_cols].fillna("")
 
@@ -147,7 +128,7 @@ class Datasheet:
                 'data_row_start', 'data_row_end', 'start_column'.
 
         Returns:
-            Last column position that was filled with data
+            Position of last column that was added to the excel sheet
         """
         group_length = len(data_group["data"])
         supheader_row = coordinates["supheader_row"]
@@ -156,6 +137,26 @@ class Datasheet:
         data_row_end = coordinates["data_row_end"]
         start_column = coordinates["start_column"]
         end_column = start_column + group_length - 1
+
+        # Write supheader
+        supheader_text, format_name = data_group["supheader"]
+        if supheader_text:
+            supheader_format = self.get_format(format_name)
+            self.worksheet.merge_range(
+                supheader_row,
+                start_column,
+                supheader_row,
+                end_column,
+                supheader_text,
+                supheader_format,
+            )
+
+        # Write header data
+        curr_column = start_column
+        for text, format_name in data_group["header"]:
+            excel_format = self.get_format(format_name)
+            self.worksheet.write(header_row, curr_column, text, excel_format)
+            curr_column += 1
 
         # Write column data
         curr_column = start_column
@@ -174,26 +175,6 @@ class Datasheet:
                     excel_conditional,
                 )
             curr_column += 1
-
-        # Write header data
-        curr_column = start_column
-        for text, format_name in data_group["header"]:
-            excel_format = self.get_format(format_name)
-            self.worksheet.write(header_row, curr_column, text, excel_format)
-            curr_column += 1
-
-        # Write supheader
-        supheader_text, format_name = data_group["supheader"]
-        if supheader_text:
-            supheader_format = self.get_format(format_name)
-            self.worksheet.merge_range(
-                supheader_row,
-                start_column,
-                supheader_row,
-                end_column,
-                supheader_text,
-                supheader_format,
-            )
 
         # Set column width
         self.worksheet.set_column_pixels(
@@ -214,24 +195,25 @@ class Datasheet:
                 conditional_format,
             )
 
-        # Return last column
+        # Return last column position
         return end_column
 
     def _prepare_data_groups(self):
         data_groups = []
-        for name, config in self._config["groups"].items():
-            if _eval_arg("comparison_group", config):
-                for group_data in self._prepare_comparison_group(name, config):
+        for name, group_config in self._config["groups"].items():
+            if _eval_arg("comparison_group", group_config):
+                for group_data in self._prepare_comparison_group(name, group_config):
                     if group_data:
                         data_groups.append(group_data)
-            elif _eval_arg("tag", config):
-                group_data = self._prepare_sample_group(name, config)
+            elif _eval_arg("tag", group_config):
+                group_data = self._prepare_sample_group(name, group_config)
                 if group_data:
                     data_groups.append(group_data)
             else:
-                group_data = self._prepare_feature_group(name, config)
+                group_data = self._prepare_feature_group(name, group_config)
                 if group_data:
                     data_groups.append(group_data)
+        # TODO: Add all the remaining columns
         return data_groups
 
     def _prepare_feature_group(self, name, config) -> dict():
@@ -408,20 +390,6 @@ class Datasheet:
         """
         self._extend_formats("supheader", groups)
 
-    def _extend_border_formats(self) -> None:
-        """Add format variants with borders to the format templates.
-
-        For each format adds a variant with a left or a right border, the
-        format name is extended by 'format_left' or 'format_right'.
-        """
-        for name in list(self._format_templates):
-            for border in ["left", "right", "left_right"]:
-                format_name = f"{name}_{border}"
-                format_properties = self._format_templates[name].copy()
-                for direction in border.split("_"):
-                    format_properties[direction] = self._args["border_weight"]
-                self._format_templates[format_name] = format_properties
-
     def _extend_formats(self, key: str, groups: dict[str, object]) -> None:
         """Adds individual format types per group.
 
@@ -437,6 +405,20 @@ class Datasheet:
                 group_format.update(group_info[f"{key}_format"])
             group_format_name = f"{key}_{group_name}"
             self._format_templates[group_format_name] = group_format
+
+    def _extend_border_formats(self) -> None:
+        """Add format variants with borders to the format templates.
+
+        For each format adds a variant with a left or a right border, the
+        format name is extended by 'format_left' or 'format_right'.
+        """
+        for name in list(self._format_templates):
+            for border in ["left", "right", "left_right"]:
+                format_name = f"{name}_{border}"
+                format_properties = self._format_templates[name].copy()
+                for direction in border.split("_"):
+                    format_properties[direction] = self._args["border_weight"]
+                self._format_templates[format_name] = format_properties
 
     def _add_format_templates_to_workbook(self):
         """Add the template formats to the workbook."""

@@ -1,38 +1,19 @@
 %YAML 1.2
-# column_format: overrides the format for individual columns
-# Three types of groups
-# - feature_group: is the default group. No special changes to the arguments
-#   - "columns" list of column names of this group
-#   - "format" is the default format applied for all columns of a group
-#   - "column_format" allows specifying a different format for individual columns
-#   - "column_conditional" apply a conditional format to individual columns
-#   - "width" sets column widhts for this group
-#   - "supheader" is added to the first row and columns of the group are merged
-#   - "header_format" extends the default "header" format
-#   - "supheader_format" extends the default "supheader" format
-#   - "border" adds a border to the first and last column of the group
-#
-# - comparison_group: if "comparison_group": True is added
-#   - Uses "tag" as the filler between two experiments e.g. " vs "
-#   - "columns" are used as tags for each comparison e.g. "P-value" or "logFC"
-#     but should not contain the sample comparison e.g. "ExpA vs ExpB"
-#   - "column_conditional" is applied to each entry from columns e.g. "P-value"
-#
-# - sample_group: if "tag" is set and its not a comparison group
-#   - "tag" is used to extract all columns containing the tag
-#   - Use "conditional" to apply a conditional format to all columns of a group
-#   - "remove_tag" removes the "tag" string from all column headers, 
-#     use together with supheader
-#   - "log2" applies a log2 transformation to the columns, if they seem not to
-#     be already in log space (all values < 64)
 ---
 
 groups:
   protein_features: {
     format: "str", width: 70,
-    columns: ["Representative protein", "Leading proteins", "Protein entry name",
-              "Gene name", "Fasta header", "Protein length", "Total peptides",
-              "Sequence coverage", "Valid", "Potential contaminant"],
+    columns: [
+      "Representative protein",
+      "Leading proteins",
+      "Protein entry name",
+      "Gene name",
+      "Fasta header",
+      "Protein length",
+      "Total peptides",
+      "Sequence coverage",
+    ],
     column_format: {
       "Sequence coverage": "float",
       "Protein length": "int", 
@@ -78,6 +59,27 @@ groups:
     header_format: {"rotation": 90}, supheader_format: {"fg_color": "#ADD8E6"},
     format: "float", width: 45, remove_tag: True, border: True,
   }
+  quality_filter: {
+    format: "int", width: 71, border: True,
+    columns: [
+      "Valid",
+      "Potential contaminant",
+    ],
+    supheader: "Quality filter",
+    supheader_format: {"fg_color": "#ffffb3"},
+  }
+  missing_values: {
+    tag: "Events",
+    format: "int",
+    width: 45,
+    conditional: "num_events",
+    header_format: {"rotation": 90},
+    supheader: "Quantitative events",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    border: True,
+  }
+
 
 formats:
   int: {"align": "center", "num_format": "0"}
@@ -113,6 +115,11 @@ conditional_formats:
     "bar_solid": True, "data_bar_2010": True,
     "min_value": 0, "min_type": "num",
     "max_value": 100, "max_type": "num",
+  }
+  num_events: {
+    "type": "2_color_scale",
+    "min_type": "num", "min_value": 0, "min_color": "#f25540",
+    "max_type": "percentile", "max_value": 100, "max_color": "#2c7bb6"
   }
 
 
