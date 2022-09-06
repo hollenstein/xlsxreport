@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Iterable, Optional, Union
 
 import numpy as np
@@ -468,6 +469,13 @@ def parse_config_file(file: str) -> dict[str, dict]:
         "conditional_formats": _extract_config_entry(yaml_file, "conditional_formats"),
     }
     return config
+
+
+@dataclass
+class DataGroup:
+    """Class for storing data that will be written to the excel file."""
+
+    name: str
 
 
 def _extract_config_entry(config: dict[str, dict], name: str) -> dict[str, object]:
