@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from __future__ import annotations
+import dataclasses
 from typing import Iterable, Optional, Union
 
 import numpy as np
@@ -119,7 +120,9 @@ class Datasheet:
         )
         self.worksheet.freeze_panes(coordinates["data_row_start"], 1)
 
-    def _write_data_group(self, data_group: dict, coordinates: dict[str, int]) -> int:
+    def _write_data_group(
+        self, data_group: DataGroup, coordinates: dict[str, int]
+    ) -> int:
         """Writes a data group to the excel sheet and applies formatting.
 
         Args:
@@ -131,7 +134,7 @@ class Datasheet:
         Returns:
             Position of last column that was added to the excel sheet
         """
-        group_length = len(data_group["data"])
+        group_length = len(data_group.column_data)
         supheader_row = coordinates["supheader_row"]
         header_row = coordinates["header_row"]
         data_row_start = coordinates["data_row_start"]
@@ -140,54 +143,46 @@ class Datasheet:
         end_column = start_column + group_length - 1
 
         # Write supheader
-        supheader_text, format_name = data_group["supheader"]
-        if supheader_text:
-            supheader_format = self.get_format(format_name)
+        if data_group.supheader_text:
+            excel_format = self.get_format(data_group.supheader_format)
             self.worksheet.merge_range(
                 supheader_row,
                 start_column,
                 supheader_row,
                 end_column,
-                supheader_text,
-                supheader_format,
+                data_group.supheader_text,
+                excel_format,
             )
 
         # Write header data
         curr_column = start_column
-        for text, format_name in data_group["header"]:
+        for text, format_name in zip(data_group.header_data, data_group.header_formats):
             excel_format = self.get_format(format_name)
             self.worksheet.write(header_row, curr_column, text, excel_format)
             curr_column += 1
 
         # Write column data
         curr_column = start_column
-        for values, format_name, conditional_name in data_group["data"]:
+        for column_values, format_name in zip(
+            data_group.column_data, data_group.column_formats
+        ):
             excel_format = self.get_format(format_name)
             self.worksheet.write_column(
-                data_row_start, curr_column, values, excel_format
+                data_row_start, curr_column, column_values, excel_format
             )
-            if conditional_name:
-                excel_conditional = self.get_conditional(conditional_name)
-                self.worksheet.conditional_format(
-                    data_row_start,
-                    curr_column,
-                    data_row_end,
-                    curr_column,
-                    excel_conditional,
-                )
             curr_column += 1
 
         # Set column width
         self.worksheet.set_column_pixels(
-            start_column, end_column, data_group["col_width"]
+            start_column, end_column, data_group.column_width
         )
 
-        # Apply conditional formats to the group
-        for conditional_info in data_group["conditional_formats"]:
-            format_name = conditional_info["name"]
+        # Apply conditional formats
+        for conditional_info in data_group.conditional_formats:
+            format_name = conditional_info.name
             conditional_format = self.get_conditional(format_name)
-            conditional_start = start_column + conditional_info["start"]
-            conditional_end = start_column + conditional_info["end"]
+            conditional_start = start_column + conditional_info.start
+            conditional_end = start_column + conditional_info.end
             self.worksheet.conditional_format(
                 data_row_start,
                 conditional_start,
@@ -211,35 +206,51 @@ class Datasheet:
                 if group_data:
                     data_groups.append(group_data)
             else:
-                group_data = self._prepare_feature_group(name, group_config)
+                group_data = self._prepare_data_group(name, group_config)
                 if group_data:
                     data_groups.append(group_data)
         # TODO: Add all the remaining columns
         return data_groups
 
-    def _prepare_feature_group(self, name, config) -> dict():
+    def _prepare_data_group(self, group_name, config) -> Optional[DataGroup]:
         """Prepare data required to write a feature group."""
         columns = [col for col in config["columns"] if col in self._table]
         if columns:
-            group_data = {
-                "data": self._prepare_column_data(config, columns),
-                "header": self._prepare_column_headers(config, columns, name),
-                "supheader": self._prepare_supheader(config, name),
-                "col_width": config.get("width", self._args["column_width"]),
-                "conditional_formats": [],
-            }
-            # Remove already used columns from the table
-            self._table = self._table.drop(columns=columns)
+            conditional_formats = []
+            if _eval_arg("column_conditional", config):
+                for column_pos, column in enumerate(columns):
+                    conditional = config["column_conditional"].get(column, None)
+                    if conditional is not None:
+                        conditional_formats.append(
+                            ConditionalFormatGroupInfo(
+                                conditional, column_pos, column_pos
+                            )
+                        )
+
+            data_group = DataGroup(
+                self._prepare_column_data(config, columns),
+                self._prepare_column_formats(config, columns),
+                self._prepare_header_data(config, columns),
+                self._prepare_header_formats(config, columns, group_name),
+                config.get("width", self._args["column_width"]),
+                supheader_text=self._prepare_supheader_text(config),
+                supheader_format=f"supheader_{group_name}",
+                conditional_formats=conditional_formats,
+            )
         else:
-            group_data = {}
+            data_group = None
+        # Remove used columns from the table
+        self._table = self._table.drop(columns=columns)
+        return data_group
 
-        return group_data
-
-    def _prepare_sample_group(self, name, config):
+    def _prepare_sample_group(self, group_name, config) -> Optional[DataGroup]:
         """Prepare data required to write a sample group."""
         non_sample_columns, sample_columns = self._find_sample_group_columns(
             config["tag"]
         )
+        config["columns"] = [*non_sample_columns, *sample_columns]
+        data_group = self._prepare_data_group(group_name, config)
+
         conditional_formats = []
         end = -1
         for columns in [non_sample_columns, sample_columns]:
@@ -247,24 +258,10 @@ class Datasheet:
                 start = end + 1
                 end = start + len(columns) - 1
                 conditional_formats.append(
-                    {"name": config["conditional"], "start": start, "end": end}
+                    ConditionalFormatGroupInfo(config["conditional"], start, end)
                 )
-
-        columns = [*non_sample_columns, *sample_columns]
-        if columns:
-            group_data = {
-                "data": self._prepare_column_data(config, columns),
-                "header": self._prepare_column_headers(config, columns, name),
-                "supheader": self._prepare_supheader(config, name),
-                "col_width": config.get("width", self._args["column_width"]),
-                "conditional_formats": conditional_formats,
-            }
-            # Remove already used columns from the table
-            self._table = self._table.drop(columns=columns)
-        else:
-            group_data = {}
-
-        return group_data
+        data_group.conditional_formats.extend(conditional_formats)
+        return data_group
 
     def _prepare_comparison_group(self, name, config):
         # Find all comparison groups
@@ -303,57 +300,61 @@ class Datasheet:
                         match = column
                 if match is not None:
                     sub_config["column_conditional"][match] = conditional
-            group_data = self._prepare_feature_group(name, sub_config)
+            group_data = self._prepare_data_group(name, sub_config)
             comparison_group_data.append(group_data)
         return comparison_group_data
 
     def _prepare_column_data(self, config: dict, columns: list[str]) -> dict:
-        data_info = []
+        column_data = []
         for column in columns:
-            data = self._table[column]
+            values = self._table[column]
             if _eval_arg("log2", config):
-                data = data.replace(0, np.nan)
-                if not _intensities_in_logspace(data):
-                    data = np.log2(data)
-            data = data.replace(np.nan, self._args["nan_symbol"])
+                values = values.replace(0, np.nan)
+                if not _intensities_in_logspace(values):
+                    values = np.log2(values)
+            values = values.replace(np.nan, self._args["nan_symbol"])
+            column_data.append(values)
+        return column_data
 
+    def _prepare_column_formats(self, config: dict, columns: list[str]) -> dict:
+        column_formats = []
+        for column in columns:
             format_name = config["format"]
-            conditional = None
             if "column_format" in config and column in config["column_format"]:
                 format_name = config["column_format"][column]
-            if "column_conditional" in config:
-                conditional = config["column_conditional"].get(column, None)
-            data_info.append([data, format_name, conditional])
+            column_formats.append(format_name)
         if _eval_arg("border", config):
-            data_info[0][1] = f"{data_info[0][1]}_left"
-            data_info[-1][1] = f"{data_info[-1][1]}_right"
-        return data_info
+            column_formats[0] = f"{column_formats[0]}_left"
+            column_formats[-1] = f"{column_formats[-1]}_right"
+        return column_formats
 
-    def _prepare_column_headers(
-        self, config: dict, columns: list[str], name: str
-    ) -> dict:
-        header_info = []
+    def _prepare_header_data(self, config: dict, columns: list[str]) -> dict:
+        header_data = []
         for text in columns:
             if _eval_arg("remove_tag", config):
                 text = text.replace(config["tag"], "").strip()
             elif _eval_arg("log2", config):
                 log2_tag = self._args["log2_tag"]
                 text = f"{text} {log2_tag}".strip()
-            format_name = f"header_{name}"
-            header_info.append([text, format_name])
-        if _eval_arg("border", config):
-            header_info[0][1] = f"{header_info[0][1]}_left"
-            header_info[-1][1] = f"{header_info[-1][1]}_right"
-        return header_info
+            header_data.append(text)
+        return header_data
 
-    def _prepare_supheader(self, config: dict, name: str) -> dict:
+    def _prepare_header_formats(
+        self, config: dict, columns: list[str], name: str
+    ) -> dict:
+        format_name = f"header_{name}"
+        header_formats = [format_name for _ in columns]
+        if _eval_arg("border", config):
+            header_formats[0] = f"{header_formats[0]}_left"
+            header_formats[-1] = f"{header_formats[-1]}_right"
+        return header_formats
+
+    def _prepare_supheader_text(self, config: dict) -> dict:
         text = config.get("supheader", None)
         if text and _eval_arg("log2", config):
             log2_tag = self._args["log2_tag"]
             text = f"{text} {log2_tag}".strip()
-        format_name = f"supheader_{name}"
-        supheader_info = [text, format_name]
-        return supheader_info
+        return text
 
     def get_format(self, format_name: str) -> xlsxwriter.format.Format:
         """Returns an excel format."""
@@ -453,6 +454,46 @@ class Datasheet:
         return (non_sample_columns, sample_columns)
 
 
+@dataclasses.dataclass
+class DataGroup:
+    """Class for storing data that will be written to the excel file.
+
+    Attributes:
+        column_data: An iterable of column values. Each column value entry must have
+            the same length.
+        column_formats: An iterable containing format names for each column.
+        header_data: An iterable containing column titles.
+        header_formats: An iterable containing format names for each header entry
+        supheader_text: The column super header text.
+        supheader_format: The format name of the column super header.
+        width: Column width in pixel
+        conditional_formats: An iterable containing
+
+    The entry length of column_data, column_formats, header_data, header_formats has to
+    be equal.
+    """
+
+    column_data: Iterable[Iterable[Union[str, int, float]]]
+    column_formats: Iterable[str]
+    header_data: Iterable[str]
+    header_formats: Iterable[str]
+    column_width: Union[int, float]
+    supheader_text: str = ""
+    supheader_format: str = ""
+    conditional_formats: Iterable[ConditionalFormatGroupInfo] = dataclasses.field(
+        default_factory=list
+    )
+
+
+@dataclasses.dataclass
+class ConditionalFormatGroupInfo:
+    """Class that stores a conditional format with start and end column positions."""
+
+    name: str
+    start: int
+    end: int
+
+
 def parse_config_file(file: str) -> dict[str, dict]:
     """Parses excel report config file and returns entries as dictionaries.
 
@@ -471,11 +512,8 @@ def parse_config_file(file: str) -> dict[str, dict]:
     return config
 
 
-@dataclass
-class DataGroup:
-    """Class for storing data that will be written to the excel file."""
-
-    name: str
+def _create_empty_data_group() -> DataGroup:
+    return DataGroup([[]], [], [], [], 45)
 
 
 def _extract_config_entry(config: dict[str, dict], name: str) -> dict[str, object]:
