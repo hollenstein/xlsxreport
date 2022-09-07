@@ -11,11 +11,11 @@ import yaml
 class Reportbook(xlsxwriter.Workbook):
     """Subclass of the XlsxWriter Workbook class."""
 
-    def add_infosheet(self):
+    def add_infosheet(self) -> xlsxwriter.worksheet.Worksheet:
         worksheet = self.add_worksheet("Info")
         return worksheet
 
-    def add_datasheet(self, name: Optional[str] = None):
+    def add_datasheet(self, name: Optional[str] = None) -> Datasheet:
         worksheet = self.add_worksheet(name)
         data_sheet = Datasheet(self, worksheet)
         return data_sheet
@@ -33,6 +33,7 @@ class Datasheet:
             "log2_tag": "[log2]",
             "nan_symbol": "n.a.",
             "sample_extraction_tag": "Intensity",
+            "append_remaining_columns": False,
         }
 
         self.workbook = workbook
@@ -41,7 +42,7 @@ class Datasheet:
         self._table = None
         self._sample_groups = None
         self._samples = []
-        self._format_templates = {}
+        self._format_templates = {"default": {"align": "left", "num_format": "0"}}
         self._workbook_formats = {}
         self._conditional_formats = {}
 
@@ -90,6 +91,9 @@ class Datasheet:
 
         # initialize data group writing
         data_groups = self._prepare_data_groups()
+        if self._args["append_remaining_columns"]:
+            data_groups.append(self._prepare_remaining_columns_group())
+
         coordinates = {
             "supheader_row": 0,
             "header_row": 1,
@@ -209,7 +213,6 @@ class Datasheet:
                 group_data = self._prepare_data_group(name, group_config)
                 if group_data:
                     data_groups.append(group_data)
-        # TODO: Add all the remaining columns
         return data_groups
 
     def _prepare_data_group(self, group_name, config) -> Optional[DataGroup]:
@@ -226,7 +229,9 @@ class Datasheet:
                                 conditional, column_pos, column_pos
                             )
                         )
-
+            supheader_format_name = (
+                f"supheader_{group_name}" if group_name else "supheader"
+            )
             data_group = DataGroup(
                 self._prepare_column_data(config, columns),
                 self._prepare_column_formats(config, columns),
@@ -234,7 +239,7 @@ class Datasheet:
                 self._prepare_header_formats(config, columns, group_name),
                 config.get("width", self._args["column_width"]),
                 supheader_text=self._prepare_supheader_text(config),
-                supheader_format=f"supheader_{group_name}",
+                supheader_format=supheader_format_name,
                 conditional_formats=conditional_formats,
             )
         else:
@@ -254,7 +259,7 @@ class Datasheet:
         conditional_formats = []
         end = -1
         for columns in [non_sample_columns, sample_columns]:
-            if columns:
+            if columns and _eval_arg("conditional", config):
                 start = end + 1
                 end = start + len(columns) - 1
                 conditional_formats.append(
@@ -304,6 +309,11 @@ class Datasheet:
             comparison_group_data.append(group_data)
         return comparison_group_data
 
+    def _prepare_remaining_columns_group(self):
+        config = {"format": "default", "columns": self._table.columns.tolist()}
+        data_group = self._prepare_data_group("", config)
+        return data_group
+
     def _prepare_column_data(self, config: dict, columns: list[str]) -> dict:
         column_data = []
         for column in columns:
@@ -324,8 +334,8 @@ class Datasheet:
                 format_name = config["column_format"][column]
             column_formats.append(format_name)
         if _eval_arg("border", config):
-            column_formats[0] = f"{column_formats[0]}_left"
-            column_formats[-1] = f"{column_formats[-1]}_right"
+            column_formats[0] = _rename_border_format(column_formats[0], left=True)
+            column_formats[-1] = _rename_border_format(column_formats[-1], right=True)
         return column_formats
 
     def _prepare_header_data(self, config: dict, columns: list[str]) -> dict:
@@ -342,11 +352,11 @@ class Datasheet:
     def _prepare_header_formats(
         self, config: dict, columns: list[str], name: str
     ) -> dict:
-        format_name = f"header_{name}"
+        format_name = f"header_{name}" if name else "header"
         header_formats = [format_name for _ in columns]
         if _eval_arg("border", config):
-            header_formats[0] = f"{header_formats[0]}_left"
-            header_formats[-1] = f"{header_formats[-1]}_right"
+            header_formats[0] = _rename_border_format(header_formats[0], left=True)
+            header_formats[-1] = _rename_border_format(header_formats[-1], right=True)
         return header_formats
 
     def _prepare_supheader_text(self, config: dict) -> dict:
@@ -412,13 +422,14 @@ class Datasheet:
         """Add format variants with borders to the format templates.
 
         For each format adds a variant with a left or a right border, the
-        format name is extended by 'format_left' or 'format_right'.
+        format name is extended by the _rename_border_format() function.
         """
         for name in list(self._format_templates):
-            for border in ["left", "right", "left_right"]:
-                format_name = f"{name}_{border}"
+            for left, right in [(True, False), (False, True), (True, True)]:
+                format_name = _rename_border_format(name, left=left, right=right)
                 format_properties = self._format_templates[name].copy()
-                for direction in border.split("_"):
+                directions = [i for i, j in zip(["left", "right"], [left, right]) if j]
+                for direction in directions:
                     format_properties[direction] = self._args["border_weight"]
                 self._format_templates[format_name] = format_properties
 
@@ -573,3 +584,22 @@ def _intensities_in_logspace(data: Union[pd.DataFrame, np.ndarray, Iterable]) ->
     data = np.array(data, dtype=float)
     mask = np.isfinite(data)
     return np.all(data[mask].flatten() <= 64)
+
+
+def _rename_border_format(
+    format_name: str, left: bool = False, right: bool = False
+) -> str:
+    """Adds a 'border tag' to the end of a format name.
+
+    Args:
+        left: If true, expands the format_name with the tag for the left border.
+        right: If true, expands the format_name with the tag for the right border.
+
+    Returns:
+        The format_name with containing no, one or both border tags.
+    """
+    if left:
+        format_name = f"{format_name}_left"
+    if right:
+        format_name = f"{format_name}_right"
+    return format_name

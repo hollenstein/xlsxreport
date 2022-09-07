@@ -86,3 +86,4 @@ args:
   nan_symbol: "-" # Replaces nan values with this symbol
   log2_tag: "[log2]" # Added to supheader or header if column is log2 transformed
   sample_extraction_tag: "MaxLFQ Intensity"
+  append_remaining_columns: True
