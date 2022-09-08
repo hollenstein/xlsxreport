@@ -191,5 +191,5 @@ args:
   column_width: 45
   nan_symbol: "-"
   log2_tag: "[log2]"
-  sample_extraction_tag: "Intensity"
+  sample_extraction_tag: "MS/MS count"
   append_remaining_columns: True

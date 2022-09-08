@@ -54,6 +54,16 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
         warnings.simplefilter(action="ignore", category=pd.errors.DtypeWarning)
         table = pd.read_csv(infile, sep=sep)
 
+    # Replace column names - adds a "total" keyword to intensity columns
+    replace_column_names = {
+        "Intensity": "Intensity total",
+        "norm imp intensity": "norm imp intensity total",
+        "iBAQ": "iBAQ total",
+        "norm intensity": "norm intensity total",
+        "LFQ intensity": "LFQ intensity total",
+    }
+    table.rename(columns=replace_column_names, inplace=True)
+
     # Replace comparison column names
     replace_column_tags = [
         ("P.Value_", "P.Value"),
@@ -83,6 +93,7 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
         protein_sheet.apply_configuration(config_path)
         protein_sheet.add_data(table)
         protein_sheet.write_data()
+        print(protein_sheet._samples)
     click.echo(f"\tReport written to:")
     click.echo(f"\t{report_path}")
 
