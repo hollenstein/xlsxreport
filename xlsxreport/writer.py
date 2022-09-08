@@ -260,16 +260,17 @@ class Datasheet:
         config["columns"] = [*non_sample_columns, *sample_columns]
         data_group = self._prepare_data_group(group_name, config)
 
-        conditional_formats = []
-        end = -1
-        for columns in [non_sample_columns, sample_columns]:
-            if columns and _eval_arg("conditional", config):
-                start = end + 1
-                end = start + len(columns) - 1
-                conditional_formats.append(
-                    ConditionalFormatGroupInfo(config["conditional"], start, end)
-                )
-        data_group.conditional_formats.extend(conditional_formats)
+        if config["columns"]:
+            conditional_formats = []
+            end = -1
+            for columns in [non_sample_columns, sample_columns]:
+                if columns and _eval_arg("conditional", config):
+                    start = end + 1
+                    end = start + len(columns) - 1
+                    conditional_formats.append(
+                        ConditionalFormatGroupInfo(config["conditional"], start, end)
+                    )
+            data_group.conditional_formats.extend(conditional_formats)
         return data_group
 
     def _prepare_comparison_group(self, group_name: str, config: dict):
