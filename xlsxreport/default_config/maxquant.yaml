@@ -16,7 +16,8 @@ groups:
       "Q-value",
       "Score",
       "iBAQ peptides",
-      "Peptide counts (razor+unique)"
+      "Peptide counts (razor+unique)",
+      "MS/MS count",
     ],
     column_format: {
       "Number of proteins": "int",
@@ -26,9 +27,13 @@ groups:
       "Q-value": "float",
       "Score": "float",
       "Peptide counts (razor+unique)": "int",
-      "iBAQ peptides": "int"
+      "iBAQ peptides": "int",
+      "MS/MS count": "int",
     },
-    column_conditional: {"Sequence coverage [%]": "data_bar"},
+    column_conditional: {
+      "Sequence coverage [%]": "data_bar",
+      "MS/MS count": "count",
+    },
   }
   spectral_count: {
     tag: "MS/MS count",
