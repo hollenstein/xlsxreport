@@ -89,7 +89,7 @@ formats:
   str: {"align": "left", "num_format": "0"}
   header: {
     "bold": True, "align": "center", "valign": "vcenter",
-    "bottom": 2, "text_wrap": True
+    "bottom": 2, "top": 2, "text_wrap": True
   }
   supheader: {
     "bold": True, "align": "center", "valign": "vcenter",

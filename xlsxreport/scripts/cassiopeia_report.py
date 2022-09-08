@@ -93,7 +93,6 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
         protein_sheet.apply_configuration(config_path)
         protein_sheet.add_data(table)
         protein_sheet.write_data()
-        print(protein_sheet._samples)
     click.echo(f"\tReport written to:")
     click.echo(f"\t{report_path}")
 
