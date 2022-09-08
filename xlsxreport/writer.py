@@ -198,24 +198,26 @@ class Datasheet:
         # Return last column position
         return end_column
 
-    def _prepare_data_groups(self):
+    def _prepare_data_groups(self) -> list[DataGroup]:
         data_groups = []
-        for name, group_config in self._config["groups"].items():
+        for group_name, group_config in self._config["groups"].items():
             if _eval_arg("comparison_group", group_config):
-                for group_data in self._prepare_comparison_group(name, group_config):
+                for group_data in self._prepare_comparison_group(
+                    group_name, group_config
+                ):
                     if group_data:
                         data_groups.append(group_data)
             elif _eval_arg("tag", group_config):
-                group_data = self._prepare_sample_group(name, group_config)
+                group_data = self._prepare_sample_group(group_name, group_config)
                 if group_data:
                     data_groups.append(group_data)
             else:
-                group_data = self._prepare_data_group(name, group_config)
+                group_data = self._prepare_data_group(group_name, group_config)
                 if group_data:
                     data_groups.append(group_data)
         return data_groups
 
-    def _prepare_data_group(self, group_name, config) -> Optional[DataGroup]:
+    def _prepare_data_group(self, group_name: str, config: dict) -> Optional[DataGroup]:
         """Prepare data required to write a feature group."""
         columns = [col for col in config["columns"] if col in self._table]
         if columns:
@@ -248,7 +250,9 @@ class Datasheet:
         self._table = self._table.drop(columns=columns)
         return data_group
 
-    def _prepare_sample_group(self, group_name, config) -> Optional[DataGroup]:
+    def _prepare_sample_group(
+        self, group_name: str, config: dict
+    ) -> Optional[DataGroup]:
         """Prepare data required to write a sample group."""
         non_sample_columns, sample_columns = self._find_sample_group_columns(
             config["tag"]
@@ -268,16 +272,26 @@ class Datasheet:
         data_group.conditional_formats.extend(conditional_formats)
         return data_group
 
-    def _prepare_comparison_group(self, name, config):
-        # Find all comparison groups
+    def _prepare_comparison_group(self, group_name: str, config: dict):
+        """Defines subgroups from a comparison group and prepares DataGroup instances.
+
+        Each comparison of two samples generates one subgroup. To find all subgroups,
+        each entry of "columns" from the comparison group is used as a tag to collect
+        columns from self._table, then the search string is removed from each column
+        and, if the remainder contains the "tag" specified by the comparison group, it
+        is used as a subgroup.
+        """
         comparison_groups = []
         for column_tag in config["columns"]:
             for column in _find_columns(self._table, column_tag):
                 comparison_group = column.replace(column_tag, "").strip()
-                if comparison_group not in comparison_groups:
+                if (
+                    comparison_group not in comparison_groups
+                    and config["tag"] in comparison_group
+                ):
                     comparison_groups.append(comparison_group)
 
-        comparison_group_data = []
+        data_groups = []
         for comparison_group in comparison_groups:
             # Sort columns according to the order specified in the config file
             matched = _find_columns(self._table, comparison_group)
@@ -297,6 +311,7 @@ class Datasheet:
             sub_config["columns"] = columns
             sub_config["supheader"] = supheader
             sub_config["tag"] = comparison_group
+            sub_config["remove_tag"] = True
             sub_config["column_conditional"] = {}
             for tag, conditional in config["column_conditional"].items():
                 match = None
@@ -305,11 +320,11 @@ class Datasheet:
                         match = column
                 if match is not None:
                     sub_config["column_conditional"][match] = conditional
-            group_data = self._prepare_data_group(name, sub_config)
-            comparison_group_data.append(group_data)
-        return comparison_group_data
+            data_group = self._prepare_data_group(group_name, sub_config)
+            data_groups.append(data_group)
+        return data_groups
 
-    def _prepare_remaining_columns_group(self):
+    def _prepare_remaining_columns_group(self) -> DataGroup:
         config = {"format": "default", "columns": self._table.columns.tolist()}
         data_group = self._prepare_data_group("", config)
         return data_group
@@ -433,7 +448,7 @@ class Datasheet:
                     format_properties[direction] = self._args["border_weight"]
                 self._format_templates[format_name] = format_properties
 
-    def _add_format_templates_to_workbook(self):
+    def _add_format_templates_to_workbook(self) -> None:
         """Add the template formats to the workbook."""
         for name, properties in self._format_templates.items():
             self._workbook_formats[name] = self.workbook.add_format(properties)
@@ -524,7 +539,8 @@ def parse_config_file(file: str) -> dict[str, dict]:
 
 
 def _create_empty_data_group() -> DataGroup:
-    return DataGroup([[]], [], [], [], 45)
+    column_width = 45
+    return DataGroup([[]], [], [], [], column_width)
 
 
 def _extract_config_entry(config: dict[str, dict], name: str) -> dict[str, object]:
@@ -536,7 +552,7 @@ def _eval_arg(arg: str, args: dict) -> bool:
     return arg in args and args[arg] is not False
 
 
-def _extract_samples_with_column_tag(table: pd.DataFrame, tag: str):
+def _extract_samples_with_column_tag(table: pd.DataFrame, tag: str) -> list[str]:
     """Extract sample names from columns containing the specified tag"""
     columns = _find_columns(table, tag, must_be_substring=True)
     samples = [c.replace(tag, "").strip() for c in columns]
