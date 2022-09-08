@@ -2,12 +2,21 @@
 ---
 groups:
   features: {
-    format: "str", width: 78,
+    format: "str",
+    width: 78,
     columns: [
-      "Protein", "Indistinguishable Proteins", "Protein ID",  "Entry Name",  "Gene", 
-      "Description",  "Protein Length",  "Protein Probability", 
-      "Combined Total Peptides", "Combined Total Spectral Count", 
-      "Combined Unique Spectral Count", "Combined Spectral Count", 
+      "Protein",
+      "Indistinguishable Proteins",
+      "Protein ID",
+      "Entry Name",
+      "Gene",
+      "Description",
+      "Protein Length",
+      "Protein Probability",
+      "Combined Total Peptides",
+      "Combined Total Spectral Count",
+      "Combined Unique Spectral Count",
+      "Combined Spectral Count", 
     ],
     column_format: {
       "Protein Length": "int", 
@@ -20,37 +29,57 @@ groups:
     column_conditional: {
       "Combined Total Peptides": "count",
     },
-
   }
   unqiue_spectral_count: {
-    tag: "Unique Spectral Count", format: "int", width: 45,
-    conditional: "count", header_format: {"rotation": 90},
-    supheader: "Unique Spectral Count", supheader_format: {"fg_color": "#eeeeee"},
+    tag: "Unique Spectral Count",
+    format: "int",
+    conditional: "count",
+    header_format: {"rotation": 90},
+    supheader: "Unique Spectral Count",
+    supheader_format: {"fg_color": "#eeeeee"},
     remove_tag: True, border: True,
   }
   total_spectral_count: {
-    tag: "Total Spectral Count", format: "int", width: 45,
-    conditional: "count", header_format: {"rotation": 90},
-    supheader: "Total Spectral Count", supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, border: True,
+    tag: "Total Spectral Count",
+    format: "int",
+    conditional: "count",
+    header_format: {"rotation": 90},
+    supheader: "Total Spectral Count",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    border: True,
   }
   spectral_count: {
-    tag: "Spectral Count", format: "int", width: 45,
-    conditional: "count", header_format: {"rotation": 90},
-    supheader: "Spectral Count", supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, border: True,
+    tag: "Spectral Count",
+    format: "int",
+    conditional: "count",
+    header_format: {"rotation": 90},
+    supheader: "Spectral Count",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    border: True,
   }
   lfq_intensity: {
-    tag: "MaxLFQ Intensity", format: "float", width: 45,
-    conditional: "intensity", header_format: {"rotation": 90},
-    supheader: "LFQ intensity", supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, log2: True, border: True,
+    tag: "MaxLFQ Intensity",
+    format: "float",
+    conditional: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "LFQ intensity",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    log2: True,
+    border: True,
   }
   intensity: {
-    tag: "Intensity", format: "float", width: 45,
-    conditional: "intensity", header_format: {"rotation": 90},
-    supheader: "Intensity", supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, log2: True, border: True,
+    tag: "Intensity",
+    format: "float",
+    conditional: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "Intensity",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    log2: True,
+    border: True,
   }
 
 
@@ -58,10 +87,14 @@ formats:
   int: {"align": "center", "num_format": "0"}
   float: {"align": "center", "num_format": "0.00"}
   str: {"align": "left", "num_format": "0"}
-  header: {"bold": True, "align": "center", "valign": "vcenter",
-           "top": 2, "bottom": 2, "left": 0, "right": 0, "text_wrap": True}
-  supheader: {"bold": True, "align": "center", "valign": "vcenter",
-              "top": 0, "bottom": 2, "left": 2, "right": 2, "text_wrap": True}
+  header: {
+    "bold": True, "align": "center", "valign": "vcenter",
+    "bottom": 2, "top": 2, "text_wrap": True
+  }
+  supheader: {
+    "bold": True, "align": "center", "valign": "vcenter",
+    "bottom": 2, "left": 2, "right": 2, "text_wrap": True
+  }
 
 
 conditional_formats:
@@ -82,7 +115,8 @@ args:
   border_weight: 2
   supheader_height: 40
   header_height: 95
-  column_width: 64
-  nan_symbol: "-" # Replaces nan values with this symbol
-  log2_tag: "[log2]" # Added to supheader or header if column is log2 transformed
+  column_width: 45
+  nan_symbol: "-"
+  log2_tag: "[log2]"
   sample_extraction_tag: "MaxLFQ Intensity"
+  append_remaining_columns: True

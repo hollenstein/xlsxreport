@@ -11,11 +11,11 @@ import yaml
 class Reportbook(xlsxwriter.Workbook):
     """Subclass of the XlsxWriter Workbook class."""
 
-    def add_infosheet(self):
+    def add_infosheet(self) -> xlsxwriter.worksheet.Worksheet:
         worksheet = self.add_worksheet("Info")
         return worksheet
 
-    def add_datasheet(self, name: Optional[str] = None):
+    def add_datasheet(self, name: Optional[str] = None) -> Datasheet:
         worksheet = self.add_worksheet(name)
         data_sheet = Datasheet(self, worksheet)
         return data_sheet
@@ -33,6 +33,7 @@ class Datasheet:
             "log2_tag": "[log2]",
             "nan_symbol": "n.a.",
             "sample_extraction_tag": "Intensity",
+            "append_remaining_columns": False,
         }
 
         self.workbook = workbook
@@ -41,7 +42,7 @@ class Datasheet:
         self._table = None
         self._sample_groups = None
         self._samples = []
-        self._format_templates = {}
+        self._format_templates = {"default": {"align": "left", "num_format": "0"}}
         self._workbook_formats = {}
         self._conditional_formats = {}
 
@@ -90,6 +91,9 @@ class Datasheet:
 
         # initialize data group writing
         data_groups = self._prepare_data_groups()
+        if self._args["append_remaining_columns"]:
+            data_groups.append(self._prepare_remaining_columns_group())
+
         coordinates = {
             "supheader_row": 0,
             "header_row": 1,
@@ -194,25 +198,26 @@ class Datasheet:
         # Return last column position
         return end_column
 
-    def _prepare_data_groups(self):
+    def _prepare_data_groups(self) -> list[DataGroup]:
         data_groups = []
-        for name, group_config in self._config["groups"].items():
+        for group_name, group_config in self._config["groups"].items():
             if _eval_arg("comparison_group", group_config):
-                for group_data in self._prepare_comparison_group(name, group_config):
+                for group_data in self._prepare_comparison_group(
+                    group_name, group_config
+                ):
                     if group_data:
                         data_groups.append(group_data)
             elif _eval_arg("tag", group_config):
-                group_data = self._prepare_sample_group(name, group_config)
+                group_data = self._prepare_sample_group(group_name, group_config)
                 if group_data:
                     data_groups.append(group_data)
             else:
-                group_data = self._prepare_data_group(name, group_config)
+                group_data = self._prepare_data_group(group_name, group_config)
                 if group_data:
                     data_groups.append(group_data)
-        # TODO: Add all the remaining columns
         return data_groups
 
-    def _prepare_data_group(self, group_name, config) -> Optional[DataGroup]:
+    def _prepare_data_group(self, group_name: str, config: dict) -> Optional[DataGroup]:
         """Prepare data required to write a feature group."""
         columns = [col for col in config["columns"] if col in self._table]
         if columns:
@@ -226,7 +231,9 @@ class Datasheet:
                                 conditional, column_pos, column_pos
                             )
                         )
-
+            supheader_format_name = (
+                f"supheader_{group_name}" if group_name else "supheader"
+            )
             data_group = DataGroup(
                 self._prepare_column_data(config, columns),
                 self._prepare_column_formats(config, columns),
@@ -234,7 +241,7 @@ class Datasheet:
                 self._prepare_header_formats(config, columns, group_name),
                 config.get("width", self._args["column_width"]),
                 supheader_text=self._prepare_supheader_text(config),
-                supheader_format=f"supheader_{group_name}",
+                supheader_format=supheader_format_name,
                 conditional_formats=conditional_formats,
             )
         else:
@@ -243,7 +250,9 @@ class Datasheet:
         self._table = self._table.drop(columns=columns)
         return data_group
 
-    def _prepare_sample_group(self, group_name, config) -> Optional[DataGroup]:
+    def _prepare_sample_group(
+        self, group_name: str, config: dict
+    ) -> Optional[DataGroup]:
         """Prepare data required to write a sample group."""
         non_sample_columns, sample_columns = self._find_sample_group_columns(
             config["tag"]
@@ -251,28 +260,39 @@ class Datasheet:
         config["columns"] = [*non_sample_columns, *sample_columns]
         data_group = self._prepare_data_group(group_name, config)
 
-        conditional_formats = []
-        end = -1
-        for columns in [non_sample_columns, sample_columns]:
-            if columns:
-                start = end + 1
-                end = start + len(columns) - 1
-                conditional_formats.append(
-                    ConditionalFormatGroupInfo(config["conditional"], start, end)
-                )
-        data_group.conditional_formats.extend(conditional_formats)
+        if config["columns"]:
+            conditional_formats = []
+            end = -1
+            for columns in [non_sample_columns, sample_columns]:
+                if columns and _eval_arg("conditional", config):
+                    start = end + 1
+                    end = start + len(columns) - 1
+                    conditional_formats.append(
+                        ConditionalFormatGroupInfo(config["conditional"], start, end)
+                    )
+            data_group.conditional_formats.extend(conditional_formats)
         return data_group
 
-    def _prepare_comparison_group(self, name, config):
-        # Find all comparison groups
+    def _prepare_comparison_group(self, group_name: str, config: dict):
+        """Defines subgroups from a comparison group and prepares DataGroup instances.
+
+        Each comparison of two samples generates one subgroup. To find all subgroups,
+        each entry of "columns" from the comparison group is used as a tag to collect
+        columns from self._table, then the search string is removed from each column
+        and, if the remainder contains the "tag" specified by the comparison group, it
+        is used as a subgroup.
+        """
         comparison_groups = []
         for column_tag in config["columns"]:
             for column in _find_columns(self._table, column_tag):
                 comparison_group = column.replace(column_tag, "").strip()
-                if comparison_group not in comparison_groups:
+                if (
+                    comparison_group not in comparison_groups
+                    and config["tag"] in comparison_group
+                ):
                     comparison_groups.append(comparison_group)
 
-        comparison_group_data = []
+        data_groups = []
         for comparison_group in comparison_groups:
             # Sort columns according to the order specified in the config file
             matched = _find_columns(self._table, comparison_group)
@@ -292,6 +312,7 @@ class Datasheet:
             sub_config["columns"] = columns
             sub_config["supheader"] = supheader
             sub_config["tag"] = comparison_group
+            sub_config["remove_tag"] = True
             sub_config["column_conditional"] = {}
             for tag, conditional in config["column_conditional"].items():
                 match = None
@@ -300,9 +321,14 @@ class Datasheet:
                         match = column
                 if match is not None:
                     sub_config["column_conditional"][match] = conditional
-            group_data = self._prepare_data_group(name, sub_config)
-            comparison_group_data.append(group_data)
-        return comparison_group_data
+            data_group = self._prepare_data_group(group_name, sub_config)
+            data_groups.append(data_group)
+        return data_groups
+
+    def _prepare_remaining_columns_group(self) -> DataGroup:
+        config = {"format": "default", "columns": self._table.columns.tolist()}
+        data_group = self._prepare_data_group("", config)
+        return data_group
 
     def _prepare_column_data(self, config: dict, columns: list[str]) -> dict:
         column_data = []
@@ -324,8 +350,8 @@ class Datasheet:
                 format_name = config["column_format"][column]
             column_formats.append(format_name)
         if _eval_arg("border", config):
-            column_formats[0] = f"{column_formats[0]}_left"
-            column_formats[-1] = f"{column_formats[-1]}_right"
+            column_formats[0] = _rename_border_format(column_formats[0], left=True)
+            column_formats[-1] = _rename_border_format(column_formats[-1], right=True)
         return column_formats
 
     def _prepare_header_data(self, config: dict, columns: list[str]) -> dict:
@@ -342,11 +368,11 @@ class Datasheet:
     def _prepare_header_formats(
         self, config: dict, columns: list[str], name: str
     ) -> dict:
-        format_name = f"header_{name}"
+        format_name = f"header_{name}" if name else "header"
         header_formats = [format_name for _ in columns]
         if _eval_arg("border", config):
-            header_formats[0] = f"{header_formats[0]}_left"
-            header_formats[-1] = f"{header_formats[-1]}_right"
+            header_formats[0] = _rename_border_format(header_formats[0], left=True)
+            header_formats[-1] = _rename_border_format(header_formats[-1], right=True)
         return header_formats
 
     def _prepare_supheader_text(self, config: dict) -> dict:
@@ -412,17 +438,18 @@ class Datasheet:
         """Add format variants with borders to the format templates.
 
         For each format adds a variant with a left or a right border, the
-        format name is extended by 'format_left' or 'format_right'.
+        format name is extended by the _rename_border_format() function.
         """
         for name in list(self._format_templates):
-            for border in ["left", "right", "left_right"]:
-                format_name = f"{name}_{border}"
+            for left, right in [(True, False), (False, True), (True, True)]:
+                format_name = _rename_border_format(name, left=left, right=right)
                 format_properties = self._format_templates[name].copy()
-                for direction in border.split("_"):
+                directions = [i for i, j in zip(["left", "right"], [left, right]) if j]
+                for direction in directions:
                     format_properties[direction] = self._args["border_weight"]
                 self._format_templates[format_name] = format_properties
 
-    def _add_format_templates_to_workbook(self):
+    def _add_format_templates_to_workbook(self) -> None:
         """Add the template formats to the workbook."""
         for name, properties in self._format_templates.items():
             self._workbook_formats[name] = self.workbook.add_format(properties)
@@ -513,7 +540,8 @@ def parse_config_file(file: str) -> dict[str, dict]:
 
 
 def _create_empty_data_group() -> DataGroup:
-    return DataGroup([[]], [], [], [], 45)
+    column_width = 45
+    return DataGroup([[]], [], [], [], column_width)
 
 
 def _extract_config_entry(config: dict[str, dict], name: str) -> dict[str, object]:
@@ -525,7 +553,7 @@ def _eval_arg(arg: str, args: dict) -> bool:
     return arg in args and args[arg] is not False
 
 
-def _extract_samples_with_column_tag(table: pd.DataFrame, tag: str):
+def _extract_samples_with_column_tag(table: pd.DataFrame, tag: str) -> list[str]:
     """Extract sample names from columns containing the specified tag"""
     columns = _find_columns(table, tag, must_be_substring=True)
     samples = [c.replace(tag, "").strip() for c in columns]
@@ -573,3 +601,22 @@ def _intensities_in_logspace(data: Union[pd.DataFrame, np.ndarray, Iterable]) ->
     data = np.array(data, dtype=float)
     mask = np.isfinite(data)
     return np.all(data[mask].flatten() <= 64)
+
+
+def _rename_border_format(
+    format_name: str, left: bool = False, right: bool = False
+) -> str:
+    """Adds a 'border tag' to the end of a format name.
+
+    Args:
+        left: If true, expands the format_name with the tag for the left border.
+        right: If true, expands the format_name with the tag for the right border.
+
+    Returns:
+        The format_name with containing no, one or both border tags.
+    """
+    if left:
+        format_name = f"{format_name}_left"
+    if right:
+        format_name = f"{format_name}_right"
+    return format_name
