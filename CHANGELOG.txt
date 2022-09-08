@@ -1,6 +1,19 @@
 Changelog
 =========
 
+
+0.0.2
+-----
+
+- Added option do add all unspecified columns to the end of the exccel sheet.
+- Added documentation of the config file format.
+- The config file argument "remove_tag" does not affect comparison groups
+  anymore, as the sample comparison string is now always removed from the
+  header and added to the supheader.
+- Minor changes to the default config files.
+- The xlsx_report_setup script now prints its progress to the console.
+
+
 0.0.1
 -----
 
