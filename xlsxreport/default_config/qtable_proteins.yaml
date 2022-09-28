@@ -69,7 +69,7 @@ groups:
   }
   differential_expression: {
     comparison_group: True,
-    tag: " vs. ",
+    tag: " vs ",
     replace_comparison_tag: " / ",
     columns: ["P-value", "Adjusted p-value", "logFC", "Average expression"],
     column_conditional: {
