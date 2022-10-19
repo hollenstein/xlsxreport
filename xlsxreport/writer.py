@@ -91,8 +91,12 @@ class Datasheet:
 
         # initialize data group writing
         data_groups = self._prepare_data_groups()
+        hide_remaining_columns_group = False
         if self._args["append_remaining_columns"]:
-            data_groups.append(self._prepare_remaining_columns_group())
+            remaining_columns_data_group = self._prepare_remaining_columns_group()
+            if remaining_columns_data_group is not None:
+                hide_remaining_columns_group = True
+                data_groups.append(remaining_columns_data_group)
 
         coordinates = {
             "supheader_row": 0,
@@ -100,14 +104,24 @@ class Datasheet:
             "data_row_start": 2,
             "data_row_end": 2,
             "first_column": 0,
+            "last_column": None,
+            "start_column": None,
         }
         coordinates["data_row_end"] += self._table.shape[0] - 1
-        coordinates["start_column"] = coordinates["first_column"]
+        coordinates["last_column"] = coordinates["first_column"] - 1
 
         # write data groups
         for data_group in data_groups:
-            coordinates["last_column"] = self._write_data_group(data_group, coordinates)
             coordinates["start_column"] = coordinates["last_column"] + 1
+            coordinates["last_column"] = self._write_data_group(data_group, coordinates)
+
+        # Hide the additionally added remaining columns
+        if hide_remaining_columns_group:
+            self.worksheet.set_column(
+                coordinates["start_column"],
+                coordinates["last_column"],
+                options={"level": 1, "collapsed": True, "hidden": True},
+            )
 
         # Set header height, add autofilter, freeze panes
         self.worksheet.set_row_pixels(
@@ -325,7 +339,8 @@ class Datasheet:
             data_groups.append(data_group)
         return data_groups
 
-    def _prepare_remaining_columns_group(self) -> DataGroup:
+    def _prepare_remaining_columns_group(self) -> Optional[DataGroup]:
+        """Returns a remaining column data group or None, if no columns remain."""
         config = {"format": "default", "columns": self._table.columns.tolist()}
         data_group = self._prepare_data_group("", config)
         return data_group

@@ -1,10 +1,20 @@
 Changelog
 =========
 
+
+0.0.4
+-----
+
+- Changes behavior of the "append_remaining_columns" option. Now the
+  unspecified columns that are added to the end of the excel sheet
+  are grouped and hidded.
+
+
 0.0.3
 -----
 
 - Fixes issues of missing .yaml config files for installation.
+
 
 0.0.2
 -----
