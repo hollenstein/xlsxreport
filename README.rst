@@ -63,7 +63,6 @@ used.
 Planned features
 ----------------
 - Add the option to specify column comments by providing an additional file
-- Maybe add another group tag that allows hiding the group columns
 - Maybe add an option to specify sample names and order
     - Requires that samples are specified by user
     - _find_sample_group_columns() needs to also sort columns
