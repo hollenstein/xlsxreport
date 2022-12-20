@@ -32,7 +32,7 @@ add the dot after install):
 
 To uninstall the XlsxReport library type:
 
-``pip uninstall msreport``
+``pip uninstall xlsxreport``
 
 
 After XlsxReport has been installed the local AppData directory needs to be setup and the
