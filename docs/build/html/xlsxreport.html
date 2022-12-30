@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlsxreport package &mdash; XlsxReport 0.0.4 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="xlsxreport.scripts package" href="xlsxreport.scripts.html" />
+    <link rel="prev" title="Welcome to XlsxReport’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> XlsxReport
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xlsxreport package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xlsxreport.scripts.html">xlsxreport.scripts package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xlsxreport.appdir">xlsxreport.appdir module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xlsxreport.writer">xlsxreport.writer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-xlsxreport">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">XlsxReport</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">xlsxreport package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/xlsxreport.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="xlsxreport-package">
+<h1>xlsxreport package<a class="headerlink" href="#xlsxreport-package" title="Permalink to this headline"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="xlsxreport.scripts.html">xlsxreport.scripts package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xlsxreport.scripts.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xlsxreport.scripts.html#module-xlsxreport.scripts.cassiopeia_report">xlsxreport.scripts.cassiopeia_report module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xlsxreport.scripts.html#module-xlsxreport.scripts.report">xlsxreport.scripts.report module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xlsxreport.scripts.html#module-xlsxreport.scripts.setup_appdata_dir">xlsxreport.scripts.setup_appdata_dir module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xlsxreport.scripts.html#module-xlsxreport.scripts">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-xlsxreport.appdir">
+<span id="xlsxreport-appdir-module"></span><h2>xlsxreport.appdir module<a class="headerlink" href="#module-xlsxreport.appdir" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xlsxreport.appdir.get_config_file">
+<span class="sig-prename descclassname"><span class="pre">xlsxreport.appdir.</span></span><span class="sig-name descname"><span class="pre">get_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#xlsxreport.appdir.get_config_file" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the file path if filename is present in the app data directory.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlsxreport.appdir.locate_data_dir">
+<span class="sig-prename descclassname"><span class="pre">xlsxreport.appdir.</span></span><span class="sig-name descname"><span class="pre">locate_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.appdir.locate_data_dir" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlsxreport.appdir.setup_data_dir">
+<span class="sig-prename descclassname"><span class="pre">xlsxreport.appdir.</span></span><span class="sig-name descname"><span class="pre">setup_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.appdir.setup_data_dir" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a user specific app data directory and copies default config files.</p>
+</dd></dl>
+
+</section>
+<section id="module-xlsxreport.writer">
+<span id="xlsxreport-writer-module"></span><h2>xlsxreport.writer module<a class="headerlink" href="#module-xlsxreport.writer" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlsxreport.writer.ConditionalFormatGroupInfo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlsxreport.writer.</span></span><span class="sig-name descname"><span class="pre">ConditionalFormatGroupInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.writer.ConditionalFormatGroupInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class that stores a conditional format with start and end column positions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.ConditionalFormatGroupInfo.end">
+<span class="sig-name descname"><span class="pre">end</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#xlsxreport.writer.ConditionalFormatGroupInfo.end" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.ConditionalFormatGroupInfo.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#xlsxreport.writer.ConditionalFormatGroupInfo.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.ConditionalFormatGroupInfo.start">
+<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#xlsxreport.writer.ConditionalFormatGroupInfo.start" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlsxreport.writer.</span></span><span class="sig-name descname"><span class="pre">DataGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">column_data:</span> <span class="pre">typing.Iterable[typing.Iterable[typing.Union[str,</span> <span class="pre">int,</span> <span class="pre">float]]],</span> <span class="pre">column_formats:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">header_data:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">header_formats:</span> <span class="pre">typing.Iterable[str],</span> <span class="pre">column_width:</span> <span class="pre">typing.Union[int,</span> <span class="pre">float],</span> <span class="pre">supheader_text:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">supheader_format:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'',</span> <span class="pre">conditional_formats:</span> <span class="pre">typing.Iterable[xlsxreport.writer.ConditionalFormatGroupInfo]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.writer.DataGroup" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for storing data that will be written to the excel file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.column_data">
+<span class="sig-name descname"><span class="pre">column_data</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.column_data" title="Permalink to this definition"></a></dt>
+<dd><p>An iterable of column values. Each column value entry must have
+the same length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Iterable[Iterable[Union[str, int, float]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.column_formats">
+<span class="sig-name descname"><span class="pre">column_formats</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.column_formats" title="Permalink to this definition"></a></dt>
+<dd><p>An iterable containing format names for each column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Iterable[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.header_data">
+<span class="sig-name descname"><span class="pre">header_data</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.header_data" title="Permalink to this definition"></a></dt>
+<dd><p>An iterable containing column titles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Iterable[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.header_formats">
+<span class="sig-name descname"><span class="pre">header_formats</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.header_formats" title="Permalink to this definition"></a></dt>
+<dd><p>An iterable containing format names for each header entry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Iterable[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.supheader_text">
+<span class="sig-name descname"><span class="pre">supheader_text</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.supheader_text" title="Permalink to this definition"></a></dt>
+<dd><p>The column super header text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.supheader_format">
+<span class="sig-name descname"><span class="pre">supheader_format</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.supheader_format" title="Permalink to this definition"></a></dt>
+<dd><p>The format name of the column super header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.width">
+<span class="sig-name descname"><span class="pre">width</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.width" title="Permalink to this definition"></a></dt>
+<dd><p>Column width in pixel</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.conditional_formats">
+<span class="sig-name descname"><span class="pre">conditional_formats</span></span><a class="headerlink" href="#xlsxreport.writer.DataGroup.conditional_formats" title="Permalink to this definition"></a></dt>
+<dd><p>An iterable containing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Iterable[<a class="reference internal" href="#xlsxreport.writer.ConditionalFormatGroupInfo" title="xlsxreport.writer.ConditionalFormatGroupInfo">xlsxreport.writer.ConditionalFormatGroupInfo</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>The entry length of column_data, column_formats, header_data, header_formats has to
+be equal.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">column_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">column_formats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlsxreport.writer.DataGroup.column_width">
+<span class="sig-name descname"><span class="pre">column_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#xlsxreport.writer.DataGroup.column_width" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">conditional_formats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#xlsxreport.writer.ConditionalFormatGroupInfo" title="xlsxreport.writer.ConditionalFormatGroupInfo"><span class="pre">xlsxreport.writer.ConditionalFormatGroupInfo</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">header_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">header_formats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">supheader_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">supheader_text</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlsxreport.writer.</span></span><span class="sig-name descname"><span class="pre">Datasheet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workbook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlsxwriter.workbook.Workbook</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worksheet</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlsxwriter.worksheet.Worksheet</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.writer.Datasheet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet.add_data">
+<span class="sig-name descname"><span class="pre">add_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#xlsxreport.writer.Datasheet.add_data" title="Permalink to this definition"></a></dt>
+<dd><p>Adds table that will be used for filing the worksheet with data.</p>
+<p>Also extracts sample names from table by using the
+‘sample_extraction_tag’ from the config.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet.apply_configuration">
+<span class="sig-name descname"><span class="pre">apply_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#xlsxreport.writer.Datasheet.apply_configuration" title="Permalink to this definition"></a></dt>
+<dd><p>Reads a config file and prepares workbook formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet.get_conditional">
+<span class="sig-name descname"><span class="pre">get_conditional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#xlsxreport.writer.Datasheet.get_conditional" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an excel conditional format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet.get_format">
+<span class="sig-name descname"><span class="pre">get_format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xlsxwriter.format.Format</span></span></span><a class="headerlink" href="#xlsxreport.writer.Datasheet.get_format" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an excel format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Datasheet.write_data">
+<span class="sig-name descname"><span class="pre">write_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#xlsxreport.writer.Datasheet.write_data" title="Permalink to this definition"></a></dt>
+<dd><p>Writes data to the excel sheet and applies formatting.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlsxreport.writer.Reportbook">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlsxreport.writer.</span></span><span class="sig-name descname"><span class="pre">Reportbook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlsxreport.writer.Reportbook" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">xlsxwriter.workbook.Workbook</span></code></p>
+<p>Subclass of the XlsxWriter Workbook class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Reportbook.add_datasheet">
+<span class="sig-name descname"><span class="pre">add_datasheet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xlsxreport.writer.Datasheet" title="xlsxreport.writer.Datasheet"><span class="pre">xlsxreport.writer.Datasheet</span></a></span></span><a class="headerlink" href="#xlsxreport.writer.Reportbook.add_datasheet" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlsxreport.writer.Reportbook.add_infosheet">
+<span class="sig-name descname"><span class="pre">add_infosheet</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">xlsxwriter.worksheet.Worksheet</span></span></span><a class="headerlink" href="#xlsxreport.writer.Reportbook.add_infosheet" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlsxreport.writer.parse_config_file">
+<span class="sig-prename descclassname"><span class="pre">xlsxreport.writer.</span></span><span class="sig-name descname"><span class="pre">parse_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#xlsxreport.writer.parse_config_file" title="Permalink to this definition"></a></dt>
+<dd><p>Parses excel report config file and returns entries as dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Dictionary containing the keys ‘formats’, ‘conditional_formats’,</dt><dd><p>’groups’, ‘args’, each pointing to another dictionary.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-xlsxreport">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-xlsxreport" title="Permalink to this headline"></a></h2>
+<p>XlsxReport is a Python package to automatically generate formatted excel reports
+from quantitative mass spectrometry result tables. YAML config files are used to
+describe the content of a result table and the format of the excel report.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to XlsxReport’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="xlsxreport.scripts.html" class="btn btn-neutral float-right" title="xlsxreport.scripts package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, David M. Hollenstein.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
