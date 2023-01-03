@@ -1,0 +1,18 @@
+site_name: XlsxReport Docs
+
+theme:
+  name: "material"
+
+markdown_extensions:
+  - admonition
+
+plugins:
+  - search
+  - mkdocstrings
+
+nav:
+  - Calculation Docs: index.md
+  - tutorials.md
+  - How-To guides: how_to_guides.md
+  - reference.md
+  - explanation.md
