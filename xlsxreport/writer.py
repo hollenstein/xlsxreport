@@ -1,3 +1,5 @@
+"""Test docstring of xlsxreport.writer module-"""
+
 from __future__ import annotations
 import dataclasses
 from typing import Iterable, Optional, Union

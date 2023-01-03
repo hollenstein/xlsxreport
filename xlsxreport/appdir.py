@@ -1,3 +1,13 @@
+""" Test docstring of xlsxreport.appdir module
+
+
+The module contains the following functions:
+
+- `locate_data_dir()` - Returns the XlsxReport user data directory.
+- `setup_data_dir()` - Creates a XlsxReport user data directory.
+- `get_config_file(filename)` - Returns the full path of a config file in the data dir.
+"""
+
 import os
 import shutil
 from typing import Union
@@ -24,7 +34,14 @@ def setup_data_dir():
 
 
 def get_config_file(filename: str) -> Union[str, None]:
-    """Returns the file path if filename is present in the app data directory."""
+    """Returns the file path if filename is present in the app data directory.
+
+    Args:
+        filename: Config filename
+
+    Returns:
+        Full path to config file or None
+    """
     file_path = None
     data_dir = locate_data_dir()
 
