@@ -71,11 +71,11 @@ groups:
     comparison_group: True,
     tag: " vs ",
     replace_comparison_tag: " / ",
-    columns: ["P-value", "Adjusted p-value", "logFC", "Average expression"],
+    columns: ["P-value", "Adjusted p-value", "Ratio [log2]", "Average expression"],
     column_conditional: {
         "P-value": "pvalue",
         "Adjusted p-value": "pvalue",
-        "logFC": "intensity",
+        "Ratio [log2]": "intensity",
         "Average expression": "intensity",
     },
     header_format: {"rotation": 90},
