@@ -1,23 +1,18 @@
-Changelog
-=========
+# Changelog
 
-
-0.0.4
------
+## 0.0.4
 
 - Changes behavior of the "append_remaining_columns" option. Now the
   unspecified columns that are added to the end of the excel sheet
   are grouped and hidden.
 
 
-0.0.3
------
+## 0.0.3
 
 - Fixes issues of missing .yaml config files for installation.
 
 
-0.0.2
------
+## 0.0.2
 
 - Added option to add all unspecified columns to the end of the excel sheet.
 - Added documentation of the config file format.
@@ -28,7 +23,6 @@ Changelog
 - The xlsx_report_setup script now prints its progress to the console.
 
 
-0.0.1
------
+## 0.0.1
 
 - Initial unstable version of XlsxWriter
