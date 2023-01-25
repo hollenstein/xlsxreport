@@ -4,23 +4,25 @@
 groups:
   protein_features: {
     format: "str",
-    width: 70,
+    width: 73,
     columns: [
       "Representative protein",
       "Leading proteins",
-      "Protein entry name",
       "Gene name",
+      "Protein name",
       "Fasta header",
-      "Protein length",
+      "Molecular weight [kDa]",
       "Total peptides",
       "Sequence coverage",
+      "Protein Probability",
+      "Q-value"
     ],
     column_format: {
       "Sequence coverage": "float",
-      "Protein length": "int", 
+      "Molecular weight [kDa]": "float", 
       "Total peptides": "int",
-      "Valid": "int",
-      "Potential contaminant": "int"
+      "Protein Probability": "float",
+      "Q-value": "float",
     },
     column_conditional: {"Sequence coverage": "data_bar"},
   }
@@ -67,6 +69,17 @@ groups:
     log2: True,
     border: True,
   }
+  quantified_events: {
+    tag: "Events",
+    width: 25,
+    format: "int",
+    conditional: "num_events",
+    header_format: {"rotation": 90},
+    supheader: "Quantitative events",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    border: True,
+  }
   differential_expression: {
     comparison_group: True,
     tag: " vs ",
@@ -75,7 +88,7 @@ groups:
     column_conditional: {
         "P-value": "pvalue",
         "Adjusted p-value": "pvalue",
-        "Ratio [log2]": "intensity",
+        "Ratio [log2]": "ratio",
         "Average expression": "intensity",
     },
     header_format: {"rotation": 90},
@@ -94,16 +107,6 @@ groups:
     ],
     supheader: "Quality filter",
     supheader_format: {"fg_color": "#ffffb3"},
-  }
-  missing_values: {
-    tag: "Events",
-    format: "int",
-    conditional: "num_events",
-    header_format: {"rotation": 90},
-    supheader: "Quantitative events",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    border: True,
   }
 
 
@@ -128,6 +131,12 @@ conditional_formats:
     "mid_type": "percentile", "mid_value": 50, "mid_color": "#ffffbf",
     "max_type": "max", "max_color": "#f25540"
   }
+  ratio: {
+    "type": "3_color_scale",
+    "min_type": "num", "min_value": -5, "min_color": "#2c7bb6",
+    "mid_type": "num", "mid_value": 0, "mid_color": "#fefefe",
+    "max_type": "num", "max_value": 5, "max_color": "#f25540"
+  }
   count: {
     "type": "2_color_scale",
     "min_type": "num", "min_value": 0, "min_color": "#ffffbf",
@@ -147,15 +156,16 @@ conditional_formats:
     "max_value": 100, "max_type": "num",
   }
   num_events: {
-    "type": "2_color_scale",
-    "min_type": "num", "min_value": 0, "min_color": "#f25540",
-    "max_type": "percentile", "max_value": 100, "max_color": "#2c7bb6"
+    "type": "3_color_scale",
+    "min_type": "num", "min_value": 0, "min_color": "#f9aa9f",
+    "mid_type": "num", "mid_value": 1, "mid_color": "#d6e8f5",
+    "max_type": "percentile", "max_value": 100, "max_color": "#84b9e1"
   }
 
 
 args:
   border_weight: 2
-  supheader_height: 30
+  supheader_height: 40
   header_height: 95
   column_width: 45
   nan_symbol: "-"
