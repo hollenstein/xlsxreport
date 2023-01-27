@@ -18,8 +18,8 @@ setup(
     package_data={"xlsxreport.default_config": ["*.yaml"]},
     entry_points={
         "console_scripts": [
-            "xlsx_report_setup = xlsxreport.scripts.setup_appdata_dir:cli",
-            "xlsx_report = xlsxreport.scripts.report:cli",
+            "xlsxreport_setup = xlsxreport.scripts.setup_appdata_dir:cli",
+            "xlsxreport = xlsxreport.scripts.report:cli",
             "cassiopeia_report = xlsxreport.scripts.cassiopeia_report:cli",
         ],
     },
