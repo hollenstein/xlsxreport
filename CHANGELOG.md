@@ -1,7 +1,7 @@
 # Changelog
 
 
-## Upcoming (0.0.5)
+## 0.0.5
 
 ### Changed
 - (!) Renamed console script "xlsx_report" to "xlsxreport"
