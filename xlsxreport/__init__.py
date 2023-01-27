@@ -14,4 +14,4 @@ from .appdir import locate_data_dir, get_config_file, setup_data_dir
 
 __author__ = "David M. Hollenstein"
 __license__ = "Apache 2.0"
-__version__ = "0.0.1"
+__version__ = "0.0.5"
