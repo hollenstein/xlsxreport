@@ -271,19 +271,16 @@ class Datasheet:
         non_sample_columns, sample_columns = self._find_sample_group_columns(
             config["tag"]
         )
-        config["columns"] = [*non_sample_columns, *sample_columns]
+        config["columns"] = sample_columns
         data_group = self._prepare_data_group(group_name, config)
 
-        if config["columns"]:
+        if config["columns"] and _eval_arg("conditional", config):
             conditional_formats = []
-            end = -1
-            for columns in [non_sample_columns, sample_columns]:
-                if columns and _eval_arg("conditional", config):
-                    start = end + 1
-                    end = start + len(columns) - 1
-                    conditional_formats.append(
-                        ConditionalFormatGroupInfo(config["conditional"], start, end)
-                    )
+            start = 0
+            end = len(config["columns"]) - 1
+            conditional_formats.append(
+                ConditionalFormatGroupInfo(config["conditional"], start, end)
+            )
             data_group.conditional_formats.extend(conditional_formats)
         return data_group
 
