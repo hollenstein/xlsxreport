@@ -1,5 +1,6 @@
 # Changelog
 
+----------------------------------------------------------------------------------------
 
 ## 0.0.5
 
@@ -18,6 +19,7 @@
   - Changed formatting of the quantified_events block  
 - Updated console ouput for the "xlsxreport_setup" console script.
 
+----------------------------------------------------------------------------------------
 
 ## 0.0.4
 
@@ -25,11 +27,13 @@
   unspecified columns that are added to the end of the excel sheet
   are grouped and hidden.
 
+----------------------------------------------------------------------------------------
 
 ## 0.0.3
 
 - Fixes issues of missing .yaml config files for installation.
 
+----------------------------------------------------------------------------------------
 
 ## 0.0.2
 
@@ -41,6 +45,7 @@
 - Minor changes to the default config files.
 - The xlsx_report_setup script now prints its progress to the console.
 
+----------------------------------------------------------------------------------------
 
 ## 0.0.1
 
