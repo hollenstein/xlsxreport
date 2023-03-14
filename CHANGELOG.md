@@ -1,7 +1,15 @@
 # Changelog
 
+----------------------------------------------------------------------------------------
 
-## 0.0.5
+## 0.0.6 - Fix missing supheader
+
+### Fixes
+  - Supheader not being written when a block contains only one column.
+
+----------------------------------------------------------------------------------------
+
+## 0.0.5 - Improvements for MsReport report generation
 
 ### Changed
 - (!) Renamed console script "xlsx_report" to "xlsxreport"
@@ -18,20 +26,23 @@
   - Changed formatting of the quantified_events block  
 - Updated console ouput for the "xlsxreport_setup" console script.
 
+----------------------------------------------------------------------------------------
 
-## 0.0.4
+## 0.0.4 - Group and hide remaining columns
 
 - Changes behavior of the "append_remaining_columns" option. Now the
   unspecified columns that are added to the end of the excel sheet
   are grouped and hidden.
 
+----------------------------------------------------------------------------------------
 
-## 0.0.3
+## 0.0.3 - Installation fix
 
 - Fixes issues of missing .yaml config files for installation.
 
+----------------------------------------------------------------------------------------
 
-## 0.0.2
+## 0.0.2 - Adds remaining columns to report
 
 - Added option to add all unspecified columns to the end of the excel sheet.
 - Added documentation of the config file format.
@@ -41,7 +52,8 @@
 - Minor changes to the default config files.
 - The xlsx_report_setup script now prints its progress to the console.
 
+----------------------------------------------------------------------------------------
 
-## 0.0.1
+## 0.0.1 - First functional version
 
 - Initial unstable version of XlsxWriter

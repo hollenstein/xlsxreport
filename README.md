@@ -1,3 +1,5 @@
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
 # XlsxReport
 
 ## Introduction
@@ -14,37 +16,43 @@ Development is currently in early alpha and the interface is not yet stable.
 
 ## Install
 
-For Windows users without Python we recommend installing the free
-[Anaconda](https://www.continuum.io/downloads) Python package provided by Continuum
-Analytics, which already contains a large number of popular Python packages for data
-science. Or get Python from the
-[Python homepage](ttps://www.python.org/downloads/windows/). XlsxReport requires
-Python version 3.9 or higher.
+If you do not already have a Python installation, we recommend installing the
+[Anaconda distribution](https://www.continuum.io/downloads) of Continuum Analytics,
+which already contains a large number of popular Python packages for Data Science.
+Alternatively, you can also get Python from the
+[Python homepage](https://www.python.org/downloads/windows). XlsxReport requires Python
+version 3.9 or higher.
 
-To install XlsxReport, activate the conda environment you want to use, navigate to the
-folder containing the XlsxReport files and enter the following command (don't forget to
-add the dot after install):
+You can use pip to install XlsxReport from the distribution file with the following
+command:
 
 ```
-pip install .
+pip install xlsxreport-X.Y.Z-py3-none-any.whl
 ```
 
-
-To uninstall the XlsxReport library type:
+To uninstall the XlsxReport package type:
 
 ```
 pip uninstall xlsxreport
 ```
 
 
-After XlsxReport has been installed the local AppData directory needs to be setup and the
-default configuration files need to be copied. Running the "xlsx_report_setup" script
-creates a new XlsxReport folder in the local user data directory, for example
-"C:/User/user_name/AppData/Local/XlsxReport" on Windows 10, and copies the default config
-files there.
+### Installation when using Anaconda
+If you are using Anaconda, you will need to install the XlsxReport package into a conda
+environment. Open the Anaconda navigator, activate the conda environment you want to
+use, run the "CMD.exe" application to open a terminal, and then use the pip install
+command as described above.
+
+
+### Setting up the AppData directory
+After XlsxReport has been installed the local AppData directory needs to be setup and
+the default configuration files need to be copied. Running the "xlsxreport_setup"
+script creates a new XlsxReport folder in the local user data directory, for example
+"C:/User/user_name/AppData/Local/XlsxReport" on Windows 10, and copies the default
+config files there.
 
 ```
-xlsx_report_setup
+xlsxreport_setup
 ```
 
 
@@ -54,7 +62,7 @@ To generate a simple excel protein report, run the "xlsx_report" script with an 
 and config file. Here is an example with the default maxquant.yaml config file.
 
 ```
-xlsx_report C:/proteinGroups.txt maxquant.yaml
+xlsxreport C:/proteinGroups.txt maxquant.yaml
 ```
 
 
