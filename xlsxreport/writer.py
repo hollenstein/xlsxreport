@@ -163,14 +163,20 @@ class Datasheet:
         # Write supheader
         if data_group.supheader_text:
             excel_format = self.get_format(data_group.supheader_format)
-            self.worksheet.merge_range(
-                supheader_row,
-                start_column,
-                supheader_row,
-                end_column,
-                data_group.supheader_text,
-                excel_format,
-            )
+            supheader_text = data_group.supheader_text
+            if start_column != end_column:
+                self.worksheet.merge_range(
+                    supheader_row,
+                    start_column,
+                    supheader_row,
+                    end_column,
+                    supheader_text,
+                    excel_format,
+                )
+            else:
+                self.worksheet.write(
+                    supheader_row, start_column, supheader_text, excel_format
+                )
 
         # Write header data
         curr_column = start_column
