@@ -1,11 +1,15 @@
 from __future__ import annotations
 import dataclasses
+from sre_parse import WHITESPACE
 from typing import Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
 import xlsxwriter
 import yaml
+
+
+WHITESPACE_SYMBOLS = " ._-"
 
 
 class Reportbook(xlsxwriter.Workbook):
@@ -311,8 +315,15 @@ class Datasheet:
 
         data_groups = []
         for comparison_group in comparison_groups:
+            matched = []
+            for column in _find_columns(self._table, comparison_group):
+                leftover = column.replace(comparison_group, "")
+                for column_tag in config["columns"]:
+                    leftover = leftover.replace(column_tag, "")
+                if leftover.strip(WHITESPACE_SYMBOLS) == "":
+                    matched.append(column)
+
             # Sort columns according to the order specified in the config file
-            matched = _find_columns(self._table, comparison_group)
             columns = []
             for column_tag in config["columns"]:
                 columns.extend([col for col in matched if column_tag in col])

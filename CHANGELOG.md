@@ -2,6 +2,15 @@
 
 ----------------------------------------------------------------------------------------
 
+## 0.0.7 - Fix comparison group issue
+
+### Fixes
+  - Fixes a mix up of columns in comparison groups that was caused when an experiment 
+    comparison was the exact substring of another, for example "exp1 vs exp2" and
+    "exp3exp1 vs exp2".
+
+----------------------------------------------------------------------------------------
+
 ## 0.0.6 - Fix missing supheader
 
 ### Fixes
