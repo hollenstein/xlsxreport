@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = "0.0.6"
+VERSION = "0.0.7"
 
 packages = find_packages()
 packages.append("xlsxreport.default_config")
