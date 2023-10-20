@@ -17,7 +17,7 @@ def report_template() -> ReportTemplate:
     }
 
     report_template = ReportTemplate(
-        groups={"section 1": section_template},
+        sections={"section 1": section_template},
         formats={
             "header": {"bold": True, "align": "center"},
             "supheader": {"bold": True, "align": "center", "text_wrap": True},
@@ -65,7 +65,7 @@ def table_section(report_template, example_table) -> compiler.TableSection:
             "Column 1": report_template.formats["header"],
             "Column 2": report_template.formats["header"],
         },
-        supheader=report_template.groups["section 1"]["supheader"],
+        supheader=report_template.sections["section 1"]["supheader"],
         supheader_format=report_template.formats["supheader"],
         section_conditional=report_template.conditional_formats["cond_2"],
     )

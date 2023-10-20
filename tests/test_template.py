@@ -66,7 +66,7 @@ class TestReportTemplate:
         template = ReportTemplate.load(temp_template_file)
         template.save(temp_template_path)
         loaded_template = ReportTemplate.load(temp_template_file)
-        assert template.groups == loaded_template.groups
+        assert template.sections == loaded_template.sections
         assert template.formats == loaded_template.formats
         assert template.conditional_formats == loaded_template.conditional_formats
         assert template.settings == loaded_template.settings

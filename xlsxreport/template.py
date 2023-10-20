@@ -15,12 +15,12 @@ class ReportTemplate:
 
     def __init__(
         self,
-        groups: Optional[dict] = None,
+        sections: Optional[dict] = None,
         formats: Optional[dict] = None,
         settings: Optional[dict] = None,
         conditional_formats: Optional[dict] = None,
     ):
-        self.groups = {} if groups is None else groups
+        self.sections = {} if sections is None else sections
         self.formats = {} if formats is None else formats
         self.settings = {} if settings is None else settings
         self.conditional_formats = (
@@ -35,14 +35,14 @@ class ReportTemplate:
         template = cls()
         template.formats = template_data.get("formats", {})
         template.conditional_formats = template_data.get("conditional_formats", {})
-        template.groups = template_data.get("groups", {})
+        template.sections = template_data.get("groups", {})
         template.settings = template_data.get("args", {})
         return template
 
     def save(self, filepath) -> None:
         """Save a report template to a YAML file."""
         template_data = {
-            "groups": self.groups,
+            "groups": self.sections,
             "formats": self.formats,
             "conditional_formats": self.conditional_formats,
             "args": self.settings,

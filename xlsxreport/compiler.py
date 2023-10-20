@@ -41,7 +41,7 @@ def compile_table_sections(
     """Compile table sections from a report template and a table."""
 
     table_sections = []
-    for section_template in report_template.groups.values():
+    for section_template in report_template.sections.values():
         selected_cols = eval_section_columns(section_template, table.columns)
         col_formats = eval_column_formats(
             selected_cols, section_template, report_template.formats, DEFAULT_FORMAT
