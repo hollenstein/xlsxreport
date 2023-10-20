@@ -55,7 +55,7 @@ class Datasheet:
         """Reads a config file and prepares workbook formats."""
         template = ReportTemplate.load(config_file)
         self.template_sections = template.sections
-        self._add_args(template.settings)
+        self._args.update(template.settings)
 
         self._add_formats(template.formats)
         self._extend_header_format(template.sections)
