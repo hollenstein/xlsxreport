@@ -1,12 +1,13 @@
 from __future__ import annotations
 import dataclasses
-from sre_parse import WHITESPACE
 from typing import Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
 import xlsxwriter
 import yaml
+
+from xlsxreport.template import ReportTemplate
 
 
 WHITESPACE_SYMBOLS = " ._-"
@@ -42,7 +43,7 @@ class Datasheet:
 
         self.workbook = workbook
         self.worksheet = worksheet
-        self._config = None
+        self.template_sections = None
         self._table = None
         self._sample_groups = None
         self._samples = []
@@ -52,16 +53,17 @@ class Datasheet:
 
     def apply_configuration(self, config_file: str) -> None:
         """Reads a config file and prepares workbook formats."""
-        self._config = parse_config_file(config_file)
-        self._add_args(self._config["args"])
+        template = ReportTemplate.load(config_file)
+        self.template_sections = template.sections
+        self._add_args(template.settings)
 
-        self._add_formats(self._config["formats"])
-        self._extend_header_format(self._config["groups"])
-        self._extend_supheader_format(self._config["groups"])
+        self._add_formats(template.formats)
+        self._extend_header_format(template.sections)
+        self._extend_supheader_format(template.sections)
         self._extend_border_formats()
         self._add_format_templates_to_workbook()
 
-        self._add_conditional_formats(self._config["conditional_formats"])
+        self._add_conditional_formats(template.conditional_formats)
 
     def add_data(self, table: pd.DataFrame) -> None:
         """Adds table that will be used for filing the worksheet with data.
@@ -82,7 +84,7 @@ class Datasheet:
 
     def write_data(self) -> None:
         """Writes data to the excel sheet and applies formatting."""
-        if self._config is None:
+        if self.template_sections is None:
             raise Exception(
                 "Configuration has not applied. Call "
                 '"ReportSheet.apply_configuration()" to do so.'
@@ -224,7 +226,7 @@ class Datasheet:
 
     def _prepare_data_groups(self) -> list[DataGroup]:
         data_groups = []
-        for group_name, group_config in self._config["groups"].items():
+        for group_name, group_config in self.template_sections.items():
             if _eval_arg("comparison_group", group_config):
                 for group_data in self._prepare_comparison_group(
                     group_name, group_config
@@ -548,24 +550,6 @@ class ConditionalFormatGroupInfo:
     name: str
     start: int
     end: int
-
-
-def parse_config_file(file: str) -> dict[str, dict]:
-    """Parses excel report config file and returns entries as dictionaries.
-
-    Returns:
-        Dictionary containing the keys 'formats', 'conditional_formats',
-            'groups', 'args', each pointing to another dictionary.
-    """
-    with open(file) as open_file:
-        yaml_file = yaml.safe_load(open_file)
-    config = {
-        "args": _extract_config_entry(yaml_file, "args"),
-        "groups": _extract_config_entry(yaml_file, "groups"),
-        "formats": _extract_config_entry(yaml_file, "formats"),
-        "conditional_formats": _extract_config_entry(yaml_file, "conditional_formats"),
-    }
-    return config
 
 
 def _create_empty_data_group() -> DataGroup:
