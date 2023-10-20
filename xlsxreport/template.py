@@ -1,6 +1,6 @@
 """This module provides a class for handling configuration for formatting excel reports.
 
-The module contains a single class, ReportConfig, which stores the configuration of a
+The module contains a single class, ReportTemplate, which stores the configuration of a
 report. It provides methods for loading and saving the configuration to a YAML file, as
 well as checking if the configuration is valid.
 """
@@ -10,8 +10,8 @@ from typing import Optional
 import yaml
 
 
-class ReportConfig:
-    """Class to store the configuration of a report."""
+class ReportTemplate:
+    """Class to store the template of a report."""
 
     def __init__(
         self,
@@ -28,20 +28,20 @@ class ReportConfig:
         )
 
     @classmethod
-    def load(cls, filepath) -> ReportConfig:
-        """Load a report configuration from a YAML file."""
+    def load(cls, filepath) -> ReportTemplate:
+        """Load a report template from a YAML file."""
         with open(filepath, "r", encoding="utf-8") as file:
-            config_data = yaml.safe_load(file)
-        config = cls()
-        config.formats = config_data.get("formats", {})
-        config.conditional_formats = config_data.get("conditional_formats", {})
-        config.groups = config_data.get("groups", {})
-        config.settings = config_data.get("args", {})
-        return config
+            template_data = yaml.safe_load(file)
+        template = cls()
+        template.formats = template_data.get("formats", {})
+        template.conditional_formats = template_data.get("conditional_formats", {})
+        template.groups = template_data.get("groups", {})
+        template.settings = template_data.get("args", {})
+        return template
 
     def save(self, filepath) -> None:
-        """Save a report configuration to a YAML file."""
-        config_data = {
+        """Save a report template to a YAML file."""
+        template_data = {
             "groups": self.groups,
             "formats": self.formats,
             "conditional_formats": self.conditional_formats,
@@ -49,7 +49,7 @@ class ReportConfig:
         }
         with open(filepath, "w", encoding="utf-8") as file:
             yaml.dump(
-                config_data,
+                template_data,
                 file,
                 version=(1, 2),
                 sort_keys=False,

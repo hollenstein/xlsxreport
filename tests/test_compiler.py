@@ -2,11 +2,11 @@ import pytest
 import pandas as pd
 from sympy import comp
 import xlsxreport.compiler as compiler
-import xlsxreport.config as config
+from xlsxreport.template import ReportTemplate
 
 
 @pytest.fixture()
-def report_template() -> config.ReportConfig:
+def report_template() -> ReportTemplate:
     section_template = {
         "format": "str",
         "columns": ["Column 1", "Column 2", "Column 3"],
@@ -16,7 +16,7 @@ def report_template() -> config.ReportConfig:
         "conditional": "cond_2",
     }
 
-    report_template = config.ReportConfig(
+    report_template = ReportTemplate(
         groups={"section 1": section_template},
         formats={
             "header": {"bold": True, "align": "center"},
@@ -284,7 +284,7 @@ class TestEvalSectionConditionalFormats:
 
 
 # Tests are missing for several edge cases, especially related to default formats
-# - currently it is not tested when no width is specified in the ReportConfig
+# - currently it is not tested when no width is specified in the ReportTemplate
 def test_compile_table_section(report_template, table_section, example_table):
     compiled_sections = compiler.compile_table_sections(report_template, example_table)
     compiled_section = compiled_sections[0]

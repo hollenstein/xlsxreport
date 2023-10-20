@@ -1,11 +1,11 @@
 import pytest
 import os
-from xlsxreport.config import ReportConfig
+from xlsxreport.template import ReportTemplate
 
 
 @pytest.fixture()
-def temp_config_path(request, tmp_path):
-    output_path = os.path.join(tmp_path, "config_save.yaml")
+def temp_template_path(request, tmp_path):
+    output_path = os.path.join(tmp_path, "template_save.yaml")
 
     def teardown():
         if os.path.isfile(output_path):
@@ -16,14 +16,14 @@ def temp_config_path(request, tmp_path):
 
 
 @pytest.fixture()
-def temp_config_file(request, tmp_path):
-    config_path = os.path.join(tmp_path, "config_load.yaml")
+def temp_template_file(request, tmp_path):
+    template_path = os.path.join(tmp_path, "template_load.yaml")
 
     def teardown():
-        if os.path.isfile(config_path):
-            os.remove(config_path)
+        if os.path.isfile(template_path):
+            os.remove(template_path)
 
-    config_text = """
+    template_text = """
         %YAML 1.2
         ---
         groups:
@@ -52,21 +52,21 @@ def temp_config_file(request, tmp_path):
             header_height: 95
             column_width: 45
     """
-    config_text = "\n".join([line[8:] for line in config_text.splitlines()]).strip()
-    with open(config_path, "w", encoding="utf-8") as file:
-        file.write(config_text)
+    template_text = "\n".join([line[8:] for line in template_text.splitlines()]).strip()
+    with open(template_path, "w", encoding="utf-8") as file:
+        file.write(template_text)
     request.addfinalizer(teardown)
-    return config_path
+    return template_path
 
 
-class TestReportConfig:
+class TestReportTemplate:
     def test_config_identical_after_load_save_reload(
-        self, temp_config_file, temp_config_path
+        self, temp_template_file, temp_template_path
     ):
-        config = ReportConfig.load(temp_config_file)
-        config.save(temp_config_path)
-        loaded_config = ReportConfig.load(temp_config_file)
-        assert config.groups == loaded_config.groups
-        assert config.formats == loaded_config.formats
-        assert config.conditional_formats == loaded_config.conditional_formats
-        assert config.settings == loaded_config.settings
+        template = ReportTemplate.load(temp_template_file)
+        template.save(temp_template_path)
+        loaded_template = ReportTemplate.load(temp_template_file)
+        assert template.groups == loaded_template.groups
+        assert template.formats == loaded_template.formats
+        assert template.conditional_formats == loaded_template.conditional_formats
+        assert template.settings == loaded_template.settings

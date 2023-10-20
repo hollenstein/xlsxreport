@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Optional
+from typing import Iterable, Optional
 import pandas as pd
-from xlsxreport.config import ReportConfig
+from xlsxreport.template import ReportTemplate
 
 
 DEFAULT_COL_WIDTH = 64
@@ -21,19 +21,6 @@ class TableSection:
     supheader_format: dict = field(default_factory=dict)
     section_conditional: str = ""
 
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, TableSection):
-            return False
-
-        for field_name in other.__dataclass_fields__:
-            if field_name == "data":
-                if not self.data.equals(other.data):
-                    return False
-            else:
-                if getattr(self, field_name) != getattr(other, field_name):
-                    return False
-        return True
-
 
 # Missing from the compile_table_sections:
 # 1) test which type the section template is
@@ -49,7 +36,7 @@ class TableSection:
 
 
 def compile_table_sections(
-    report_template: ReportConfig, table: pd.DataFrame
+    report_template: ReportTemplate, table: pd.DataFrame
 ) -> list[TableSection]:
     """Compile table sections from a report template and a table."""
 
