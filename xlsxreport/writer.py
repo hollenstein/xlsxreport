@@ -85,12 +85,12 @@ class Datasheet:
     def write_data(self) -> None:
         """Writes data to the excel sheet and applies formatting."""
         if self.template_sections is None:
-            raise Exception(
+            raise ValueError(
                 "Configuration has not applied. Call "
                 '"ReportSheet.apply_configuration()" to do so.'
             )
         if self._table is None:
-            raise Exception(
+            raise ValueError(
                 "No data for writing has been added. "
                 'Call "ReportSheet.add_data()" to add data.'
             )
