@@ -4,6 +4,7 @@ import pandas as pd
 from xlsxreport.template import ReportTemplate
 
 
+BORDER_WIDTH = 2
 DEFAULT_COL_WIDTH = 64
 DEFAULT_FORMAT = {"num_format": "@"}
 
@@ -99,6 +100,9 @@ def eval_column_formats(
 ) -> dict:
     """Returns format descriptions for each column in the section.
 
+    If "border" is set to True in the `section_template`, the format descriptions for
+    the first and last column are updated to include borders.
+
     Args:
         columns: A list of column names.
         section_template: A dictionary containing the format names for columns.
@@ -119,6 +123,9 @@ def eval_column_formats(
             format_name = section_template["column_format"].get(col, section_format)
 
         column_formats[col] = format_templates.get(format_name, default_format).copy()
+    if section_template.get("border", False):
+        column_formats[columns[0]]["left"] = BORDER_WIDTH
+        column_formats[columns[-1]]["right"] = BORDER_WIDTH
     return column_formats
 
 
@@ -178,7 +185,9 @@ def eval_header_formats(
     """Returns format descriptions for each column header in the section.
 
     Header format descriptions defined in the `section_template` update the one from the
-    `format_templates`.
+    `format_templates`. If "border" is set to True in the `section_template`, the
+    header format descriptions for the first and last column are updated to include
+    borders.
 
     Args:
         columns: A list of column names.
@@ -192,6 +201,9 @@ def eval_header_formats(
     section_format = section_template.get("header_format", {})
     header_format = dict(temmplate_format, **section_format)
     column_header_formats = {col: header_format.copy() for col in columns}
+    if section_template.get("border", False):
+        column_header_formats[columns[0]]["left"] = BORDER_WIDTH
+        column_header_formats[columns[-1]]["right"] = BORDER_WIDTH
     return column_header_formats
 
 
@@ -199,7 +211,8 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
     """Returns a format descriptions for the supheader.
 
     Supheader format description defined in the `section_template` updates the one from
-    the `format_templates`.
+    the `format_templates`. If "border" is set to True in the `section_template`, the
+    supheader format description is updated to include borders.
 
     Args:
         columns: A list of column names.
@@ -213,6 +226,9 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
     temmplate_format = format_templates.get("supheader", {})
     section_format = section_template.get("supheader_format", {})
     supheader_format = dict(temmplate_format, **section_format)
+    if section_template.get("border", False):
+        supheader_format.update({"left": BORDER_WIDTH, "right": BORDER_WIDTH})
+
     return supheader_format
 
 
