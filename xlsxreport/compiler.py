@@ -5,9 +5,9 @@ import pandas as pd
 from xlsxreport.template import ReportTemplate
 
 
-BORDER_TYPE = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
-DEFAULT_COL_WIDTH = 64
-DEFAULT_FORMAT = {"num_format": "@"}
+BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
+DEFAULT_COL_WIDTH: float = 64
+DEFAULT_FORMAT: dict = {"num_format": "@"}
 
 
 class SectionCategory(Enum):
@@ -343,7 +343,7 @@ def eval_column_conditional_formats(
 def eval_column_widths(
     columns: str,
     section_template: dict,
-    default_width: int = 64,
+    default_width: float = 64,
 ) -> dict:
     """Returns column widths for each column in the section.
 
