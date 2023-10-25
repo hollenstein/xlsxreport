@@ -117,9 +117,10 @@ class TestTableSectionWriteColumn:
         conditional_format.cells.ranges[0].bottom == [(5, 2)]
 
 
-class TestTableSectionWriteSectionWithoutSupheader:
-    @pytest.fixture(autouse=True)
-    def _init_section_writer_with_write_section(self, table_section):
+class TestTableSectionWriteSection:
+    def _create_worksheet_with_section_writer_and_write_section(
+        self, table_section, write_supheader
+    ):
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
         row, column = 1, 1
         with ExcelWriteReadManager() as excel_manager:
@@ -131,42 +132,24 @@ class TestTableSectionWriteSectionWithoutSupheader:
                 table_section,
                 start_row=row - 1,
                 start_column=column - 1,
-                write_supheader=False,
+                write_supheader=write_supheader,
             )
-        self.worksheet = excel_manager.load_worksheet()
-        self.columns = list(self.worksheet.columns)
+        return excel_manager.load_worksheet()
 
-    def test_correct_number_of_columns_written(self, table_section):
-        assert len(self.columns) == table_section.data.shape[1]
+    @pytest.mark.parametrize("write_supheader", [True, False])
+    def test_correct_number_of_columns_written(self, table_section, write_supheader):
+        worksheet = self._create_worksheet_with_section_writer_and_write_section(
+            table_section, write_supheader=write_supheader
+        )
+        assert len(list(worksheet.columns)) == table_section.data.shape[1]
 
-    def test_correct_number_of_rows_written(self, table_section):
-        for column in self.columns:
-            assert len(column) == table_section.data.shape[0] + 1  # +1 for header
-
-
-class TestTableSectionWriteSectionWithSupheader:
-    @pytest.fixture(autouse=True)
-    def _init_section_writer_with_write_section(self, table_section):
-        # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
-        row, column = 1, 1
-        with ExcelWriteReadManager() as excel_manager:
-            workbook = excel_manager.workbook
-            worksheet = excel_manager.worksheet
-            section_writer = writer.TableSectionWriter(workbook)
-            section_writer._write_section(
-                worksheet,
-                table_section,
-                start_row=row - 1,
-                start_column=column - 1,
-                write_supheader=True,
-            )
-        self.worksheet = excel_manager.load_worksheet()
-        self.columns = list(self.worksheet.columns)
-
-    def test_correct_number_of_rows_written(self, table_section):
-        for column in self.columns:
-            # +2 for header and supheader
-            assert len(column) == table_section.data.shape[0] + 2
+    @pytest.mark.parametrize("write_supheader, num_headers", [(True, 2), (False, 1)])
+    def test_correct_number_of_rows_written(self, table_section, write_supheader, num_headers):  # fmt: skip
+        worksheet = self._create_worksheet_with_section_writer_and_write_section(
+            table_section, write_supheader=write_supheader
+        )
+        for column in worksheet.columns:
+            assert len(column) == table_section.data.shape[0] + num_headers
 
 
 class TestTableSectionWriterGetXlsxFormat:
