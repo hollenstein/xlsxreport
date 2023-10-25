@@ -25,6 +25,7 @@ class ExcelWriteReadManager:
         self.workbook = Workbook(self.buffer)
         self.worksheet_name = "Worksheet"
         self.worksheet = self.workbook.add_worksheet(self.worksheet_name)
+        self.section_writer = writer.TableSectionWriter(self.workbook)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -63,11 +64,8 @@ class TestTableSectionWriteColumn:
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
         row, column = 2, 2
         with ExcelWriteReadManager() as excel_manager:
-            workbook = excel_manager.workbook
-            worksheet = excel_manager.worksheet
-            section_writer = writer.TableSectionWriter(workbook)
-            section_writer._write_column(
-                worksheet,
+            excel_manager.section_writer._write_column(
+                excel_manager.worksheet,
                 row=row - 1,
                 column=column - 1,
                 header="Header",
@@ -78,9 +76,7 @@ class TestTableSectionWriteColumn:
                 column_width=10000,
             )
         self.worksheet = excel_manager.load_worksheet()
-        self.header_cell = self.worksheet.cell(row=2, column=2)
         self.written_column = list(self.worksheet.columns)[1]
-        self.written_cells = self.written_column[1:]
 
     def test_column_is_written_to_correct_position(self):
         columns = list(self.worksheet.columns)
@@ -94,11 +90,12 @@ class TestTableSectionWriteColumn:
         assert column_values == [None, "Header", 1, 2, "3"]
 
     def test_header_format_is_applied(self):
-        assert self.header_cell.font.bold == True
-        assert self.header_cell.border.bottom.style == "medium"
+        header_cell = self.worksheet.cell(row=2, column=2)
+        assert header_cell.font.bold == True
+        assert header_cell.border.bottom.style == "medium"
 
     def test_column_format_is_applied(self):
-        column_cells = self.written_cells[1:]  # without header cell
+        column_cells = self.written_column[2:]  # without empty and header cell
         assert all([cell.alignment.horizontal == "center" for cell in column_cells])
         assert all([cell.number_format == "0.00" for cell in column_cells])
 
@@ -117,21 +114,65 @@ class TestTableSectionWriteColumn:
         conditional_format.cells.ranges[0].bottom == [(5, 2)]
 
 
+class TestTableSectionWriteSupheader:
+    def _create_worksheet_with_section_writer_and_write_supheader(
+        self, row: int = 1, column: int = 1, num_columns: int = 1
+    ):
+        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
+        TableSectionWriter. Then writes the `table_section` to the worksheet by using
+        the TableSectionWriter._write_section method. The worksheet is then safed to a
+        buffer and loaded with openpyxl. The loaded worksheet is returned.
+
+        Note that row and column are specified as one indexed, whereas xlsxwriter is
+        zero indexed.
+        """
+        with ExcelWriteReadManager() as excel_manager:
+            excel_manager.section_writer._write_supheader(
+                worksheet=excel_manager.worksheet,
+                row=row - 1,
+                column=column - 1,
+                num_columns=num_columns,
+                supheader="Supheader",
+                supheader_format={"bold": True},
+            )
+        return excel_manager.load_worksheet()
+
+    @pytest.mark.parametrize("row, column", [(1, 2), (2, 1), (5, 10)])
+    def test_supheader_written_to_correct_position(self, row, column):
+        worksheet = self._create_worksheet_with_section_writer_and_write_supheader(row, column)  # fmt: skip
+        assert worksheet.cell(row=row, column=column).value == "Supheader"
+
+    def test_supheader_format_is_applied(self):
+        worksheet = self._create_worksheet_with_section_writer_and_write_supheader()
+        assert worksheet.cell(row=1, column=1).font.bold == True
+
+    @pytest.mark.parametrize("num_columns", [2, 4, 10])
+    def test_supheader_cell_is_merged(self, num_columns):
+        worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=num_columns)  # fmt: skip
+        merged_cells = list(worksheet.merged_cells.ranges[0].cells)
+        assert merged_cells == [(1, i) for i in range(1, num_columns + 1)]
+
+    def test_no_merge_applied_when_written_with_only_one_column(self):
+        worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=1)  # fmt: skip
+        assert len(worksheet.merged_cells.ranges) == 0
+        assert worksheet.cell(row=1, column=1).value == "Supheader"
+
+
 class TestTableSectionWriteSection:
     def _create_worksheet_with_section_writer_and_write_section(
         self, table_section, write_supheader
     ):
-        # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
-        row, column = 1, 1
+        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
+        TableSectionWriter. Then writes the `table_section` to the worksheet by using
+        the TableSectionWriter._write_section method. The worksheet is then safed to a
+        buffer and loaded with openpyxl. The loaded worksheet is returned.
+        """
         with ExcelWriteReadManager() as excel_manager:
-            workbook = excel_manager.workbook
-            worksheet = excel_manager.worksheet
-            section_writer = writer.TableSectionWriter(workbook)
-            section_writer._write_section(
-                worksheet,
+            excel_manager.section_writer._write_section(
+                excel_manager.worksheet,
                 table_section,
-                start_row=row - 1,
-                start_column=column - 1,
+                start_row=0,
+                start_column=0,
                 write_supheader=write_supheader,
             )
         return excel_manager.load_worksheet()
@@ -150,6 +191,17 @@ class TestTableSectionWriteSection:
         )
         for column in worksheet.columns:
             assert len(column) == table_section.data.shape[0] + num_headers
+
+    @pytest.mark.parametrize("write_supheader", [True, False])
+    def test_supheader_correctly_added_or_ommitted(self, table_section, write_supheader):  # fmt: skip
+        worksheet = self._create_worksheet_with_section_writer_and_write_section(
+            table_section, write_supheader=write_supheader
+        )
+        # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed.
+        if write_supheader:
+            assert worksheet.cell(row=1, column=1).value == table_section.supheader
+        else:
+            assert worksheet.cell(row=1, column=1).value != table_section.supheader
 
 
 class TestTableSectionWriterGetXlsxFormat:

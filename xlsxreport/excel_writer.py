@@ -15,18 +15,28 @@ class TableSectionWriter:
         worksheet: xlsxwriter.worksheet.Worksheet,
         sections: Iterable[TableSection],
         settings: dict | None = None,
-        start_column: int = 0,
         start_row: int = 0,
-    ):
+        start_column: int = 0,
+    ) -> None:
         """Write a list of sections to the workbook to create a table."""
-        sections = sections if sections is not None else {}
-        # column_height = settings["column_height"]  # -> NOVEL
-        # header_height = settings["header_height"]
-        # supheader_height = settings["supheader_height"]
-
+        # TODO - not included in any tests
+        settings = settings if settings is not None else {}
+        write_supheader = settings.get("write_supheader", True)
+        for section in sections:
+            self._write_section(
+                worksheet=worksheet,
+                section=section,
+                start_row=start_row,
+                start_column=start_column,
+                write_supheader=write_supheader,
+            )
+            start_column += section.data.shape[1]
         # 1) setup coordinates (take into account if a supheader should be written)
         # 2) write sections
         # 3) set supheader, header and row heights (needs to know column lengths)
+        #    - column_height = settings["column_height"]  # -> NOVEL
+        #    - header_height = settings["header_height"]
+        #    - supheader_height = settings["supheader_height"]
         # 4) freeze panes
         # 5) add auto filter
 
@@ -37,16 +47,26 @@ class TableSectionWriter:
         start_row: int,
         start_column: int,
         write_supheader: bool,
-    ):
+    ) -> None:
         """Write a TableSection to the workbook."""
         header_row = start_row
+        values_row = start_row + 1
         if write_supheader:
             header_row += 1
-        for column_num, column in enumerate(section.data.columns):
+            values_row += 1
+            self._write_supheader(
+                worksheet=worksheet,
+                row=start_row,
+                column=start_column,
+                num_columns=section.data.shape[1],
+                supheader=section.supheader,
+                supheader_format=section.supheader_format,
+            )
+        for column_position, column in enumerate(section.data.columns):
             self._write_column(
-                worksheet,
+                worksheet=worksheet,
                 row=header_row,
-                column=start_column + column_num,
+                column=start_column + column_position,
                 header=section.headers[column],
                 values=section.data[column],
                 header_format=section.header_formats[column],
@@ -54,11 +74,35 @@ class TableSectionWriter:
                 conditional_format=section.column_conditionals[column],
                 column_width=section.column_widths[column],
             )
-        # 1) if write_supheader: merge_range -> text and format; move header_row
-        #   section.supheader
-        #   section.supheader_format
-        # 2) write section conditional format: conditional_format
-        #   section.section_conditional
+        # TODO - section conditional is not included in any tests
+        if section.section_conditional:
+            num_values, num_rows = section.data.shape
+            worksheet.conditional_format(
+                values_row,
+                start_column,
+                values_row + num_values - 1,
+                start_column + num_rows - 1,
+                section.section_conditional,
+            )
+
+    def _write_supheader(
+        self,
+        worksheet: xlsxwriter.worksheet.Worksheet,
+        row: int,
+        column: int,
+        num_columns: int,
+        supheader: str,
+        supheader_format: dict[str, float | str | bool],
+    ) -> None:
+        """Write a supheader to the workbook by merging a range of cells."""
+        supheader_xlsx_format = self.get_xlsx_format(supheader_format)
+        if num_columns > 1:
+            last_column = column + num_columns - 1
+            worksheet.merge_range(
+                row, column, row, last_column, supheader, supheader_xlsx_format
+            )
+        else:
+            worksheet.write(row, column, supheader, supheader_xlsx_format)
 
     def _write_column(
         self,
@@ -67,19 +111,21 @@ class TableSectionWriter:
         column: int,
         header: str,
         values: Iterable,
-        header_format: xlsxwriter.format.Format,
-        values_format: xlsxwriter.format.Format,
+        header_format: dict[str, float | str | bool],
+        values_format: dict[str, float | str | bool],
         conditional_format: dict[str, float | str | bool],
         column_width: float,
-    ):
+    ) -> None:
+        """Write a column to the workbook."""
         header_xlsx_format = self.get_xlsx_format(header_format)
         values_xlsx_format = self.get_xlsx_format(values_format)
         worksheet.write(row, column, header, header_xlsx_format)
         worksheet.write_column(row + 1, column, values, values_xlsx_format)
         worksheet.set_column_pixels(column, column, column_width)
-        worksheet.conditional_format(
-            row + 1, column, row + len(values), column, conditional_format
-        )
+        if conditional_format:
+            worksheet.conditional_format(
+                row + 1, column, row + len(values), column, conditional_format
+            )
 
     def get_xlsx_format(
         self, format_description: dict[str, float | str | bool]
