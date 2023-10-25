@@ -5,7 +5,7 @@ import pandas as pd
 from xlsxreport.template import ReportTemplate
 
 
-BORDER_WIDTH = 2
+BORDER_TYPE = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH = 64
 DEFAULT_FORMAT = {"num_format": "@"}
 
@@ -147,6 +147,7 @@ def get_section_compiler(section_template: dict) -> SectionCompiler:
 # Missing from the compile_table_sections:
 # 1) Apply section type specific data manipulations (e.g. log2 transformation)
 # 2) Apply common data manipulations (e.g. replace missing values / NaNs)
+
 
 def compile_table_sections(
     report_template: ReportTemplate, table: pd.DataFrame
@@ -306,8 +307,8 @@ def eval_column_formats(
 
         column_formats[col] = format_templates.get(format_name, default_format).copy()
     if section_template.get("border", False):
-        column_formats[columns[0]]["left"] = BORDER_WIDTH
-        column_formats[columns[-1]]["right"] = BORDER_WIDTH
+        column_formats[columns[0]]["left"] = BORDER_TYPE
+        column_formats[columns[-1]]["right"] = BORDER_TYPE
     return column_formats
 
 
@@ -384,8 +385,8 @@ def eval_header_formats(
     header_format = dict(temmplate_format, **section_format)
     column_header_formats = {col: header_format.copy() for col in columns}
     if section_template.get("border", False):
-        column_header_formats[columns[0]]["left"] = BORDER_WIDTH
-        column_header_formats[columns[-1]]["right"] = BORDER_WIDTH
+        column_header_formats[columns[0]]["left"] = BORDER_TYPE
+        column_header_formats[columns[-1]]["right"] = BORDER_TYPE
     return column_header_formats
 
 
@@ -409,7 +410,7 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
     section_format = section_template.get("supheader_format", {})
     supheader_format = dict(temmplate_format, **section_format)
     if section_template.get("border", False):
-        supheader_format.update({"left": BORDER_WIDTH, "right": BORDER_WIDTH})
+        supheader_format.update({"left": BORDER_TYPE, "right": BORDER_TYPE})
 
     return supheader_format
 

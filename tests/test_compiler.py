@@ -233,14 +233,14 @@ class TestEvalColumnFormats:
     def test_border_true_adds_right_and_left_border_only_to_first_and_last_column(self):  # fmt: skip
         columns = ["Col 1", "Col 2", "Col 3"]
         column_formats = compiler.eval_column_formats(columns, {"border": True}, {})
-        assert column_formats[columns[0]] == {"left": compiler.BORDER_WIDTH}
+        assert column_formats[columns[0]] == {"left": compiler.BORDER_TYPE}
         assert column_formats[columns[1]] == {}
-        assert column_formats[columns[-1]] == {"right": compiler.BORDER_WIDTH}
+        assert column_formats[columns[-1]] == {"right": compiler.BORDER_TYPE}
 
     def test_border_true_with_one_column_adds_left_and_right_border(self):
         self.section_template["border"] = True
         column_formats = compiler.eval_column_formats(["Col 1"], {"border": True}, {})
-        assert column_formats["Col 1"] == {"left": compiler.BORDER_WIDTH, "right": compiler.BORDER_WIDTH}  # fmt: skip
+        assert column_formats["Col 1"] == {"left": compiler.BORDER_TYPE, "right": compiler.BORDER_TYPE}  # fmt: skip
 
 
 class TestEvalColumnConditionalFormats:
@@ -348,16 +348,16 @@ class TestEvalHeaderFormats:
     def test_border_true_adds_right_and_left_border_only_to_first_and_last_column(self):  # fmt: skip
         columns = ["Col 1", "Col 2", "Col 3"]
         header_formats = compiler.eval_header_formats(columns, {"border": True}, {})
-        assert header_formats[columns[0]] == {"left": compiler.BORDER_WIDTH}
+        assert header_formats[columns[0]] == {"left": compiler.BORDER_TYPE}
         assert header_formats[columns[1]] == {}
-        assert header_formats[columns[-1]] == {"right": compiler.BORDER_WIDTH}
+        assert header_formats[columns[-1]] == {"right": compiler.BORDER_TYPE}
 
     def test_border_true_with_one_column_adds_left_and_right_border(self):
         self.section_template["border"] = True
         header_formats = compiler.eval_header_formats(
             ["Col 1"], {"format": "str", "border": True}, {"str": {}}
         )
-        assert header_formats["Col 1"] == {"left": compiler.BORDER_WIDTH, "right": compiler.BORDER_WIDTH}  # fmt: skip
+        assert header_formats["Col 1"] == {"left": compiler.BORDER_TYPE, "right": compiler.BORDER_TYPE}  # fmt: skip
 
 
 class TestEvalSupHeaderFormat:
@@ -395,7 +395,7 @@ class TestEvalSupHeaderFormat:
 
     def test_border_true(self):
         sup_format = compiler.eval_supheader_format({"border": True}, {})
-        assert sup_format == {"left": compiler.BORDER_WIDTH, "right": compiler.BORDER_WIDTH}  # fmt: skip
+        assert sup_format == {"left": compiler.BORDER_TYPE, "right": compiler.BORDER_TYPE}  # fmt: skip
 
 
 class TestEvalSectionConditionalFormats:
