@@ -180,14 +180,14 @@ class TestTableSectionWriteColumn:
         self.worksheet_mock.conditional_format.assert_not_called()
 
 
-class TestTableSectionWriteSupheader:
+class TestIntegrationTableSectionWriteSupheader:
     def _create_worksheet_with_section_writer_and_write_supheader(
         self, row: int = 1, column: int = 1, num_columns: int = 1
     ):
         """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
-        TableSectionWriter. Then writes the `table_section` to the worksheet by using
-        the TableSectionWriter._write_section method. The worksheet is then safed to a
-        buffer and loaded with openpyxl. The loaded worksheet is returned.
+        TableSectionWriter. After using the TableSectionWriter to write a supheader to
+        the worksheet, it is then safed to a buffer and loaded with openpyxl. The loaded
+        worksheet is returned.
 
         Note that row and column are specified as one indexed, whereas xlsxwriter is
         zero indexed.
@@ -224,14 +224,17 @@ class TestTableSectionWriteSupheader:
         assert worksheet.cell(row=1, column=1).value == "Supheader"
 
 
-class TestTableSectionWriteSection:
+class TestIntegrationTableSectionWriteSection:
     def _create_worksheet_with_section_writer_and_write_section(
         self, table_section, write_supheader
     ):
         """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
-        TableSectionWriter. Then writes the `table_section` to the worksheet by using
-        the TableSectionWriter._write_section method. The worksheet is then safed to a
-        buffer and loaded with openpyxl. The loaded worksheet is returned.
+        TableSectionWriter. After using the TableSectionWriter to write a section to the
+        worksheet, it is then safed to a buffer and loaded with openpyxl. The loaded
+        worksheet is returned.
+
+        Note that row and column are specified as one indexed, whereas xlsxwriter is
+        zero indexed.
         """
         with ExcelWriteReadTestManager() as excel_manager:
             excel_manager.section_writer._write_section(
@@ -268,6 +271,39 @@ class TestTableSectionWriteSection:
             assert worksheet.cell(row=1, column=1).value == table_section.supheader
         else:
             assert worksheet.cell(row=1, column=1).value != table_section.supheader
+
+
+class TestTableSectionWriteSection:
+    @pytest.fixture(autouse=True)
+    def _init_section_writer(self):
+        self.worksheet_mock = MagicMock(name="worksheet_mock")
+        self.section_writer = writer.TableSectionWriter(Workbook())
+
+    @pytest.mark.parametrize("write_supheader", [True, False])
+    def test_conditional_format_called_with_correct_arguments(self, table_section, write_supheader):  # fmt: skip
+        table_section.section_conditional = {"bold": True}
+
+        self.section_writer._write_section(
+            self.worksheet_mock,
+            table_section,
+            start_row=0,
+            start_column=0,
+            write_supheader=write_supheader,
+        )
+
+        rows, cols = table_section.data.shape
+        data_start_row = 2 if write_supheader else 1
+        data_end_row = data_start_row + rows - 1
+        self.worksheet_mock.conditional_format.assert_called_once_with(
+            data_start_row, 0, data_end_row, cols - 1, {"bold": True}
+        )
+
+    def test_conditional_format_not_called_when_conditionaL_format_is_empty(self, table_section):  # fmt: skip
+        table_section.section_conditional = {}
+        self.section_writer._write_section(
+            self.worksheet_mock, table_section, 0, 0, True
+        )
+        self.worksheet_mock.conditional_format.assert_not_called()
 
 
 class TestTableSectionWriterGetXlsxFormat:
