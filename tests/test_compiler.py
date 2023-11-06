@@ -1,6 +1,5 @@
 import pytest
 import pandas as pd
-from sympy import comp
 import xlsxreport.compiler as compiler
 from xlsxreport.template import ReportTemplate
 
