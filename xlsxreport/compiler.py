@@ -34,16 +34,17 @@ class TableSection:
     section_conditional: str = ""
 
     def __post_init__(self):
-        if not self.column_formats:
-            self.column_formats = {col: {} for col in self.data.columns}
-        if not self.column_conditionals:
-            self.column_conditionals = {col: {} for col in self.data.columns}
-        if not self.column_widths:
-            self.column_widths = {col: DEFAULT_COL_WIDTH for col in self.data.columns}
-        if not self.headers:
-            self.headers = {col: col for col in self.data.columns}
-        if not self.header_formats:
-            self.header_formats = {col: {} for col in self.data.columns}
+        for col in self.data.columns:
+            if col not in self.column_formats:
+                self.column_formats[col] = {}
+            if col not in self.column_conditionals:
+                self.column_conditionals[col] = {}
+            if col not in self.column_widths:
+                self.column_widths[col] = DEFAULT_COL_WIDTH
+            if col not in self.headers:
+                self.headers[col] = col
+            if col not in self.header_formats:
+                self.header_formats[col] = {}
 
 
 class SectionCompiler(Protocol):
