@@ -19,25 +19,41 @@ class TableSectionWriter:
         start_column: int = 0,
     ) -> None:
         """Write a list of sections to the workbook to create a table."""
-        # TODO - not included in any tests
         settings = settings if settings is not None else {}
-        write_supheader = settings.get("write_supheader", False)
+        write_supheader = settings.get("write_supheader", True)
+        supheader_height = settings.get("supheader_height", 20)
+        header_height = settings.get("header_height", 20)
+
+        header_row = start_row
+        values_row = start_row + 1
+        if write_supheader:
+            header_row += 1
+            values_row += 1
+        next_column = start_column
+        last_value_row = start_row
+
         for section in sections:
             self._write_section(
                 worksheet=worksheet,
                 section=section,
                 start_row=start_row,
-                start_column=start_column,
+                start_column=next_column,
                 write_supheader=write_supheader,
             )
-            start_column += section.data.shape[1]
-        # 2) write sections
-        # 3) set supheader, header and row heights (needs to know column lengths)
-        #    - column_height = settings["column_height"]  # -> NOVEL
-        #    - header_height = settings["header_height"]
-        #    - supheader_height = settings["supheader_height"]
-        # 4) freeze panes
-        # 5) add auto filter
+            last_value_row = max(last_value_row, section.data.shape[0] + header_row)
+            next_column += section.data.shape[1]
+
+        # TODO - not tested from here on (including last value row)
+        if write_supheader:
+            worksheet.set_row_pixels(start_row, supheader_height)
+        worksheet.set_row_pixels(header_row, header_height)
+        worksheet.freeze_panes(values_row, start_column + 1)
+        worksheet.autofilter(
+            header_row,
+            start_column,
+            last_value_row,
+            last_col=next_column - 1,
+        )
 
     def _write_section(
         self,
