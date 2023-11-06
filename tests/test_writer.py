@@ -28,37 +28,95 @@ class ExcelWriteReadTestManager:
         self.workbook = Workbook(self.buffer)
         self.worksheet_name = "Worksheet"
         self.worksheet = self.workbook.add_worksheet(self.worksheet_name)
-        self.section_writer = writer.TableSectionWriter(self.workbook)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.workbook.close()
+        self._load_excel_from_buffer()
 
-    def load_excel_from_buffer(self):
+    def _load_excel_from_buffer(self):
         if self.buffer is None:
             raise Exception("Buffer is not initialized")
         self.loaded_workbook = openpyxl.load_workbook(self.buffer)
         self.loaded_worksheet = self.loaded_workbook[self.worksheet_name]
-
-    def load_worksheet(self) -> openpyxl.worksheet.worksheet.Worksheet:
-        self.load_excel_from_buffer()
-        return self.loaded_worksheet
 
 
 @pytest.fixture()
 def table_section() -> compiler.TableSection:
     section = compiler.TableSection(
         data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
-        column_formats={"Column 1": {}, "Column 2": {}},
-        column_conditionals={"Column 1": {}, "Column 2": {}},
         column_widths={"Column 1": 10, "Column 2": 10},
-        headers={"Column 1": "Column 1", "Column 2": "Column 2"},
-        header_formats={"Column 1": {}, "Column 2": {}},
-        supheader="Supheader",
-        supheader_format={},
-        section_conditional={},
     )
     return section
+
+
+class TestTableSectionWriteSections:
+    """Tests for TableSectionWriter.write_section():
+    - Test that multiple sections are written with correct column and row positions
+    - Test that supheader, header and row heights are set with correct values and on
+    correct coordinates
+    - Test that freeze panes is applied to the correct coordinates
+    - Test that auto filter is applied to the correct coordinates
+    """
+
+    @pytest.fixture(autouse=True)
+    def _init_table_sections(self):
+        section_1 = compiler.TableSection(
+            data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
+        )
+        section_2 = compiler.TableSection(
+            data=pd.DataFrame({"Column 3": [1, 2, 3], "Column 4": ["A", "B", "C"]}),
+        )
+        self.headers = list(section_1.headers) + list(section_2.headers)
+        self.table_sections = [section_1, section_2]
+        self.col_num = 4
+        self.row_num = 3
+        self.column_values = []
+        for section in self.table_sections:
+            self.column_values.extend([section.data[c].tolist() for c in section.data.columns])  # fmt: skip
+
+    @pytest.mark.parametrize("start_row", [0, 2, 10])
+    def test_all_section_headers_correctly_written_with_different_start_rows(self, start_row):  # fmt: skip
+        with ExcelWriteReadTestManager() as excel_manager:
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer.write_sections(excel_manager.worksheet, self.table_sections, start_row=start_row)  # fmt: skip
+        sheet = excel_manager.loaded_worksheet
+        assert [cell.value for cell in list(sheet.rows)[start_row]] == self.headers
+
+    def test_all_section_values_are_written_to_the_correct_position(self):
+        with ExcelWriteReadTestManager() as excel_manager:
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer.write_sections(excel_manager.worksheet, self.table_sections)
+        sheet_columns = list(excel_manager.loaded_worksheet.columns)
+        for column_cells, column_values in zip(sheet_columns, self.column_values):
+            value_cells = column_cells[1:]  # without header cell
+            assert [cell.value for cell in value_cells] == column_values
+
+    @pytest.mark.parametrize("start_col", [0, 2, 10])
+    def test_start_column_correctly_applied(self, start_col):
+        with ExcelWriteReadTestManager() as excel_manager:
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer.write_sections(excel_manager.worksheet, self.table_sections, start_column=start_col)  # fmt: skip
+        sheet = excel_manager.loaded_worksheet
+        for empty_column in list(sheet.columns)[:start_col]:
+            assert all([cell.value is None for cell in empty_column])
+        assert len(list(sheet.columns)) == self.col_num + start_col
+
+    @pytest.mark.parametrize(
+        "write_supheader, start_row", [(True, 0), (True, 2), (False, 0), (False, 2)]
+    )
+    def test_start_row_and_supheader_correctly_applied(self, write_supheader, start_row):  # fmt: skip
+        with ExcelWriteReadTestManager() as excel_manager:
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer.write_sections(
+                excel_manager.worksheet,
+                self.table_sections,
+                settings={"write_supheader": write_supheader},
+                start_row=start_row,
+            )
+        sheet_rows = list(excel_manager.loaded_worksheet.rows)
+        header_row = start_row + int(write_supheader)
+        assert [cell.value for cell in sheet_rows[header_row]] == self.headers
 
 
 class TestIntegrationTableSectionWriteColumn:
@@ -67,7 +125,8 @@ class TestIntegrationTableSectionWriteColumn:
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
         row, column = 2, 2
         with ExcelWriteReadTestManager() as excel_manager:
-            excel_manager.section_writer._write_column(
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer._write_column(
                 excel_manager.worksheet,
                 row=row - 1,
                 column=column - 1,
@@ -78,7 +137,7 @@ class TestIntegrationTableSectionWriteColumn:
                 conditional_format={"type": "2_color_scale"},
                 column_width=10000,
             )
-        self.worksheet = excel_manager.load_worksheet()
+        self.worksheet = excel_manager.loaded_worksheet
         self.written_column = list(self.worksheet.columns)[1]
 
     def test_column_is_written_to_correct_position(self):
@@ -193,7 +252,8 @@ class TestIntegrationTableSectionWriteSupheader:
         zero indexed.
         """
         with ExcelWriteReadTestManager() as excel_manager:
-            excel_manager.section_writer._write_supheader(
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer._write_supheader(
                 worksheet=excel_manager.worksheet,
                 row=row - 1,
                 column=column - 1,
@@ -201,7 +261,7 @@ class TestIntegrationTableSectionWriteSupheader:
                 supheader="Supheader",
                 supheader_format={"bold": True},
             )
-        return excel_manager.load_worksheet()
+        return excel_manager.loaded_worksheet
 
     @pytest.mark.parametrize("row, column", [(1, 2), (2, 1), (5, 10)])
     def test_supheader_written_to_correct_position(self, row, column):
@@ -237,14 +297,15 @@ class TestIntegrationTableSectionWriteSection:
         zero indexed.
         """
         with ExcelWriteReadTestManager() as excel_manager:
-            excel_manager.section_writer._write_section(
+            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer._write_section(
                 excel_manager.worksheet,
                 table_section,
                 start_row=0,
                 start_column=0,
                 write_supheader=write_supheader,
             )
-        return excel_manager.load_worksheet()
+        return excel_manager.loaded_worksheet
 
     @pytest.mark.parametrize("write_supheader", [True, False])
     def test_correct_number_of_columns_written(self, table_section, write_supheader):
@@ -263,6 +324,7 @@ class TestIntegrationTableSectionWriteSection:
 
     @pytest.mark.parametrize("write_supheader", [True, False])
     def test_supheader_correctly_added_or_ommitted(self, table_section, write_supheader):  # fmt: skip
+        table_section.supheader = "A supheader name"
         worksheet = self._create_worksheet_with_section_writer_and_write_section(
             table_section, write_supheader=write_supheader
         )

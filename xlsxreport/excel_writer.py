@@ -21,7 +21,7 @@ class TableSectionWriter:
         """Write a list of sections to the workbook to create a table."""
         # TODO - not included in any tests
         settings = settings if settings is not None else {}
-        write_supheader = settings.get("write_supheader", True)
+        write_supheader = settings.get("write_supheader", False)
         for section in sections:
             self._write_section(
                 worksheet=worksheet,
@@ -31,7 +31,6 @@ class TableSectionWriter:
                 write_supheader=write_supheader,
             )
             start_column += section.data.shape[1]
-        # 1) setup coordinates (take into account if a supheader should be written)
         # 2) write sections
         # 3) set supheader, header and row heights (needs to know column lengths)
         #    - column_height = settings["column_height"]  # -> NOVEL
