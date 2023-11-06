@@ -10,7 +10,7 @@ import xlsxreport.compiler as compiler
 import xlsxreport.excel_writer as writer
 
 
-class ExcelWriteReadManager:
+class ExcelWriteReadTestManager:
     """Helper class for writing an excel file with `xlsxwriter` to buffer and reading it
     from the buffer with `openpyxl`.
 
@@ -66,7 +66,7 @@ class TestIntegrationTableSectionWriteColumn:
     def _init_section_writer_with_write_column(self):
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
         row, column = 2, 2
-        with ExcelWriteReadManager() as excel_manager:
+        with ExcelWriteReadTestManager() as excel_manager:
             excel_manager.section_writer._write_column(
                 excel_manager.worksheet,
                 row=row - 1,
@@ -192,7 +192,7 @@ class TestTableSectionWriteSupheader:
         Note that row and column are specified as one indexed, whereas xlsxwriter is
         zero indexed.
         """
-        with ExcelWriteReadManager() as excel_manager:
+        with ExcelWriteReadTestManager() as excel_manager:
             excel_manager.section_writer._write_supheader(
                 worksheet=excel_manager.worksheet,
                 row=row - 1,
@@ -233,7 +233,7 @@ class TestTableSectionWriteSection:
         the TableSectionWriter._write_section method. The worksheet is then safed to a
         buffer and loaded with openpyxl. The loaded worksheet is returned.
         """
-        with ExcelWriteReadManager() as excel_manager:
+        with ExcelWriteReadTestManager() as excel_manager:
             excel_manager.section_writer._write_section(
                 excel_manager.worksheet,
                 table_section,
