@@ -79,14 +79,23 @@ class TestTableSectionWriteSections:
     def test_all_section_headers_correctly_written_with_different_start_rows(self, start_row):  # fmt: skip
         with ExcelWriteReadTestManager() as excel_manager:
             section_writer = writer.TableSectionWriter(excel_manager.workbook)
-            section_writer.write_sections(excel_manager.worksheet, self.table_sections, start_row=start_row)  # fmt: skip
+            section_writer.write_sections(
+                excel_manager.worksheet,
+                self.table_sections,
+                settings={"write_supheader": False},
+                start_row=start_row,
+            )
         sheet = excel_manager.loaded_worksheet
         assert [cell.value for cell in list(sheet.rows)[start_row]] == self.headers
 
     def test_all_section_values_are_written_to_the_correct_position(self):
         with ExcelWriteReadTestManager() as excel_manager:
             section_writer = writer.TableSectionWriter(excel_manager.workbook)
-            section_writer.write_sections(excel_manager.worksheet, self.table_sections)
+            section_writer.write_sections(
+                excel_manager.worksheet,
+                self.table_sections,
+                settings={"write_supheader": False},
+            )
         sheet_columns = list(excel_manager.loaded_worksheet.columns)
         for column_cells, column_values in zip(sheet_columns, self.column_values):
             value_cells = column_cells[1:]  # without header cell
@@ -96,7 +105,9 @@ class TestTableSectionWriteSections:
     def test_start_column_correctly_applied(self, start_col):
         with ExcelWriteReadTestManager() as excel_manager:
             section_writer = writer.TableSectionWriter(excel_manager.workbook)
-            section_writer.write_sections(excel_manager.worksheet, self.table_sections, start_column=start_col)  # fmt: skip
+            section_writer.write_sections(
+                excel_manager.worksheet, self.table_sections, start_column=start_col
+            )
         sheet = excel_manager.loaded_worksheet
         for empty_column in list(sheet.columns)[:start_col]:
             assert all([cell.value is None for cell in empty_column])
@@ -105,7 +116,9 @@ class TestTableSectionWriteSections:
     @pytest.mark.parametrize(
         "write_supheader, start_row", [(True, 0), (True, 2), (False, 0), (False, 2)]
     )
-    def test_start_row_and_supheader_correctly_applied(self, write_supheader, start_row):  # fmt: skip
+    def test_start_row_and_supheader_correctly_applied(
+        self, write_supheader, start_row
+    ):
         with ExcelWriteReadTestManager() as excel_manager:
             section_writer = writer.TableSectionWriter(excel_manager.workbook)
             section_writer.write_sections(
@@ -241,7 +254,7 @@ class TestTableSectionWriteColumn:
 
 class TestIntegrationTableSectionWriteSupheader:
     def _create_worksheet_with_section_writer_and_write_supheader(
-        self, row: int = 1, column: int = 1, num_columns: int = 1
+        self, row: int = 1, column: int = 1, num_columns: int = 1, supheader = "Supheader"  # fmt: skip
     ):
         """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
         TableSectionWriter. After using the TableSectionWriter to write a supheader to
@@ -258,7 +271,7 @@ class TestIntegrationTableSectionWriteSupheader:
                 row=row - 1,
                 column=column - 1,
                 num_columns=num_columns,
-                supheader="Supheader",
+                supheader=supheader,
                 supheader_format={"bold": True},
             )
         return excel_manager.loaded_worksheet
@@ -282,6 +295,10 @@ class TestIntegrationTableSectionWriteSupheader:
         worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=1)  # fmt: skip
         assert len(worksheet.merged_cells.ranges) == 0
         assert worksheet.cell(row=1, column=1).value == "Supheader"
+
+    def test_no_merge_applied_when_no_supheader_specified(self):
+        worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=2, supheader="")  # fmt: skip
+        assert len(worksheet.merged_cells.ranges) == 0
 
 
 class TestIntegrationTableSectionWriteSection:
