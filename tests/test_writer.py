@@ -1,10 +1,13 @@
 from io import BytesIO
+from unittest.mock import MagicMock, call
+
+import openpyxl
 import pandas as pd
 import pytest
-import openpyxl
-import xlsxreport.excel_writer as writer
-import xlsxreport.compiler as compiler
 from xlsxwriter import Workbook as Workbook
+
+import xlsxreport.compiler as compiler
+import xlsxreport.excel_writer as writer
 
 
 class ExcelWriteReadManager:
@@ -58,7 +61,7 @@ def table_section() -> compiler.TableSection:
     return section
 
 
-class TestTableSectionWriteColumn:
+class TestIntegrationTableSectionWriteColumn:
     @pytest.fixture(autouse=True)
     def _init_section_writer_with_write_column(self):
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
@@ -112,6 +115,69 @@ class TestTableSectionWriteColumn:
         conditional_format = list(self.worksheet.conditional_formatting)[0]
         conditional_format.cells.ranges[0].top == [(3, 2)]
         conditional_format.cells.ranges[0].bottom == [(5, 2)]
+
+
+class TestTableSectionWriteColumn:
+    @pytest.fixture(autouse=True)
+    def _init_section_writer(self):
+        self.worksheet_mock = MagicMock(name="worksheet_mock")
+        self.section_writer = writer.TableSectionWriter(Workbook())
+
+    @pytest.fixture(autouse=True)
+    def _init_arguments_for_write_column(self):
+        self.args = {
+            "row": 1,
+            "column": 1,
+            "header": "Header name",
+            "values": [1, 2, 3],
+            "header_format": {"bold": True},
+            "values_format": {"bold": False},
+            "conditional_format": {"type": "cell"},
+            "column_width": 10,
+        }
+        self.header_row = self.args["row"]
+        self.data_row_start = self.args["row"] + 1
+        self.data_row_end = self.args["row"] + len(self.args["values"])
+
+    def test_write_column_called_with_correct_arguments_to_write_values(self):
+        self.section_writer._write_column(self.worksheet_mock, **self.args)
+        assert self.worksheet_mock.write_column.call_args == call(
+            self.data_row_start,
+            self.args["column"],
+            self.args["values"],
+            self.section_writer.get_xlsx_format(self.args["values_format"]),
+        )
+
+    def test_write_called_with_correct_arguments_to_write_header(self):
+        self.section_writer._write_column(self.worksheet_mock, **self.args)
+        assert self.worksheet_mock.write.call_args == call(
+            self.header_row,
+            self.args["column"],
+            self.args["header"],
+            self.section_writer.get_xlsx_format(self.args["header_format"]),
+        )
+
+    def test_set_column_pixels_called_with_correct_arguments(self):
+        self.section_writer._write_column(self.worksheet_mock, **self.args)
+        assert self.worksheet_mock.set_column_pixels.call_args == call(
+            self.args["column"], self.args["column"], self.args["column_width"]
+        )
+
+    def test_conditional_format_called_with_correct_arguments(self):
+        self.section_writer._write_column(self.worksheet_mock, **self.args)
+
+        assert self.worksheet_mock.conditional_format.call_args == call(
+            self.data_row_start,
+            self.args["column"],
+            self.data_row_end,
+            self.args["column"],
+            self.args["conditional_format"],
+        )
+
+    def test_conditional_format_not_called_when_conditionaL_format_is_empty(self):
+        self.args["conditional_format"] = {}
+        self.section_writer._write_column(self.worksheet_mock, **self.args)
+        self.worksheet_mock.conditional_format.assert_not_called()
 
 
 class TestTableSectionWriteSupheader:

@@ -74,7 +74,6 @@ class TableSectionWriter:
                 conditional_format=section.column_conditionals[column],
                 column_width=section.column_widths[column],
             )
-        # TODO - section conditional is not included in any tests
         if section.section_conditional:
             num_values, num_rows = section.data.shape
             worksheet.conditional_format(
