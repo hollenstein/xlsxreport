@@ -33,6 +33,18 @@ class TableSection:
     supheader_format: dict = field(default_factory=dict)
     section_conditional: str = ""
 
+    def __post_init__(self):
+        if not self.column_formats:
+            self.column_formats = {col: {} for col in self.data.columns}
+        if not self.column_conditionals:
+            self.column_conditionals = {col: {} for col in self.data.columns}
+        if not self.column_widths:
+            self.column_widths = {col: DEFAULT_COL_WIDTH for col in self.data.columns}
+        if not self.headers:
+            self.headers = {col: col for col in self.data.columns}
+        if not self.header_formats:
+            self.header_formats = {col: {} for col in self.data.columns}
+
 
 class SectionCompiler(Protocol):
     """Protocol for section compilers."""
