@@ -35,7 +35,7 @@ class TestCorrectCreationOfFormattedExcelFile:
             protein_sheet.write_data()
 
         reference_excel_path = "./tests/testdata/mq_proteinGroups.xlsx"
-        with open(temp_excel_path, "rb") as f1, open(reference_excel_path, "rb") as f2:
+        with open(reference_excel_path, "rb") as f1, open(temp_excel_path, "rb") as f2:
             wb1 = openpyxl.load_workbook(f1)
             wb2 = openpyxl.load_workbook(f2)
 
@@ -45,6 +45,10 @@ class TestCorrectCreationOfFormattedExcelFile:
             # Compare the sheet names
             for sheet1, sheet2 in zip(wb1, wb2):
                 assert sheet1.title == sheet2.title
+
+            # Compare equal number of rows and columns
+            assert len(list(sheet1.iter_rows())) == len(list(sheet2.iter_rows()))
+            assert len(list(sheet1.iter_cols())) == len(list(sheet2.iter_cols()))
 
             # Compare the cell values and formatting
             for sheet1, sheet2 in zip(wb1, wb2):
@@ -83,7 +87,7 @@ class TestCorrectCreationOfFormattedExcelFile:
             )
 
         reference_excel_path = "./tests/testdata/mq_proteinGroups.xlsx"
-        with open(temp_excel_path, "rb") as f1, open(reference_excel_path, "rb") as f2:
+        with open(reference_excel_path, "rb") as f1, open(temp_excel_path, "rb") as f2:
             wb1 = openpyxl.load_workbook(f1)
             wb2 = openpyxl.load_workbook(f2)
 
@@ -93,6 +97,10 @@ class TestCorrectCreationOfFormattedExcelFile:
             # Compare the sheet names
             for sheet1, sheet2 in zip(wb1, wb2):
                 assert sheet1.title == sheet2.title
+
+            # Compare equal number of rows and columns
+            assert len(list(sheet1.iter_rows())) == len(list(sheet2.iter_rows()))
+            assert len(list(sheet1.iter_cols())) == len(list(sheet2.iter_cols()))
 
             # Compare the cell values and formatting
             for sheet1, sheet2 in zip(wb1, wb2):
