@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterable, Optional, Protocol
 
+import numpy as np
 import pandas as pd
 
 from .template import ReportTemplate
@@ -75,7 +76,7 @@ class StandardSectionCompiler:
     def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(section_template, table.columns)
-        data = eval_data(table, selected_cols)
+        data = eval_data(table, selected_cols, section_template)
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -120,7 +121,7 @@ class TagSampleSectionCompiler:
         selected_cols = eval_tag_sample_section_columns(
             section_template, table.columns, self.settings["sample_extraction_tag"]
         )
-        data = eval_data(table, selected_cols)
+        data = eval_data(table, selected_cols, section_template)
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -249,41 +250,54 @@ def remove_empty_table_sections(
     return [section for section in table_sections if not section.data.empty]
 
 
-def eval_data(table: pd.DataFrame, columns: Iterable[str]):
-    """Returns a copy of the table with only the selected columns and no NaN values."""
-    return table[columns].fillna(NAN_REPLACEMENT_SYMBOL)
+def eval_data(table: pd.DataFrame, columns: Iterable[str], section_template: dict):
+    """Returns a copy of the table with only the selected columns and no NaN values.
+
+    Args:
+        table: The table to select columns from.
+        columns: The columns to select from the table.
+        section_template:
+    """
+    data = table[columns].copy()
+    if section_template.get("log2", False):
+        if not data.select_dtypes(exclude=["number"]).columns.empty:
+            raise ValueError("Cannot log2 transform non-numeric columns.")
+        data = data.mask(data <= 0, np.nan)
+        data = np.log2(data)
+    data.fillna(NAN_REPLACEMENT_SYMBOL, inplace=True)
+    return data
 
 
 def eval_standard_section_columns(
-    template_section: dict, columns: Iterable[str]
+    section_template: dict, columns: Iterable[str]
 ) -> list[str]:
     """Select columns from the template that are present in the table.
 
     Args:
-        template_section: A dictionary containing the columns to be selected as the
+        section_template: A dictionary containing the columns to be selected as the
             values of the "columns" key.
         columns: A list of column names to select from.
 
     Returns:
         A list of column names that are present in both the template and the table.
     """
-    selected_columns = [col for col in template_section["columns"] if col in columns]
+    selected_columns = [col for col in section_template["columns"] if col in columns]
     return selected_columns
 
 
 def eval_tag_sample_section_columns(
-    template_section: dict, columns: Iterable[str], extraction_tag: str
+    section_template: dict, columns: Iterable[str], extraction_tag: str
 ) -> list[str]:
     """Extract tag sample columns.
 
     Args:
-        template_section: A dictionary containing the columns to be selected as the
+        section_template: A dictionary containing the columns to be selected as the
             values of the "columns" key.
         columns: A list of column names to select from.
         extraction_tag: The tag used to extract sample names from the columns.
 
     Returns:
-        A list of sample columns that contain the `template_section["tag"]`.
+        A list of sample columns that contain the `section_template["tag"]`.
     """
     samples = []
     for col in columns:
@@ -293,7 +307,7 @@ def eval_tag_sample_section_columns(
 
     selected_columns = []
     for col in columns:
-        if template_section["tag"] not in col:
+        if section_template["tag"] not in col:
             continue
         for sample in samples:
             if sample in col:
@@ -303,14 +317,14 @@ def eval_tag_sample_section_columns(
 
 def eval_tag_sample_headers(
     columns: Iterable[str],
-    template_section: dict,
+    section_template: dict,
     log2_tag: str = "",
 ) -> dict:
     """Returns header names for each column.
 
     Args:
         columns: A list of column names to select from.
-        template_section: A dictionary with "tag" containing the substring that will be
+        section_template: A dictionary with "tag" containing the substring that will be
             removed from the headers if "remove_tag" is True. The "log2" key determines
             whether to add the `log2_tag` to the headers, however, if "remove_tag" is
             True the `log2_tag` will never be added. The "remove_tag" and "log"
@@ -321,9 +335,9 @@ def eval_tag_sample_headers(
     Returns:
         A dictionary containing the header names for each column.
     """
-    tag = template_section["tag"]
-    remove_tag = template_section.get("remove_tag", False)
-    add_log2_tag = template_section.get("log2", False) and not remove_tag
+    tag = section_template["tag"]
+    remove_tag = section_template.get("remove_tag", False)
+    add_log2_tag = section_template.get("log2", False) and not remove_tag
     if remove_tag:
         headers = {col: col.replace(tag, "").strip() for col in columns}
     else:
@@ -335,14 +349,14 @@ def eval_tag_sample_headers(
 
 
 def eval_tag_sample_supheader(
-    template_section: dict,
+    section_template: dict,
     log2_tag: str = "",
 ) -> str:
     """Returns header names for each column.
 
     Args:
         columns: A list of column names to select from.
-        template_section: A dictionary with "tag" containing the substring that will be
+        section_template: A dictionary with "tag" containing the substring that will be
             removed from the headers if "remove_tag" is True. The "log2" key determines
             whether to add the `log2_tag` to the headers, however, if "remove_tag" is
             True the `log2_tag` will never be added. The "remove_tag" and "log"
@@ -353,10 +367,10 @@ def eval_tag_sample_supheader(
     Returns:
         A dictionary containing the header names for each column.
     """
-    if template_section.get("log2", False):
-        return f"{template_section['supheader']} {log2_tag}"
+    if section_template.get("log2", False):
+        return f"{section_template['supheader']} {log2_tag}"
     else:
-        return template_section["supheader"]
+        return section_template["supheader"]
 
 
 def eval_column_formats(

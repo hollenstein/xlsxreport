@@ -1,5 +1,7 @@
+import numpy as np
 import pytest
 import pandas as pd
+
 import xlsxreport.compiler as compiler
 from xlsxreport.template import ReportTemplate
 
@@ -55,8 +57,8 @@ def example_table() -> pd.DataFrame:
             "Column 1": [1, 2, 3],
             "Column 2": ["A", "B", "C"],
             "Column 4": ["A", "B", "C"],
-            "Tag Sample 1": ["A", "B", "C"],
-            "Tag Sample 2": ["A", "B", "C"],
+            "Tag Sample 1": [1, 2, 3],
+            "Tag Sample 2": [1, 2, 3],
         }
     )
     return table
@@ -93,7 +95,7 @@ def standard_table_section(report_template, example_table) -> compiler.TableSect
 @pytest.fixture()
 def tag_sample_table_section(report_template, example_table) -> compiler.TableSection:
     table_section = compiler.TableSection(
-        data=example_table[["Tag Sample 1", "Tag Sample 2"]].copy(),
+        data=np.log2(example_table[["Tag Sample 1", "Tag Sample 2"]].copy()),
         column_formats={
             "Tag Sample 1": report_template.formats["float"],
             "Tag Sample 2": report_template.formats["float"],
@@ -121,14 +123,24 @@ def tag_sample_table_section(report_template, example_table) -> compiler.TableSe
 class TestEvalData:
     def test_data_frame_contains_only_selected_columns(self):
         table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"])
+        evaluated_data = compiler.eval_data(table, ["Column 1"], {})
         assert list(evaluated_data.columns) == ["Column 1"]
 
     def test_nan_values_in_dataframe_replaced(self):
         table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"])
+        evaluated_data = compiler.eval_data(table, ["Column 1"], {})
         assert not evaluated_data.isna().values.any()
         assert evaluated_data["Column 1"][2] == compiler.NAN_REPLACEMENT_SYMBOL
+
+    def test_log2_transformation_applied_when_specified(self):
+        table = pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data(table, ["Column 1"], {"log2": True})
+        assert evaluated_data["Column 1"].tolist() == np.log2(table["Column 1"]).tolist()  # fmt: skip
+
+    def test_log2_transformation_replaces_values_smaller_or_equal_to_zero_with_nan(self):  # fmt: skip
+        table = pd.DataFrame({"Column 1": [-1, 0, 1], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data(table, ["Column 1"], {"log2": True})
+        assert evaluated_data["Column 1"].tolist() == ["", "", 0]
 
 
 def test_eval_standard_section_columns_selects_correct_columns():
@@ -466,7 +478,7 @@ def test_TagSampleSectionCompiler(
 
 class TestPrepareTableSections:
     def test_only_non_empty_sections_are_returned(self, report_template):
-        table = pd.DataFrame({"Tag Sample 1": ["A"], "Tag Sample 2": ["A"]})
+        table = pd.DataFrame({"Tag Sample 1": [1], "Tag Sample 2": [1]})
         compiled_sections = compiler.prepare_table_sections(
             report_template, table, remove_duplicate_columns=False
         )
