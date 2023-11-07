@@ -183,6 +183,28 @@ def compile_table_sections(
     return table_sections
 
 
+def prune_table_sections(table_sections: list[TableSection]) -> None:
+    """Remove duplicate columns from table sections, keeping only the first occurance."""
+    observed_columns = set()
+    for section in table_sections:
+        to_remove = [col for col in section.data.columns if col in observed_columns]
+        section.data = section.data.drop(columns=to_remove)
+        for col in to_remove:
+            del section.column_formats[col]
+            del section.column_conditionals[col]
+            del section.column_widths[col]
+            del section.headers[col]
+            del section.header_formats[col]
+        observed_columns.update(section.data.columns)
+
+
+def remove_empty_table_sections(
+    table_sections: list[TableSection],
+) -> list[TableSection]:
+    """Returns a list of non-empty `TableSection`."""
+    return [section for section in table_sections if not section.data.empty]
+
+
 def eval_standard_section_columns(
     template_section: dict, columns: Iterable[str]
 ) -> list[str]:
