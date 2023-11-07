@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import Iterable
+
 import xlsxwriter
 
-from xlsxreport.compiler import TableSection
+from .compiler import TableSection
 
 
 class TableSectionWriter:
@@ -43,7 +44,7 @@ class TableSectionWriter:
             last_value_row = max(last_value_row, section.data.shape[0] + header_row)
             next_column += section.data.shape[1]
 
-        # TODO - not tested from here on (including last value row)
+        # TODO - not tested from here on (including calculation of last_value_row)
         if write_supheader:
             worksheet.set_row_pixels(start_row, supheader_height)
         worksheet.set_row_pixels(header_row, header_height)

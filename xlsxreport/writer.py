@@ -5,9 +5,8 @@ from typing import Iterable, Optional, Union
 import numpy as np
 import pandas as pd
 import xlsxwriter
-import yaml
 
-from xlsxreport.template import ReportTemplate
+from .template import ReportTemplate
 
 
 WHITESPACE_SYMBOLS = " ._-"

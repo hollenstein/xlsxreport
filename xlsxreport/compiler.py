@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterable, Optional, Protocol
+
 import pandas as pd
-from xlsxreport.template import ReportTemplate
+
+from .template import ReportTemplate
 
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
