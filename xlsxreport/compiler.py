@@ -162,10 +162,42 @@ def get_section_compiler(section_template: dict) -> SectionCompiler:
 # 2) Apply common data manipulations (e.g. replace missing values / NaNs)
 
 
+def prepare_table_sections(
+    report_template: ReportTemplate,
+    table: pd.DataFrame,
+    remove_duplicate_columns: bool = True,
+) -> list[TableSection]:
+    """Compile and non-empty table sections from a report template and a table.
+
+    Args:
+        report_template: The report template describing how table sections should be
+            generated.
+        table: The table to compile the sections from.
+        remove_duplicate_columns: If True, duplicate columns are removed from the
+            sections, keeping only the first occurrence of a column.
+
+    Returns:
+        A list of non-empty, compiled table sections.
+    """
+    compiled_table_sections = compile_table_sections(report_template, table)
+    if remove_duplicate_columns:
+        prune_table_sections(compiled_table_sections)
+    return remove_empty_table_sections(compiled_table_sections)
+
+
 def compile_table_sections(
     report_template: ReportTemplate, table: pd.DataFrame
 ) -> list[TableSection]:
-    """Compile table sections from a report template and a table."""
+    """Compile table sections from a report template and a table.
+
+    Args:
+        report_template: The report template describing how table sections should be
+            generated.
+        table: The table to compile the sections from.
+
+    Returns:
+        A list of compiled table sections.
+    """
     table_sections = []
     for section_template in report_template.sections.values():
         section_category = identify_template_section_category(section_template)
@@ -183,7 +215,7 @@ def compile_table_sections(
     return table_sections
 
 
-def prune_table_sections(table_sections: list[TableSection]) -> None:
+def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
     """Remove duplicate columns from table sections, keeping only the first occurance."""
     observed_columns = set()
     for section in table_sections:
@@ -199,9 +231,9 @@ def prune_table_sections(table_sections: list[TableSection]) -> None:
 
 
 def remove_empty_table_sections(
-    table_sections: list[TableSection],
+    table_sections: Iterable[TableSection],
 ) -> list[TableSection]:
-    """Returns a list of non-empty `TableSection`."""
+    """Returns a list of non-empty table sections."""
     return [section for section in table_sections if not section.data.empty]
 
 

@@ -451,6 +451,34 @@ def test_TagSampleSectionCompiler(
             assert compiled_attr == expected_section_attr
 
 
+class TestPrepareTableSections:
+    def test_only_non_empty_sections_are_returned(self, report_template):
+        table = pd.DataFrame({"Tag Sample 1": ["A"], "Tag Sample 2": ["A"]})
+        compiled_sections = compiler.prepare_table_sections(
+            report_template, table, remove_duplicate_columns=False
+        )
+        assert all([not s.data.empty for s in compiled_sections])
+
+    def test_duplicate_columns_are_removed(self, report_template, example_table):
+        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        compiled_sections = compiler.prepare_table_sections(
+            report_template, example_table, remove_duplicate_columns=True
+        )
+        observed_columns = []
+        for section in compiled_sections:
+            observed_columns.extend(section.data.columns)
+        assert len(set(observed_columns)) == len(observed_columns)
+
+    def test_empty_sections_caused_by_removal_of_duplicate_columns_are_not_returned(
+        self, report_template, example_table
+    ):
+        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        compiled_sections = compiler.prepare_table_sections(
+            report_template, example_table, remove_duplicate_columns=True
+        )
+        assert all([not s.data.empty for s in compiled_sections])
+
+
 class TestCompileTableSection:
     def test_correctly_compiled_sections(
         self,
@@ -543,7 +571,7 @@ def test_remove_empty_table_sections():
         compiler.TableSection(data=pd.DataFrame({"C2": [1]})),
     ]
     filtered_sections = compiler.remove_empty_table_sections(sections)
-    assert not any([s.data.empty for s in filtered_sections])
+    assert all([not s.data.empty for s in filtered_sections])
 
 
 class TestIdentifyTemplateSectionCategory:
