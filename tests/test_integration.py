@@ -71,8 +71,7 @@ class TestCorrectCreationOfFormattedExcelFile:
     def test_new_xlsx_report_implementation(self, temp_excel_path):
         config_path = "./tests/testdata/mq_protein_config.yaml"
         mq_path = "./tests/testdata/mq_proteinGroups.txt"
-        # table = pd.read_csv(mq_path, sep="\t")
-        table = pd.read_csv(mq_path, sep="\t").fillna("")
+        table = pd.read_csv(mq_path, sep="\t")
 
         report_template = ReportTemplate.load(config_path)
         table_sections = prepare_table_sections(report_template, table)

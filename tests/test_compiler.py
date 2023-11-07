@@ -118,6 +118,19 @@ def tag_sample_table_section(report_template, example_table) -> compiler.TableSe
     return table_section
 
 
+class TestEvalData:
+    def test_data_frame_contains_only_selected_columns(self):
+        table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data(table, ["Column 1"])
+        assert list(evaluated_data.columns) == ["Column 1"]
+
+    def test_nan_values_in_dataframe_replaced(self):
+        table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data(table, ["Column 1"])
+        assert not evaluated_data.isna().values.any()
+        assert evaluated_data["Column 1"][2] == compiler.NAN_REPLACEMENT_SYMBOL
+
+
 def test_eval_standard_section_columns_selects_correct_columns():
     template_section = {"columns": ["Column 1", "Column 2", "Column 3"]}
     columns = ["Column 1", "Column 2", "Column 4"]

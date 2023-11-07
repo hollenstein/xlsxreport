@@ -10,6 +10,7 @@ from .template import ReportTemplate
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
 DEFAULT_FORMAT: dict = {"num_format": "@"}
+NAN_REPLACEMENT_SYMBOL = ""
 
 
 class SectionCategory(Enum):
@@ -23,7 +24,10 @@ class SectionCategory(Enum):
 
 @dataclass
 class TableSection:
-    """Contains information for writing and formatting a section of a table."""
+    """Contains information for writing and formatting a section of a table.
+
+    Note that the `data` DataFrame must not contain any NaN values.
+    """
 
     data: pd.DataFrame
     column_formats: dict = field(default_factory=dict)
@@ -36,6 +40,10 @@ class TableSection:
     section_conditional: str = ""
 
     def __post_init__(self):
+        nan_columns = self.data.columns[self.data.isnull().any()].tolist()
+        if nan_columns:
+            raise ValueError(f"`data` contains NaN values in columns: {nan_columns}")
+
         for col in self.data.columns:
             if col not in self.column_formats:
                 self.column_formats[col] = {}
@@ -67,6 +75,7 @@ class StandardSectionCompiler:
     def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(section_template, table.columns)
+        data = eval_data(table, selected_cols)
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -86,7 +95,7 @@ class StandardSectionCompiler:
         )
 
         return TableSection(
-            table[selected_cols].copy(),
+            data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
             column_widths=col_widths,
@@ -111,6 +120,7 @@ class TagSampleSectionCompiler:
         selected_cols = eval_tag_sample_section_columns(
             section_template, table.columns, self.settings["sample_extraction_tag"]
         )
+        data = eval_data(table, selected_cols)
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -134,7 +144,7 @@ class TagSampleSectionCompiler:
         )
 
         return TableSection(
-            table[selected_cols].copy(),
+            data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
             column_widths=col_widths,
@@ -169,7 +179,7 @@ def prepare_table_sections(
     table: pd.DataFrame,
     remove_duplicate_columns: bool = True,
 ) -> list[TableSection]:
-    """Compile and non-empty table sections from a report template and a table.
+    """Compile non-empty table sections from a report template and a table.
 
     Args:
         report_template: The report template describing how table sections should be
@@ -237,6 +247,11 @@ def remove_empty_table_sections(
 ) -> list[TableSection]:
     """Returns a list of non-empty table sections."""
     return [section for section in table_sections if not section.data.empty]
+
+
+def eval_data(table: pd.DataFrame, columns: Iterable[str]):
+    """Returns a copy of the table with only the selected columns and no NaN values."""
+    return table[columns].fillna(NAN_REPLACEMENT_SYMBOL)
 
 
 def eval_standard_section_columns(
