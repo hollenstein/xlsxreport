@@ -5,7 +5,7 @@ from typing import Iterable, Optional, Protocol
 import numpy as np
 import pandas as pd
 
-from .template import ReportTemplate
+from xlsxreport.template import ReportTemplate
 
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()

@@ -3,7 +3,7 @@ from typing import Iterable
 
 import xlsxwriter
 
-from .compiler import TableSection
+from xlsxreport.compiler import TableSection
 
 
 class TableSectionWriter:

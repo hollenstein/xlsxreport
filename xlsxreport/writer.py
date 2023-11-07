@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import xlsxwriter
 
-from .template import ReportTemplate
+from xlsxreport.template import ReportTemplate
 
 
 WHITESPACE_SYMBOLS = " ._-"
