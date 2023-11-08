@@ -770,7 +770,7 @@ class TestIdentifyTemplateSectionCategory:
 
     @pytest.mark.parametrize(
         "section_template",
-        [{"comparison_group": True}, {"comparison_group": True, "tag": ""}],
+        [{"comparison_group": True, "columns": [], "tag": ""}],
     )
     def test_identify_comparison_section(self, section_template):
         section_category = compiler.identify_template_section_category(section_template)
@@ -780,8 +780,10 @@ class TestIdentifyTemplateSectionCategory:
         "section_template",
         [
             {"format": "str"},
-            {"columns": [], "tag": "str"},
+            {"columns": [], "tag": ""},
             {"columns": [], "comparison_group": True},
+            {"tag": "", "comparison_group": True},
+            {"columns": [], "tag": "", "comparison_group": False},
         ],
     )
     def test_identify_unknown_section(self, section_template):

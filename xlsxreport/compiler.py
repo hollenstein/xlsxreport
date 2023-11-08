@@ -604,6 +604,8 @@ def eval_column_formats(
     Returns:
         A dictionary containing format descriptions for each column.
     """
+    if not columns:
+        return {}
     default_format = {} if default_format is None else default_format
     section_format = section_template.get("format", None)
     column_formats = {}
@@ -687,6 +689,8 @@ def eval_header_formats(
     Returns:
         A dictionary containing header format descriptions for each column.
     """
+    if not columns:
+        return {}
     temmplate_format = format_templates.get("header", {})
     section_format = section_template.get("header_format", {})
     header_format = dict(temmplate_format, **section_format)
@@ -751,14 +755,14 @@ def identify_template_section_category(section_template: dict) -> SectionCategor
     Returns:
         A SectionCategory enum value.
     """
-    has_comp_group = "comparison_group" in section_template
+    is_comp_group = section_template.get("comparison_group", False)
     has_tag = "tag" in section_template
     has_columns = "columns" in section_template
 
-    if has_comp_group and not has_columns:
+    if is_comp_group and has_columns and has_tag:
         return SectionCategory.COMPARISON
-    if has_tag and not has_comp_group and not has_columns:
+    if has_tag and not has_columns and not is_comp_group:
         return SectionCategory.TAG_SAMPLE
-    if has_columns and not has_tag and not has_comp_group:
+    if has_columns and not has_tag and not is_comp_group:
         return SectionCategory.STANDARD
     return SectionCategory.UNKNOWN
