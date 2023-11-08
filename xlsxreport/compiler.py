@@ -1,3 +1,4 @@
+"""Contains functions for compiling table sections from a report template and a table."""
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterable, Optional, Protocol
