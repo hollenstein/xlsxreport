@@ -1,3 +1,4 @@
+"""This module provides a class for writing compiled TableSections to an Excel file."""
 from __future__ import annotations
 from typing import Iterable
 
@@ -7,6 +8,8 @@ from xlsxreport.compiler import TableSection
 
 
 class TableSectionWriter:
+    """Class for writing compiled `TableSections` to an Excel file."""
+
     def __init__(self, workbook: xlsxwriter.Workbook):
         self.workbook = workbook
         self._xlsxwriter_formats: dict = {}  # use dictionary hash as key
@@ -19,7 +22,21 @@ class TableSectionWriter:
         start_row: int = 0,
         start_column: int = 0,
     ) -> None:
-        """Write a list of sections to the workbook to create a table."""
+        """Write a list of sections to the workbook to create a table.
+
+        Args:
+            worksheet: The Excel worksheet to write to.
+            sections: A list of compiled `TableSection`s that will be written as a
+                continuous table to the `worksheet`.
+            settings: Optional, specify general settings for the table. The following
+                settings are available: `write_supheader`, `supheader_height`, and
+                `header_height`.
+            start_row: The row in the Excel worksheet to start writing the sections at.
+                The first row as seen in Excel starts at 0. The default is 0.
+            start_column: The column in the Excel worksheet to start writing the
+                sections at. The first column as seen in Excel starts at 0. The default
+                is 0.
+        """
         settings = settings if settings is not None else {}
         write_supheader = settings.get("write_supheader", True)
         supheader_height = settings.get("supheader_height", 20)
@@ -147,7 +164,7 @@ class TableSectionWriter:
     def get_xlsx_format(
         self, format_description: dict[str, float | str | bool]
     ) -> xlsxwriter.format.Format:
-        """Converts a format description to an xlsxwriter format.
+        """Converts a format description to an `xlsxwriter` format.
 
         Args:
             format_description: A dictionary describing the format.
