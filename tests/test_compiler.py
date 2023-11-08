@@ -274,16 +274,19 @@ class TestEvalTagSampleHeaders:
 
 class TestEvalTagSampleSupheader:
     def test_with_log2_tag(self):
-        template_section = {"supheader": "Supheader", "log2": True}
-        expected = "Supheader [log2]"
-        headers = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
-        assert headers == expected
+        template_section = {"supheader": "Supheader", "log2": True, "tag": "Tag"}
+        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        assert supheader == "Supheader [log2]"
 
     def test_without_log2_tag(self):
-        template_section = {"supheader": "Supheader", "log2": False}
-        expected = "Supheader"
-        headers = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
-        assert headers == expected
+        template_section = {"supheader": "Supheader", "log2": False, "tag": "Tag"}
+        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        assert supheader == "Supheader"
+
+    def test_tag_is_used_if_supheader_not_specified(self):
+        template_section = {"tag": "Tag as supheader"}
+        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        assert supheader == "Tag as supheader"
 
 
 class TestEvalColumnFormats:

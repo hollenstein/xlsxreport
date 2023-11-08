@@ -576,10 +576,10 @@ def eval_tag_sample_supheader(
     Returns:
         The supheader name for the section.
     """
+    supheader = section_template.get("supheader", section_template["tag"])
     if section_template.get("log2", False):
-        return f"{section_template['supheader']} {log2_tag}"
-    else:
-        return section_template["supheader"]
+        supheader = f"{supheader} {log2_tag}"
+    return supheader
 
 
 def eval_column_formats(
