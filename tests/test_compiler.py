@@ -52,7 +52,7 @@ def report_template() -> ReportTemplate:
 
 @pytest.fixture()
 def example_table() -> pd.DataFrame:
-    table = pd.DataFrame(
+    example_table = pd.DataFrame(
         {
             "Column 1": [1, 2, 3],
             "Column 2": ["A", "B", "C"],
@@ -61,7 +61,7 @@ def example_table() -> pd.DataFrame:
             "Tag Sample 2": [1, 2, 3],
         }
     )
-    return table
+    return example_table
 
 
 @pytest.fixture()
@@ -503,6 +503,12 @@ class TestPrepareTableSections:
         )
         assert all([not s.data.empty for s in compiled_sections])
 
+    def test_addition_of_section_with_remaining_columns(self, report_template):  # fmt: skip
+        table = pd.DataFrame({"Column 1": [1], "Another column": [1]})
+        report_template.settings["append_remaining_columns"] = True
+        compiled_sections = compiler.prepare_table_sections(report_template, table)
+        assert len(compiled_sections) == 2
+
 
 class TestCompileTableSection:
     def test_correctly_compiled_sections(
@@ -538,6 +544,29 @@ class TestCompileTableSection:
         report_template.sections = {"invalid": section}
         compiled_sections = compiler.compile_table_sections(report_template, example_table)  # fmt: skip
         assert len(compiled_sections) == 0
+
+
+class TestCompileRemaininColumnTableSection:
+    def test_correct_columns_selected_for_section(
+        self, report_template, example_table, standard_table_section
+    ):
+        compiled_section = compiler.compile_remaining_column_table_section(
+            report_template, [standard_table_section], example_table
+        )
+        expected_columns = [
+            c for c in example_table if c not in standard_table_section.data
+        ]
+        assert not standard_table_section.data.columns.empty
+        assert compiled_section.data.columns.tolist() == expected_columns
+
+    def test_empty_section_returned_when_no_remaining_columns(
+        self, report_template, example_table, standard_table_section
+    ):
+        example_table = example_table[standard_table_section.data.columns]
+        compiled_section = compiler.compile_remaining_column_table_section(
+            report_template, [standard_table_section], example_table
+        )
+        assert compiled_section.data.empty
 
 
 class TestPruneTableSections:

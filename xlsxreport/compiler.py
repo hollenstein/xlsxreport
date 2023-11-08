@@ -11,6 +11,7 @@ from xlsxreport.template import ReportTemplate
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
 DEFAULT_FORMAT: dict = {"num_format": "@"}
+REMAINING_COL_FORMAT = {"align": "left", "num_format": "0"}
 NAN_REPLACEMENT_SYMBOL = ""
 
 
@@ -157,24 +158,6 @@ class TagSampleSectionCompiler:
         )
 
 
-def get_section_compiler(section_template: dict) -> SectionCompiler:
-    """Get the section compiler function for a section template."""
-    section_category = identify_template_section_category(section_template)
-    if section_category == SectionCategory.UNKNOWN:
-        raise ValueError("Unknown section category.")
-    elif section_category == SectionCategory.STANDARD:
-        return StandardSectionCompiler
-    elif section_category == SectionCategory.TAG_SAMPLE:
-        return TagSampleSectionCompiler
-    elif section_category == SectionCategory.COMPARISON:
-        raise NotImplementedError(f"Compiler not implemented for {section_category}.")
-
-
-# Missing from the compile_table_sections:
-# 1) Apply section type specific data manipulations (e.g. log2 transformation)
-# 2) Apply common data manipulations (e.g. replace missing values / NaNs)
-
-
 def prepare_table_sections(
     report_template: ReportTemplate,
     table: pd.DataFrame,
@@ -193,6 +176,11 @@ def prepare_table_sections(
         A list of non-empty, compiled table sections.
     """
     compiled_table_sections = compile_table_sections(report_template, table)
+    if report_template.settings.get("append_remaining_columns", False):
+        remaining_section = compile_remaining_column_table_section(
+            report_template, compiled_table_sections, table
+        )
+        compiled_table_sections.append(remaining_section)
     if remove_duplicate_columns:
         prune_table_sections(compiled_table_sections)
     return remove_empty_table_sections(compiled_table_sections)
@@ -228,6 +216,38 @@ def compile_table_sections(
     return table_sections
 
 
+def compile_remaining_column_table_section(
+    report_template: ReportTemplate,
+    table_sections: Iterable[TableSection],
+    table: pd.DataFrame,
+) -> TableSection:
+    """Compile a table section containing all columns not present in other sections.
+
+    Args:
+        report_template: The report template describing how table sections should be
+            generated.
+        table_sections: The table sections that have already been compiled.
+        table: The table to compile the remaining column section from.
+
+    Returns:
+        A compiled table section containing all columns not present in other sections.
+    """
+    observed_columns = set()
+    for section in table_sections:
+        observed_columns.update(section.data.columns)
+    selected_cols = [column for column in table if column not in observed_columns]
+
+    section_compiler = StandardSectionCompiler(report_template)
+    section_compiler.formats["__remaining__"] = REMAINING_COL_FORMAT
+    section_template = {
+        "columns": selected_cols,
+        "format": "__remaining__",
+        "width": DEFAULT_COL_WIDTH,
+    }
+    section = section_compiler.compile(section_template, table)
+    return section
+
+
 def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
     """Remove duplicate columns from table sections, keeping only the first occurance."""
     observed_columns = set()
@@ -248,6 +268,19 @@ def remove_empty_table_sections(
 ) -> list[TableSection]:
     """Returns a list of non-empty table sections."""
     return [section for section in table_sections if not section.data.empty]
+
+
+def get_section_compiler(section_template: dict) -> SectionCompiler:
+    """Get the section compiler function for a section template."""
+    section_category = identify_template_section_category(section_template)
+    if section_category == SectionCategory.UNKNOWN:
+        raise ValueError("Unknown section category.")
+    elif section_category == SectionCategory.STANDARD:
+        return StandardSectionCompiler
+    elif section_category == SectionCategory.TAG_SAMPLE:
+        return TagSampleSectionCompiler
+    elif section_category == SectionCategory.COMPARISON:
+        raise NotImplementedError(f"Compiler not implemented for {section_category}.")
 
 
 def eval_data(table: pd.DataFrame, columns: Iterable[str], section_template: dict):
