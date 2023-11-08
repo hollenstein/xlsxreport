@@ -7,6 +7,7 @@ well as checking if the configuration is valid.
 
 from __future__ import annotations
 from typing import Optional
+
 import yaml
 
 
