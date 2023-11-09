@@ -152,8 +152,8 @@ def test_eval_standard_section_columns_selects_correct_columns():
 
 def test_eval_tag_sample_section_columns_selects_correct_columns():
     template_section = {"tag": "Tag"}
-    columns = ["Tag Sample 1", "Tag Sample 2", "Column 1"]
-    extraction_tag = "Tag"
+    columns = ["Tag Sample 1", "Tag Sample 2", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
+    extraction_tag = "Atag"
     selected_columns = compiler.eval_tag_sample_section_columns(
         columns, template_section, extraction_tag
     )

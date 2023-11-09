@@ -376,15 +376,13 @@ def eval_tag_sample_section_columns(
     for col in columns:
         if extraction_tag not in col or col == extraction_tag:
             continue
-        samples.append(col.replace(extraction_tag, "").strip())
+        samples.append(col.replace(extraction_tag, "").strip(WHITESPACE_CHARS))
 
     selected_columns = []
     for col in columns:
-        if section_template["tag"] not in col:
-            continue
-        for sample in samples:
-            if sample in col:
-                selected_columns.append(col)
+        sample_query = col.replace(section_template["tag"], "").strip(WHITESPACE_CHARS)
+        if section_template["tag"] in col and sample_query in samples:
+            selected_columns.append(col)
     return selected_columns
 
 
