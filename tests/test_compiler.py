@@ -123,24 +123,44 @@ def tag_sample_table_section(report_template, example_table) -> compiler.TableSe
 class TestEvalData:
     def test_data_frame_contains_only_selected_columns(self):
         table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"], {})
+        evaluated_data = compiler.eval_data(table, ["Column 1"])
         assert list(evaluated_data.columns) == ["Column 1"]
 
     def test_nan_values_in_dataframe_replaced(self):
         table = pd.DataFrame({"Column 1": [1, 2, None], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"], {})
+        evaluated_data = compiler.eval_data(table, ["Column 1"])
         assert not evaluated_data.isna().values.any()
         assert evaluated_data["Column 1"][2] == compiler.NAN_REPLACEMENT_SYMBOL
 
+
+class TestEvalDataWithLog2Transformation:
     def test_log2_transformation_applied_when_specified(self):
         table = pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"], {"log2": True})
+        evaluated_data = compiler.eval_data_with_log2_transformation(
+            table, ["Column 1"], {"log2": True}, evaluate_log_state=False
+        )
         assert evaluated_data["Column 1"].tolist() == np.log2(table["Column 1"]).tolist()  # fmt: skip
 
     def test_log2_transformation_replaces_values_smaller_or_equal_to_zero_with_nan(self):  # fmt: skip
         table = pd.DataFrame({"Column 1": [-1, 0, 1], "Column 2": ["A", "B", "C"]})
-        evaluated_data = compiler.eval_data(table, ["Column 1"], {"log2": True})
+        evaluated_data = compiler.eval_data_with_log2_transformation(
+            table, ["Column 1"], {"log2": True}, evaluate_log_state=False
+        )
         assert evaluated_data["Column 1"].tolist() == ["", "", 0]
+
+    def test_log_space_evaluation_prevents_log2_transformation_of_small_values(self):  # fmt: skip
+        table = pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data_with_log2_transformation(
+            table, ["Column 1"], {"log2": True}, evaluate_log_state=True
+        )
+        assert evaluated_data["Column 1"].tolist() == [1, 2, 3]
+
+    def test_log_space_evaluation_does_not_prevent_log2_transformation_of_large_values(self):  # fmt: skip
+        table = pd.DataFrame({"Column 1": [1, 2, 65], "Column 2": ["A", "B", "C"]})
+        evaluated_data = compiler.eval_data_with_log2_transformation(
+            table, ["Column 1"], {"log2": True}, evaluate_log_state=True
+        )
+        assert evaluated_data["Column 1"].tolist() == np.log2(table["Column 1"]).tolist()  # fmt:skip
 
 
 def test_eval_standard_section_columns_selects_correct_columns():

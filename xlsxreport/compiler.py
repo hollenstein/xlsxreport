@@ -79,7 +79,7 @@ class StandardSectionCompiler:
     def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(table.columns, section_template)
-        data = eval_data(table, selected_cols, section_template)
+        data = eval_data(table, selected_cols)
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -124,7 +124,12 @@ class TagSampleSectionCompiler:
         selected_cols = eval_tag_sample_section_columns(
             table.columns, section_template, self.settings["sample_extraction_tag"]
         )
-        data = eval_data(table, selected_cols, section_template)
+        data = eval_data_with_log2_transformation(
+            table,
+            selected_cols,
+            section_template,
+            self.settings.get("evaluate_log2_transformation", False),
+        )
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
         )
@@ -291,13 +296,14 @@ def compile_remaining_column_table_section(
     selected_cols = [column for column in table if column not in observed_columns]
 
     section_compiler = StandardSectionCompiler(report_template)
-    section_compiler.formats["__remaining__"] = REMAINING_COL_FORMAT
+    section_compiler.formats[-1] = REMAINING_COL_FORMAT
     section_template = {
         "columns": selected_cols,
-        "format": "__remaining__",
+        "format": -1,
         "width": DEFAULT_COL_WIDTH,
     }
     section = section_compiler.compile(section_template, table)
+    del section_compiler.formats[-1]
     return section
 
 
@@ -323,16 +329,29 @@ def remove_empty_table_sections(
     return [section for section in table_sections if not section.data.empty]
 
 
-def eval_data(table: pd.DataFrame, columns: Iterable[str], section_template: dict):
+def eval_data(table: pd.DataFrame, columns: Iterable[str]):
     """Returns a copy of the table with only the selected columns and no NaN values.
 
     Args:
         table: The table to select columns from.
         columns: The columns to select from the table.
-        section_template:
     """
+    data = table[columns].fillna(NAN_REPLACEMENT_SYMBOL)
+    return data
+
+
+def eval_data_with_log2_transformation(
+    table: pd.DataFrame,
+    columns: Iterable[str],
+    section_template: dict,
+    evaluate_log_state: bool,
+) -> pd.DataFrame:
     data = table[columns].copy()
-    if section_template.get("log2", False):
+    apply_log_transformation = section_template.get("log2", False)
+    if evaluate_log_state and _intensities_in_logspace(data):
+        apply_log_transformation = False
+
+    if apply_log_transformation:
         if not data.select_dtypes(exclude=["number"]).columns.empty:
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
@@ -764,3 +783,25 @@ def identify_template_section_category(section_template: dict) -> SectionCategor
     if has_columns and not has_tag and not is_comp_group:
         return SectionCategory.STANDARD
     return SectionCategory.UNKNOWN
+
+
+def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> bool:
+    """Evaluates whether intensities are likely to be log transformed.
+
+    Assumes that intensities are log transformed if all values are smaller or
+    equal to 64. Intensities values (and intensity peak areas) reported by
+    tandem mass spectrometery typically range from 10^3 to 10^12. To reach log2
+    transformed values greather than 64, intensities would need to be higher
+    than 10^19, which seems to be very unlikely to be ever encountered.
+
+    Args:
+        data: Dataset that contains only intensity values, can be any iterable,
+            a numpy.array or a pandas.DataFrame, multiple dimensions or columns
+            are allowed.
+
+    Returns:
+        True if intensity values in 'data' appear to be log transformed.
+    """
+    data = np.array(data, dtype=float)
+    mask = np.isfinite(data)
+    return np.all(data[mask].flatten() <= 64)
