@@ -341,6 +341,9 @@ def eval_data(table: pd.DataFrame, columns: Iterable[str]):
     Args:
         table: The table to select columns from.
         columns: The columns to select from the table.
+
+    Returns:
+        A copy of the table with only the selected columns NaN values replaced.
     """
     data = table[columns].fillna(NAN_REPLACEMENT_SYMBOL)
     return data
@@ -352,6 +355,20 @@ def eval_data_with_log2_transformation(
     section_template: dict,
     evaluate_log_state: bool,
 ) -> pd.DataFrame:
+    """Selects columns from the table and applies a log2 transformation if specified.
+
+    Args:
+        table: The table to select columns from.
+        columns: The columns to select from the table.
+        section_template: A dictionary containing the key "log2" (bool), which
+            determines whether to apply a log2 transformation.
+        evaluate_log_state: If True, the log2 transformation is only applied if the
+            intensities are not already in log space.
+
+    Returns:
+        A copy of the table with only the selected columns and NaN vaues replaced,
+        optionally values are log2 transformed.
+    """
     data = table[columns].copy()
     apply_log_transformation = section_template.get("log2", False)
     if evaluate_log_state and _intensities_in_logspace(data):
