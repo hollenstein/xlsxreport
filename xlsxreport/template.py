@@ -3,6 +3,16 @@
 The module contains a single class, ReportTemplate, which stores the configuration of a
 report. It provides methods for loading and saving the configuration to a YAML file, as
 well as checking if the configuration is valid.
+
+Valid ReportTemplate.settings entries are:
+    supheader_height: float
+    header_height: float
+    column_width: float
+    log2_tag: str
+    sample_extraction_tag: str
+    append_remaining_columns: bool
+    write_supheader: bool
+    evaluate_log2_transformation: bool
 """
 
 from __future__ import annotations
