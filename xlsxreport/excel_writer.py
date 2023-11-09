@@ -1,8 +1,9 @@
 """This module provides a class for writing compiled TableSections to an Excel file."""
 from __future__ import annotations
-from typing import Iterable
+from typing import Collection, Iterable, Optional
 
-import xlsxwriter
+import xlsxwriter.format
+import xlsxwriter.worksheet
 
 from xlsxreport.compiler import TableSection
 
@@ -18,7 +19,7 @@ class TableSectionWriter:
         self,
         worksheet: xlsxwriter.worksheet.Worksheet,
         sections: Iterable[TableSection],
-        settings: dict | None = None,
+        settings: Optional[dict] = None,
         start_row: int = 0,
         start_column: int = 0,
     ) -> None:
@@ -151,7 +152,7 @@ class TableSectionWriter:
         row: int,
         column: int,
         header: str,
-        values: Iterable,
+        values: Collection,
         header_format: dict[str, float | str | bool],
         values_format: dict[str, float | str | bool],
         conditional_format: dict[str, float | str | bool],

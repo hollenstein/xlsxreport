@@ -1,7 +1,8 @@
 """Contains functions for compiling table sections from a report template and a table."""
+from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Iterable, Optional, Protocol
+from typing import Iterable, Optional, Protocol, Sequence
 
 import numpy as np
 import pandas as pd
@@ -41,7 +42,7 @@ class TableSection:
     header_formats: dict = field(default_factory=dict)
     supheader: str = ""
     supheader_format: dict = field(default_factory=dict)
-    section_conditional: str = ""
+    section_conditional: dict = field(default_factory=dict)
     hide_section: bool = False
 
     def __post_init__(self):
@@ -65,8 +66,14 @@ class TableSection:
 class SectionCompiler(Protocol):
     """Protocol for section compilers."""
 
-    def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
+    def __init__(self, report_template: ReportTemplate):
+        ...
+
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> TableSection | list[TableSection]:
         """Compile a table section from a section template and a table."""
+        ...
 
 
 class StandardSectionCompiler:
@@ -208,7 +215,7 @@ class ComparisonSectionCompiler:
         return table_sections
 
 
-def get_section_compiler(section_template: dict) -> SectionCompiler:
+def get_section_compiler(section_template: dict) -> type[SectionCompiler]:
     """Get the section compiler function for a section template."""
     section_category = identify_template_section_category(section_template)
     if section_category == SectionCategory.UNKNOWN:
@@ -219,6 +226,10 @@ def get_section_compiler(section_template: dict) -> SectionCompiler:
         return TagSampleSectionCompiler
     elif section_category == SectionCategory.COMPARISON:
         return ComparisonSectionCompiler
+    else:
+        raise NotImplementedError(
+            f"Section compiler not implemented for category {section_category}."
+        )
 
 
 def prepare_table_sections(
@@ -335,7 +346,7 @@ def remove_empty_table_sections(
     return [section for section in table_sections if not section.data.empty]
 
 
-def eval_data(table: pd.DataFrame, columns: Iterable[str]):
+def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     """Returns a copy of the table with only the selected columns and no NaN values.
 
     Args:
@@ -484,7 +495,7 @@ def eval_comparison_group_columns(
 
 def eval_comparison_group_headers(
     columns: Iterable[str], section_template: dict, comparison_group: str
-):
+) -> dict[str, str]:
     """Returns header names for each column.
 
     Args:
@@ -515,7 +526,9 @@ def eval_comparison_group_headers(
     return headers
 
 
-def eval_comparison_group_supheader(section_template: dict, comparison_group: str):
+def eval_comparison_group_supheader(
+    section_template: dict, comparison_group: str
+) -> str:
     """Returns the supheader name for a comparison group.
 
     Args:
@@ -568,7 +581,7 @@ def eval_tag_sample_headers(
     columns: Iterable[str],
     section_template: dict,
     log2_tag: str = "",
-) -> dict:
+) -> dict[str, str]:
     """Returns header names for each column.
 
     Args:
@@ -599,7 +612,7 @@ def eval_tag_sample_headers(
 
 def eval_tag_sample_supheader(
     section_template: dict,
-    log2_tag: str = "",
+    log2_tag: str,
 ) -> str:
     """Returns the supheader name for a tag sample section.
 
@@ -623,11 +636,11 @@ def eval_tag_sample_supheader(
 
 
 def eval_column_formats(
-    columns: str,
+    columns: Sequence[str],
     section_template: dict,
     format_templates: dict,
     default_format: Optional[dict] = None,
-) -> dict:
+) -> dict[str, dict]:
     """Returns format descriptions for each column in the section.
 
     If "border" is set to True in the `section_template`, the format descriptions for
@@ -662,10 +675,10 @@ def eval_column_formats(
 
 
 def eval_column_conditional_formats(
-    columns: str,
+    columns: Iterable[str],
     section_template: dict,
     format_templates: dict,
-) -> dict:
+) -> dict[str, dict]:
     """Returns conditional format descriptions for each column in the section.
 
     Args:
@@ -690,10 +703,10 @@ def eval_column_conditional_formats(
 
 
 def eval_column_widths(
-    columns: str,
+    columns: Iterable[str],
     section_template: dict,
     default_width: float = 64,
-) -> dict:
+) -> dict[str, float]:
     """Returns column widths for each column in the section.
 
     Args:
@@ -712,8 +725,8 @@ def eval_column_widths(
 
 
 def eval_header_formats(
-    columns: str, section_template: dict, format_templates: dict
-) -> dict:
+    columns: Sequence[str], section_template: dict, format_templates: dict
+) -> dict[str, dict]:
     """Returns format descriptions for each column header in the section.
 
     Header format descriptions defined in the `section_template` update the one from the
