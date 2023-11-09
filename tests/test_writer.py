@@ -379,10 +379,20 @@ class TestTableSectionWriteSection:
 
     def test_conditional_format_not_called_when_conditionaL_format_is_empty(self, table_section):  # fmt: skip
         table_section.section_conditional = {}
-        self.section_writer._write_section(
-            self.worksheet_mock, table_section, 0, 0, True
-        )
+        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
         self.worksheet_mock.conditional_format.assert_not_called()
+
+    def test_set_column_not_called_when_hide_section_is_false(self, table_section):
+        table_section.hide_section = False
+        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
+        self.worksheet_mock.set_column.assert_not_called()
+
+    def test_set_column_called_correctly_when_hide_section_is_false(self, table_section):  # fmt: skip
+        table_section.hide_section = True
+        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
+        self.worksheet_mock.set_column.assert_called_once_with(
+            0, table_section.data.shape[1] - 1, options={"level": 1, "collapsed": True, "hidden": True}  # fmt: skip
+        )
 
 
 class TestTableSectionWriterGetXlsxFormat:

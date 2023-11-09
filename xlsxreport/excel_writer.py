@@ -82,8 +82,10 @@ class TableSectionWriter:
         write_supheader: bool,
     ) -> None:
         """Write a TableSection to the workbook."""
+        num_values, num_rows = section.data.shape
         header_row = start_row
         values_row = start_row + 1
+
         if write_supheader:
             header_row += 1
             values_row += 1
@@ -108,13 +110,18 @@ class TableSectionWriter:
                 column_width=section.column_widths[column],
             )
         if section.section_conditional:
-            num_values, num_rows = section.data.shape
             worksheet.conditional_format(
                 values_row,
                 start_column,
                 values_row + num_values - 1,
                 start_column + num_rows - 1,
                 section.section_conditional,
+            )
+        if section.hide_section:
+            worksheet.set_column(
+                start_column,
+                start_column + num_rows - 1,
+                options={"level": 1, "collapsed": True, "hidden": True},
             )
 
     def _write_supheader(

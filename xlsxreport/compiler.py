@@ -42,6 +42,7 @@ class TableSection:
     supheader: str = ""
     supheader_format: dict = field(default_factory=dict)
     section_conditional: str = ""
+    hide_section: bool = False
 
     def __post_init__(self):
         nan_columns = self.data.columns[self.data.isnull().any()].tolist()
@@ -97,6 +98,7 @@ class StandardSectionCompiler:
         section_conditional = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
+        hide_section = section_template.get("hide_section", False)
 
         return TableSection(
             data=data,
@@ -108,6 +110,7 @@ class StandardSectionCompiler:
             supheader=supheader,
             supheader_format=supheader_format,
             section_conditional=section_conditional,
+            hide_section=hide_section,
         )
 
 
@@ -151,6 +154,7 @@ class TagSampleSectionCompiler:
         section_conditional = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
+        hide_section = section_template.get("hide_section", False)
 
         return TableSection(
             data=data,
@@ -162,6 +166,7 @@ class TagSampleSectionCompiler:
             supheader=supheader,
             supheader_format=supheader_format,
             section_conditional=section_conditional,
+            hide_section=hide_section,
         )
 
 
@@ -301,6 +306,7 @@ def compile_remaining_column_table_section(
         "columns": selected_cols,
         "format": -1,
         "width": DEFAULT_COL_WIDTH,
+        "hide_section": True,
     }
     section = section_compiler.compile(section_template, table)
     del section_compiler.formats[-1]
