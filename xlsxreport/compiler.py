@@ -235,7 +235,6 @@ def get_section_compiler(section_template: dict) -> type[SectionCompiler]:
 def prepare_table_sections(
     report_template: ReportTemplate,
     table: pd.DataFrame,
-    remove_duplicate_columns: bool = True,
 ) -> list[TableSection]:
     """Compile non-empty table sections from a report template and a table.
 
@@ -243,8 +242,6 @@ def prepare_table_sections(
         report_template: The report template describing how table sections should be
             generated.
         table: The table to compile the sections from.
-        remove_duplicate_columns: If True, duplicate columns are removed from the
-            sections, keeping only the first occurrence of a column.
 
     Returns:
         A list of non-empty, compiled table sections.
@@ -255,7 +252,7 @@ def prepare_table_sections(
             report_template, compiled_table_sections, table
         )
         compiled_table_sections.append(remaining_section)
-    if remove_duplicate_columns:
+    if report_template.settings.get("remove_duplicate_columns", True):
         prune_table_sections(compiled_table_sections)
     return remove_empty_table_sections(compiled_table_sections)
 

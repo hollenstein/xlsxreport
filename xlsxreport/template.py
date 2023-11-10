@@ -13,6 +13,7 @@ Valid ReportTemplate.settings entries are:
     append_remaining_columns: bool
     write_supheader: bool
     evaluate_log2_transformation: bool
+    remove_duplicate_columns: bool
 """
 
 from __future__ import annotations

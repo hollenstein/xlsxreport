@@ -45,6 +45,7 @@ def report_template() -> ReportTemplate:
             "column_width": 10,
             "sample_extraction_tag": "Tag",
             "log2_tag": "[log2]",
+            "remove_duplicate_columns": True,
         },
     )
     return report_template
@@ -631,28 +632,28 @@ class TestComparisonSectionCompiler:
 class TestPrepareTableSections:
     def test_only_non_empty_sections_are_returned(self, report_template):
         table = pd.DataFrame({"Tag Sample 1": [1], "Tag Sample 2": [1]})
-        compiled_sections = compiler.prepare_table_sections(
-            report_template, table, remove_duplicate_columns=False
-        )
+        compiled_sections = compiler.prepare_table_sections(report_template, table)
         assert all([not s.data.empty for s in compiled_sections])
 
     def test_duplicate_columns_are_removed(self, report_template, example_table):
         report_template.sections["Another section"] = {"columns": ["Column 1"]}
-        compiled_sections = compiler.prepare_table_sections(
-            report_template, example_table, remove_duplicate_columns=True
-        )
+        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
         observed_columns = []
         for section in compiled_sections:
             observed_columns.extend(section.data.columns)
         assert len(set(observed_columns)) == len(observed_columns)
 
+    def test_duplicate_columns_are_kept_when_setting_is_false(self, report_template, example_table):  # fmt: skip
+        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        report_template.settings["remove_duplicate_columns"] = False
+        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
+        assert compiled_sections[-1].data.columns.tolist() == ["Column 1"]
+
     def test_empty_sections_caused_by_removal_of_duplicate_columns_are_not_returned(
         self, report_template, example_table
     ):
         report_template.sections["Another section"] = {"columns": ["Column 1"]}
-        compiled_sections = compiler.prepare_table_sections(
-            report_template, example_table, remove_duplicate_columns=True
-        )
+        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
         assert all([not s.data.empty for s in compiled_sections])
 
     def test_addition_of_section_with_remaining_columns(self, report_template):  # fmt: skip
