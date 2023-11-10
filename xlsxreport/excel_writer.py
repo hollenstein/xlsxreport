@@ -38,10 +38,12 @@ class TableSectionWriter:
                 sections at. The first column as seen in Excel starts at 0. The default
                 is 0.
         """
-        settings = settings if settings is not None else {}
-        write_supheader = settings.get("write_supheader", True)
-        supheader_height = settings.get("supheader_height", 20)
-        header_height = settings.get("header_height", 20)
+        settings: dict = settings if settings is not None else {}
+        write_supheader: bool = settings.get("write_supheader", True)
+        supheader_height: float = settings.get("supheader_height", 20)
+        header_height: float = settings.get("header_height", 20)
+        add_autofiler: bool = settings.get("add_autofilter", True)
+        freeze_cols: int = settings.get("freeze_cols", 1)
 
         header_row = start_row
         values_row = start_row + 1
@@ -66,13 +68,15 @@ class TableSectionWriter:
         if write_supheader:
             worksheet.set_row_pixels(start_row, supheader_height)
         worksheet.set_row_pixels(header_row, header_height)
-        worksheet.freeze_panes(values_row, start_column + 1)
-        worksheet.autofilter(
-            header_row,
-            start_column,
-            last_value_row,
-            last_col=next_column - 1,
-        )
+        if freeze_cols > 0:
+            worksheet.freeze_panes(values_row, start_column + freeze_cols)
+        if add_autofiler:
+            worksheet.autofilter(
+                header_row,
+                start_column,
+                last_value_row,
+                last_col=next_column - 1,
+            )
 
     def _write_section(
         self,

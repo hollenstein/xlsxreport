@@ -5,15 +5,18 @@ report. It provides methods for loading and saving the configuration to a YAML f
 well as checking if the configuration is valid.
 
 Valid ReportTemplate.settings entries are:
-    supheader_height: float
-    header_height: float
-    column_width: float
+    supheader_height: float (default: 20)
+    header_height: float (default: 20)
+    column_width: float (default: 64)
     log2_tag: str
     sample_extraction_tag: str
-    append_remaining_columns: bool
-    write_supheader: bool
-    evaluate_log2_transformation: bool
-    remove_duplicate_columns: bool
+    append_remaining_columns: bool (default: False)
+    write_supheader: bool (default: True)
+    evaluate_log2_transformation: bool (default: False)
+    remove_duplicate_columns: bool (default: True)
+    add_autofilter: bool (default: True)
+    freeze_cols: int (default: 1)
+
 """
 
 from __future__ import annotations
