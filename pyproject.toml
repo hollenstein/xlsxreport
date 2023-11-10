@@ -28,3 +28,6 @@ version = { attr = "xlsxreport.__version__" }
 xlsxreport_setup = "xlsxreport.scripts.setup_appdata_dir:cli"
 xlsxreport = "xlsxreport.scripts.report:cli"
 cassiopeia_report = "xlsxreport.scripts.cassiopeia_report:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
