@@ -192,16 +192,28 @@ def test_eval_comparison_groups_extracts_correct_values():
     assert comparison_groups == ["ex1 vs ex2", "ex1 vs EX3"]
 
 
-def test_eval_comparison_group_columns_selects_correct_columns():
-    template_section = {
-        "comparison_group": True,
-        "tag": " vs ",
-        "columns": ["P", "A"],
-    }
-    columns = ["P", "A", "P ex1 vs ex2", "A ex1 vs ex2", "P ex1 vs EX3", "A ex1 vs EX3"]
-    selected_columns = compiler.eval_comparison_group_columns(columns, template_section, "ex1 vs EX3")  # fmt: skip
-    expected_columns = ["P ex1 vs EX3", "A ex1 vs EX3"]
-    assert selected_columns == expected_columns
+class TestEvalComparisonGroupColumns:
+    def test_correct_columns_are_selected(self):
+        template_section = {
+            "comparison_group": True,
+            "tag": " vs ",
+            "columns": ["P", "A"],
+        }
+        columns = ["P", "A", "P ex1 vs ex2", "A ex1 vs ex2", "P ex1 vs EX3", "A ex1 vs EX3"]  # fmt: skip
+        selected_columns = compiler.eval_comparison_group_columns(columns, template_section, "ex1 vs EX3")  # fmt: skip
+        expected_columns = ["P ex1 vs EX3", "A ex1 vs EX3"]
+        assert selected_columns == expected_columns
+
+    def test_column_order_of_section_template_is_used(self):
+        template_section = {
+            "comparison_group": True,
+            "tag": " vs ",
+            "columns": ["P", "A"],
+        }
+        columns = ["A ex1 vs ex2", "P ex1 vs ex2"]  # fmt: skip
+        selected_columns = compiler.eval_comparison_group_columns(columns, template_section, "ex1 vs ex2")  # fmt: skip
+        expected_columns = ["P ex1 vs ex2", "A ex1 vs ex2"]
+        assert selected_columns == expected_columns
 
 
 class TestEvalComparisonGroupHeaders:

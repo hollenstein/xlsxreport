@@ -480,14 +480,15 @@ def eval_comparison_group_columns(
         A list of column names that consist of the `comparison_group` and one of the
         substrings specified by `section_template["columns"]`.
     """
-    selected_columns = []
-    for column in [col for col in columns if comparison_group in col]:
-        leftover = column.replace(comparison_group, "")
-        for column_tag in section_template["columns"]:
-            leftover = leftover.replace(column_tag, "")
-        if leftover.strip(WHITESPACE_CHARS) == "":
-            selected_columns.append(column)
-    return selected_columns
+    selected_cols = []
+    comparison_group_cols = [col for col in columns if comparison_group in col]
+    for column_tag in section_template["columns"]:
+        for column in comparison_group_cols:
+            leftover = column.replace(comparison_group, "").replace(column_tag, "")
+            if leftover.strip(WHITESPACE_CHARS) == "" and column not in selected_cols:
+                selected_cols.append(column)
+                break
+    return selected_cols
 
 
 def eval_comparison_group_headers(
