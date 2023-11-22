@@ -2,6 +2,41 @@
 
 ----------------------------------------------------------------------------------------
 
+## 0.0.8 - Refactoring and new settings
+
+### Changed
+- `groups` in the yaml config file with the setting "border: True" will now always have
+  a thick border line in the written Excel file (which is a border type 2 in Excel).
+- NaN entries are now always written as an empty string to the Excel file.
+
+### Added
+- Added additional parameters to the settings (`args`) section of the yaml config file,
+  which allow to control behaviors that were previously applied by default.
+  - `write_supheader` (default: True), determines if a supheader row will be written.
+  - `evaluate_log2_transformation` (default: True), if True values are evaluated before
+    applying a log2 transformation to `groups` that have the "log2: True" setting.
+  - `remove_duplicate_columns` (default: True), if True columns that were already used
+    in a compiled `group` are removed from subsequent groups.
+  - `add_autofilter` (default: True), if True adds an Excel auto filter to header row.
+  - `freeze_cols` (default: 1), if larger than 0 applies freeze pane to the Excel file.
+    The selected row for freezing will always be the header row, the selected column
+    corresponds to the specified value.
+- Added additional settings to `groups` in the yaml config file.
+  - "hide_section: True" results in sections being hidden in the Excel file.
+  - A "conditional" setting can now be added to "feature" groups, which allows applying
+    a conditional format to all columns of the group. 
+
+### Removed
+- (!) Removed parameters `border_weight` and `nan_symbol` from the settings (`args`)
+  section of the yaml config file.
+
+### Internal
+- Changed the build config file to `pyproject.toml`.
+- Added extensive unit testing.
+- Added an integration test for generating a formatted Excel file.
+
+----------------------------------------------------------------------------------------
+
 ## 0.0.7 - Fix comparison group issue
 
 ### Fixes
