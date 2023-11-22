@@ -58,19 +58,9 @@ xlsxreport_setup
 
 ## Run a script
 
-To generate a simple excel protein report, run the "xlsx_report" script with an input
+To generate a simple excel protein report, run the "xlsxreport" script with an input
 and config file. Here is an example with the default maxquant.yaml config file.
 
 ```
 xlsxreport C:/proteinGroups.txt maxquant.yaml
-```
-
-
-The script "cassiopeia_report" can be used to generate an excel protein report from the
-Matrix_Export_proteinGroups.txt output of the Cassiopeia R script. In this case it is
-not necessary to specify a config file, as by default the "cassiopeia.yaml" file will be
-used.
-
-```
-cassiopeia_report C:/Matrix_Export_proteinGroups.txt
 ```
