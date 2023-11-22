@@ -1,0 +1,33 @@
+[project]
+name = "xlsxreport"
+description = "Automatic generation of formatted excel reports from MS results"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "David M. Hollenstein", email = "hollenstein.david@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+keywords = ["mass spectrometry", "proteomics", "report", "excel"]
+requires-python = ">=3.9"
+dependencies = ["numpy", "pandas", "pyyaml", "xlsxwriter", "click", "appdirs"]
+dynamic = ["version"]
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = { attr = "xlsxreport.__version__" }
+
+[project.scripts]
+xlsxreport_setup = "xlsxreport.scripts.setup_appdata_dir:cli"
+xlsxreport = "xlsxreport.scripts.report:cli"
+cassiopeia_report = "xlsxreport.scripts.cassiopeia_report:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
