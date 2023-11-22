@@ -23,23 +23,25 @@ SEPARATOR_DESCRIPTION = "Delimiter to use for the input file, default is \\t."
 
 @click.command()
 @click.argument("infile", type=click.Path(exists=True))
-@click.argument("config")
+@click.argument("template")
 @click.option("--outfile", default="", help=OUTFILE_DESCRIPTION)
 @click.option("--outpath", default="", help=OUTPATH_DESCRIPTION)
 @click.option("--sep", default="\t", help=SEPARATOR_DESCRIPTION)
-def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
-    """Create a formatted Excel report from csv INFILE and a formatting CONFIG file.
+def cli(infile: str, template: str, outfile: str, outpath: str, sep: str) -> None:
+    """Create a formatted Excel report from csv INFILE and a formatting TEMPLATE file.
 
-    The CONFIG argument is first used to look for a file with the specified filepath. If
+    The TEMPLATE argument is first used to look for a file with the specified filepath. If
     no file is found, the XlsxReport appdata directory is searched for a file with the
     corresponding name.
     """
-    if os.path.isfile(config):
-        config_path = config
-    elif xlsxreport.get_config_file(config) is not None:
-        config_path = xlsxreport.get_config_file(config)
+    if os.path.isfile(template):
+        template_path = template
+    elif xlsxreport.get_template_file(template) is not None:
+        template_path = xlsxreport.get_template_file(template)
     else:
-        raise click.ClickException(f"Invalid value for `CONFIG`: '{config}' not found.")
+        raise click.ClickException(
+            f"Invalid value for `TEMPLATE`: '{template}' not found."
+        )
 
     if outpath:
         if not os.path.isdir(os.path.dirname(outpath)):
@@ -57,14 +59,14 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
 
     click.echo(f"Generating formatted Excel report:")
     click.echo(f"----------------------------------")
-    click.echo(f"Input file:  {infile}")
-    click.echo(f"Config file: {config_path}")
+    click.echo(f"Input file:    {infile}")
+    click.echo(f"Template file: {template_path}")
 
     with warnings.catch_warnings():
         warnings.simplefilter(action="ignore", category=pd.errors.DtypeWarning)
         table = pd.read_csv(infile, sep=sep)
 
-    report_template = ReportTemplate.load(config_path)
+    report_template = ReportTemplate.load(template_path)
     table_sections = prepare_table_sections(report_template, table)
 
     with xlsxwriter.Workbook(report_path) as workbook:
@@ -73,7 +75,7 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
         section_writer.write_sections(
             worksheet, table_sections, settings=report_template.settings
         )
-    click.echo(f"Report file: {report_path}")
+    click.echo(f"Report file:   {report_path}")
 
 
 if __name__ == "__main__":

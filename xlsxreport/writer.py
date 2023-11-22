@@ -32,9 +32,9 @@ class Datasheet:
         self.table = None
         self.report_template = None
 
-    def apply_configuration(self, config_file: str) -> None:
-        """Reads a config file and prepares workbook formats."""
-        self.report_template = ReportTemplate.load(config_file)
+    def apply_configuration(self, template_file: str) -> None:
+        """Reads a template file and prepares workbook formats."""
+        self.report_template = ReportTemplate.load(template_file)
 
     def add_data(self, table: pd.DataFrame) -> None:
         self.table = table

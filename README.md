@@ -5,8 +5,8 @@
 ## Introduction
 
 XlsxReport is a Python package for automatically generating formatted excel reports from
-quantitative mass spectrometry result tables. YAML config files are used to describe the
-content of a result table and the format of the excel report.
+quantitative mass spectrometry result tables. YAML template files are used to describe
+the content of a result table and the format of the excel report.
 
 
 ## Release
@@ -38,6 +38,7 @@ pip uninstall xlsxreport
 
 
 ### Installation when using Anaconda
+
 If you are using Anaconda, you will need to install the XlsxReport package into a conda
 environment. Open the Anaconda navigator, activate the conda environment you want to
 use, run the "CMD.exe" application to open a terminal, and then use the pip install
@@ -45,11 +46,12 @@ command as described above.
 
 
 ### Setting up the AppData directory
+
 After XlsxReport has been installed the local AppData directory needs to be setup and
-the default configuration files need to be copied. Running the "xlsxreport_setup"
-script creates a new XlsxReport folder in the local user data directory, for example
+the default template files need to be copied. Running the "xlsxreport_setup" script
+creates a new XlsxReport folder in the local user data directory, for example
 "C:/User/user_name/AppData/Local/XlsxReport" on Windows 10, and copies the default
-config files there.
+template files there.
 
 ```
 xlsxreport_setup
@@ -59,8 +61,8 @@ xlsxreport_setup
 ## Run a script
 
 To generate a simple excel protein report, run the "xlsxreport" script with an input
-and config file. Here is an example with the default maxquant.yaml config file.
+and template file. Here is an example with the default maxquant.yaml template file.
 
 ```
-xlsxreport C:/proteinGroups.txt maxquant.yaml
+xlsxreport proteinGroups.txt maxquant.yaml
 ```

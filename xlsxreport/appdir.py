@@ -11,19 +11,19 @@ def locate_data_dir():
 
 
 def setup_data_dir():
-    """Creates a user specific app data directory and copies default config files."""
+    """Creates a user specific app data directory and copies default template files."""
     data_dir = locate_data_dir()
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
 
-    config_dir = os.path.join(os.path.dirname(__file__), "default_config")
-    for filename in os.listdir(config_dir):
-        src_path = os.path.join(config_dir, filename)
+    template_dir = os.path.join(os.path.dirname(__file__), "default_templates")
+    for filename in os.listdir(template_dir):
+        src_path = os.path.join(template_dir, filename)
         dest_path = os.path.join(data_dir, filename)
         shutil.copy(src_path, dest_path)
 
 
-def get_config_file(filename: str) -> Union[str, None]:
+def get_template_file(filename: str) -> Union[str, None]:
     """Returns the file path if filename is present in the app data directory."""
     file_path = None
     data_dir = locate_data_dir()

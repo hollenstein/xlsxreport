@@ -25,12 +25,12 @@ def temp_excel_path(request, tmp_path):
 
 class TestCorrectCreationOfFormattedExcelFile:
     def test_old_xlsx_report_implementation(self, temp_excel_path):
-        config_path = "./tests/testdata/mq_protein_config.yaml"
+        template_path = "./tests/testdata/mq_protein_template.yaml"
         mq_path = "./tests/testdata/mq_proteinGroups.txt"
         table = pd.read_csv(mq_path, sep="\t")
         with xlsxreport.Reportbook(temp_excel_path) as reportbook:
             protein_sheet = reportbook.add_datasheet("Proteins")
-            protein_sheet.apply_configuration(config_path)
+            protein_sheet.apply_configuration(template_path)
             protein_sheet.add_data(table)
             protein_sheet.write_data()
 
@@ -73,11 +73,11 @@ class TestCorrectCreationOfFormattedExcelFile:
                         assert str(cfrule1) == str(cfrul2)
 
     def test_new_xlsx_report_implementation(self, temp_excel_path):
-        config_path = "./tests/testdata/mq_protein_config.yaml"
+        template_path = "./tests/testdata/mq_protein_template.yaml"
         mq_path = "./tests/testdata/mq_proteinGroups.txt"
         table = pd.read_csv(mq_path, sep="\t")
 
-        report_template = ReportTemplate.load(config_path)
+        report_template = ReportTemplate.load(template_path)
         table_sections = prepare_table_sections(report_template, table)
         with xlsxwriter.Workbook(temp_excel_path) as workbook:
             worksheet = workbook.add_worksheet("Proteins")

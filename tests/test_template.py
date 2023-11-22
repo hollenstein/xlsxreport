@@ -60,7 +60,7 @@ def temp_template_file(request, tmp_path):
 
 
 class TestReportTemplate:
-    def test_config_identical_after_load_save_reload(
+    def test_template_identical_after_load_save_reload(
         self, temp_template_file, temp_template_path
     ):
         template = ReportTemplate.load(temp_template_file)
