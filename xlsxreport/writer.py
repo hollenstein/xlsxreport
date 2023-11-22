@@ -35,7 +35,6 @@ class Datasheet:
     def apply_configuration(self, config_file: str) -> None:
         """Reads a config file and prepares workbook formats."""
         self.report_template = ReportTemplate.load(config_file)
-        self.report_template.settings["evaluate_log2_transformation"] = True
 
     def add_data(self, table: pd.DataFrame) -> None:
         self.table = table

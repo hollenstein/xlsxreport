@@ -65,7 +65,6 @@ def cli(infile: str, config: str, outfile: str, outpath: str, sep: str) -> None:
         table = pd.read_csv(infile, sep=sep)
 
     report_template = ReportTemplate.load(config_path)
-    report_template.settings["evaluate_log2_transformation"] = True
     table_sections = prepare_table_sections(report_template, table)
 
     with xlsxwriter.Workbook(report_path) as workbook:
