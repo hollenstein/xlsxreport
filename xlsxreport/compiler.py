@@ -353,7 +353,7 @@ def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     Returns:
         A copy of the table with only the selected columns NaN values replaced.
     """
-    data = table[columns].fillna(NAN_REPLACEMENT_SYMBOL)
+    data = table[columns].astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
     return data
 
 
@@ -387,7 +387,7 @@ def eval_data_with_log2_transformation(
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
         data = np.log2(data)
-    data.fillna(NAN_REPLACEMENT_SYMBOL, inplace=True)
+    data = data.astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
     return data
 
 
