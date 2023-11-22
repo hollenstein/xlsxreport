@@ -11,7 +11,7 @@ Valid ReportTemplate.settings entries are:
     log2_tag: str
     sample_extraction_tag: str
     append_remaining_columns: bool (default: False)
-    write_supheader: bool (default: True)
+    write_supheader: bool (default: False)
     evaluate_log2_transformation: bool (default: False)
     remove_duplicate_columns: bool (default: True)
     add_autofilter: bool (default: True)

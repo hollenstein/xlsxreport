@@ -2,6 +2,17 @@
 
 ----------------------------------------------------------------------------------------
 
+## Upcoming release
+
+### Changed
+- Changed default value of `evaluate_log2_transformation` to False.
+- Changed default value of `write_supheader` to False.
+
+### Removed
+- (!) Removed the `cassiopeia_report` command line script.
+
+----------------------------------------------------------------------------------------
+
 ## 0.0.8 - Refactoring and new settings
 
 ### Changed

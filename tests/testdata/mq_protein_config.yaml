@@ -124,11 +124,10 @@ conditional_formats:
 
 
 args:
-  border_weight: 2
   supheader_height: 40
   header_height: 95
   column_width: 45
-  nan_symbol: ""
   log2_tag: "[log2]"
   sample_extraction_tag: "Intensity"
   append_remaining_columns: True
+  write_supheader: True

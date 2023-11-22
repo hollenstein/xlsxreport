@@ -39,7 +39,7 @@ class TableSectionWriter:
                 is 0.
         """
         settings: dict = settings if settings is not None else {}
-        write_supheader: bool = settings.get("write_supheader", True)
+        write_supheader: bool = settings.get("write_supheader", False)
         supheader_height: float = settings.get("supheader_height", 20)
         header_height: float = settings.get("header_height", 20)
         add_autofiler: bool = settings.get("add_autofilter", True)
