@@ -163,12 +163,15 @@ conditional_formats:
   }
 
 
-args:
-  border_weight: 2
+args: 
+  write_supheader: True
+  append_remaining_columns: True
+  remove_duplicate_columns: True
+  add_autofilter: True
+  freeze_cols: 1
+  evaluate_log2_transformation: True
+  log2_tag: "[log2]"
+  sample_extraction_tag: "Expression"
   supheader_height: 40
   header_height: 95
   column_width: 45
-  nan_symbol: "-"
-  log2_tag: "[log2]"
-  sample_extraction_tag: "Expression"
-  append_remaining_columns: True
