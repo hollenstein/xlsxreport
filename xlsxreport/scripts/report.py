@@ -70,7 +70,7 @@ def cli(infile: str, template: str, outfile: str, outpath: str, sep: str) -> Non
     table_sections = prepare_table_sections(report_template, table)
 
     with xlsxwriter.Workbook(report_path) as workbook:
-        worksheet = workbook.add_worksheet("Proteins")
+        worksheet = workbook.add_worksheet("Report")
         section_writer = TableSectionWriter(workbook)
         section_writer.write_sections(
             worksheet, table_sections, settings=report_template.settings
