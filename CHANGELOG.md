@@ -7,6 +7,7 @@
 ### Changed
 - Changed default value of `evaluate_log2_transformation` to False.
 - Changed default value of `write_supheader` to False.
+- Supheader cells are now still merged when no supheader name is specified.
 
 ### Removed
 - (!) Removed the `cassiopeia_report` command line script.

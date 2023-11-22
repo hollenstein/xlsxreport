@@ -140,8 +140,8 @@ class TableSectionWriter:
     ) -> None:
         """Write a supheader to the workbook by merging a range of cells."""
         supheader_xlsx_format = self.get_xlsx_format(supheader_format)
-        if not supheader:
-            return
+        # if not supheader:
+        #    return
         if num_columns > 1:
             last_column = column + num_columns - 1
             worksheet.merge_range(
