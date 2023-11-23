@@ -742,9 +742,9 @@ def eval_header_formats(
     """
     if not columns:
         return {}
-    temmplate_format = format_templates.get("header", {})
+    template_format = format_templates.get("header", {})
     section_format = section_template.get("header_format", {})
-    header_format = dict(temmplate_format, **section_format)
+    header_format = dict(template_format, **section_format)
     column_header_formats = {col: header_format.copy() for col in columns}
     if section_template.get("border", False):
         column_header_formats[columns[0]]["left"] = BORDER_TYPE
@@ -768,9 +768,9 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
     Returns:
         A dictionary describing the supheader format.
     """
-    temmplate_format = format_templates.get("supheader", {})
+    template_format = format_templates.get("supheader", {})
     section_format = section_template.get("supheader_format", {})
-    supheader_format = dict(temmplate_format, **section_format)
+    supheader_format = dict(template_format, **section_format)
     if section_template.get("border", False):
         supheader_format.update({"left": BORDER_TYPE, "right": BORDER_TYPE})
 
