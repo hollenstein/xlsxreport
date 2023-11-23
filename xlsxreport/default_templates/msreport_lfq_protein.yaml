@@ -1,7 +1,7 @@
 %YAML 1.2
 ---
 
-groups:
+sections:
   protein_features: {
     format: "str",
     width: 73,
@@ -163,7 +163,7 @@ conditional_formats:
   }
 
 
-args: 
+settings: 
   write_supheader: True
   append_remaining_columns: True
   remove_duplicate_columns: True

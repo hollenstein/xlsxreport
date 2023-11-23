@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
-groups:
+
+sections:
   features: {
     format: "str",
     width: 70,
@@ -123,7 +124,7 @@ conditional_formats:
   }
 
 
-args:
+settings:
   supheader_height: 40
   header_height: 95
   column_width: 45

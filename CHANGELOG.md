@@ -6,6 +6,8 @@
 
 ### Changed
 - (!) Replaced the term "config" with "template" throughout the codebase.
+- (!) Replaced the keyword "groups" with "sections" in the yaml template file.
+- (!) Replaced the keyword "args" with "settings" in the yaml template file.
 - Changed default value of `evaluate_log2_transformation` to False.
 - Changed default value of `write_supheader` to False.
 - Supheader cells are now still merged when no supheader name is specified.

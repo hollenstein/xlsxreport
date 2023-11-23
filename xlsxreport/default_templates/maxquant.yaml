@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
-groups:
+
+sections:
   features: {
     format: "str",
     width: 70,
@@ -123,7 +124,7 @@ conditional_formats:
   }
 
 
-args:
+settings:
   write_supheader: True
   append_remaining_columns: True
   remove_duplicate_columns: True

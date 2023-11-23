@@ -50,17 +50,17 @@ class ReportTemplate:
         template = cls()
         template.formats = template_data.get("formats", {})
         template.conditional_formats = template_data.get("conditional_formats", {})
-        template.sections = template_data.get("groups", {})
-        template.settings = template_data.get("args", {})
+        template.sections = template_data.get("sections", {})
+        template.settings = template_data.get("settings", {})
         return template
 
     def save(self, filepath) -> None:
         """Save a report template to a YAML file."""
         template_data = {
-            "groups": self.sections,
+            "sections": self.sections,
             "formats": self.formats,
             "conditional_formats": self.conditional_formats,
-            "args": self.settings,
+            "settings": self.settings,
         }
         with open(filepath, "w", encoding="utf-8") as file:
             yaml.dump(

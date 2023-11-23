@@ -26,15 +26,15 @@ def temp_template_file(request, tmp_path):
     template_text = """
         %YAML 1.2
         ---
-        groups:
-            group_1: {
+        sections:
+            section_1: {
                 format: "str",
                 width: 70,
                 columns: ["Column 1", "Column 2",],
                 column_format: {"Column 1": "int",},
                 column_conditional: {"Column 1": "conditional",},
             }
-            group_2: {
+            section_2: {
                 columns: ["Column 3"],
             }
 
@@ -48,7 +48,7 @@ def temp_template_file(request, tmp_path):
                 "type": "2_color_scale", "min_color": "#ffffbf", "max_color": "#f25540"
             }
 
-        args:
+        settings:
             header_height: 95
             column_width: 45
     """
@@ -60,6 +60,32 @@ def temp_template_file(request, tmp_path):
 
 
 class TestReportTemplate:
+    def test_all_sections_from_template_loaeded(self, temp_template_file):
+        template = ReportTemplate.load(temp_template_file)
+        assert template.sections == {
+            "section_1": {
+                "format": "str",
+                "width": 70,
+                "columns": ["Column 1", "Column 2"],
+                "column_format": {"Column 1": "int"},
+                "column_conditional": {"Column 1": "conditional"},
+            },
+            "section_2": {"columns": ["Column 3"]},
+        }
+        assert template.formats == {
+            "int": {"align": "center", "num_format": "0"},
+            "str": {"align": "left", "num_format": "0"},
+            "header": {"bold": True, "align": "center"},
+        }
+        assert template.conditional_formats == {
+            "conditional": {
+                "type": "2_color_scale",
+                "min_color": "#ffffbf",
+                "max_color": "#f25540",
+            }
+        }
+        assert template.settings == {"header_height": 95, "column_width": 45}
+
     def test_template_identical_after_load_save_reload(
         self, temp_template_file, temp_template_path
     ):
