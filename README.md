@@ -54,7 +54,7 @@ creates a new XlsxReport folder in the local user data directory, for example
 template files there.
 
 ```
-xlsxreport_setup
+xlsxreport setup
 ```
 
 
@@ -64,5 +64,5 @@ To generate a simple excel protein report, run the "xlsxreport" script with an i
 and template file. Here is an example with the default maxquant.yaml template file.
 
 ```
-xlsxreport proteinGroups.txt maxquant.yaml
+xlsxreport report proteinGroups.txt maxquant.yaml
 ```

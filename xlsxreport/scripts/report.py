@@ -5,7 +5,7 @@ import click
 import pandas as pd
 import xlsxwriter
 
-import xlsxreport
+import xlsxreport.appdir
 from xlsxreport.excel_writer import TableSectionWriter
 from xlsxreport.template import ReportTemplate
 from xlsxreport.compiler import prepare_table_sections
@@ -27,14 +27,14 @@ SEPARATOR_DESCRIPTION = "Delimiter to use for the input file, default is \\t."
 @click.option("--outfile", default="", help=OUTFILE_DESCRIPTION)
 @click.option("--outpath", default="", help=OUTPATH_DESCRIPTION)
 @click.option("--sep", default="\t", help=SEPARATOR_DESCRIPTION)
-def cli(infile: str, template: str, outfile: str, outpath: str, sep: str) -> None:
+def report(infile: str, template: str, outfile: str, outpath: str, sep: str) -> None:
     """Create a formatted Excel report from csv INFILE and a formatting TEMPLATE file.
 
     The TEMPLATE argument is first used to look for a file with the specified filepath. If
     no file is found, the XlsxReport appdata directory is searched for a file with the
     corresponding name.
     """
-    template_path = xlsxreport.get_template_path(template)
+    template_path = xlsxreport.appdir.get_template_path(template)
     if template_path is None:
         raise click.ClickException(
             f"Invalid value for `TEMPLATE`: '{template}' not found."
@@ -73,6 +73,32 @@ def cli(infile: str, template: str, outfile: str, outpath: str, sep: str) -> Non
             worksheet, table_sections, settings=report_template.settings
         )
     click.echo(f"Report file:   {report_path}")
+
+
+@click.command()
+def setup() -> None:
+    """Setup app directory and copy default template files."""
+    data_dir = xlsxreport.appdir.locate_appdir()
+    if os.path.isdir(data_dir):
+        click.echo(f"App data directory for XlsxReport found at:")
+        click.echo(f"  {data_dir}")
+    else:
+        click.echo(f"Creating XlsxReport folder in the local user data directory at:")
+        click.echo(f"  {data_dir}")
+    click.echo(
+        "Copying default XlsxReport template files to the app data directory ..."
+    )
+    xlsxreport.appdir.setup_appdir(overwrite_templates=True)
+    click.echo(f"  Template files were successfully copied.")
+
+
+@click.group()
+def cli():
+    pass
+
+
+cli.add_command(report)
+cli.add_command(setup)
 
 
 if __name__ == "__main__":
