@@ -34,11 +34,8 @@ def cli(infile: str, template: str, outfile: str, outpath: str, sep: str) -> Non
     no file is found, the XlsxReport appdata directory is searched for a file with the
     corresponding name.
     """
-    if os.path.isfile(template):
-        template_path = template
-    elif xlsxreport.get_template_file(template) is not None:
-        template_path = xlsxreport.get_template_file(template)
-    else:
+    template_path = xlsxreport.get_template_path(template)
+    if template_path is None:
         raise click.ClickException(
             f"Invalid value for `TEMPLATE`: '{template}' not found."
         )

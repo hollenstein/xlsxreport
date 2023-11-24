@@ -6,7 +6,7 @@ describe how the content of a result table should be formatted in the Excel repo
 
 
 from .writer import Reportbook
-from .appdir import locate_data_dir, get_template_file, setup_data_dir
+from .appdir import get_template_path
 
 
 __author__ = "David M. Hollenstein"
