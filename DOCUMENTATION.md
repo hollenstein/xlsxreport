@@ -6,7 +6,7 @@ XlsxReport is a Python library that simplifies the creation of well-formatted Ex
 
 With XlsxReport, generating Excel reports for mass spectrometry results from the same software or pipeline is a breeze – just create a YAML report template file once and execute a command line script to create reproducibly formatted Excel reports whenever needed.
 
-The two main applications of XlsxReport are to create clean and uncluttered Excel files for the manual inspection of MS results, and to create Excel reports that can used as supplementary tables for publications.
+The two main applications of XlsxReport are to create clean and uncluttered Excel files for the manual inspection of MS results, and to create Excel reports that can be used as supplementary tables for publications.
 
 
 ## The XlsxReport report template document
@@ -51,31 +51,105 @@ settings:
   header_height: 95
 ```
 
-### Template section area - `sections`
 
-Each entry in the `sections` area starts with a unique group name and then describes a group of columns that is written to the excel file as a block. The columns of a group can be defined manually by specifying a list of column names or automatically by defining a "tag" string that is used to extract all columns containing this string, for example "MS/MS count". In addition, each group entry contains instructions about how the columns and their headers should be formatted, if conditional formats should be applied and more. The order of groups in the config file determines the order in which the groups are written to the excel file. Columns that were already used by one group will not be used in subsequent groups.
+### The template section area - `sections`
 
-There are currently three different categories of sections:
+Each entry in the `sections` area is defined by a unique name and contains a set of parameters that describe a group of columns that will be written to the excel file as a section. There are currently three different categories of template sections, each provides a different way how the columns for the section are selected. In addition, the parameters specified in a `template section` describe how the column values and headers will be formatted, if conditional formats are applied, and other settings. The order of `template sections` in the template file determines the order in which the sections, and thus the columns, are written to the excel file.
 
-- In a `default section` columns are directly selected by specifying a list of column names with the `columns` parameter. The specified order of columns defines in which order the columns will be written to the Excel sheet. The parameters `tag` and `comparison_group` are not allowed in this section. The parameters `log2`, `replace_comparison_tag`, and `remove_tag` have no effect on this section type.
+#### Default sections
+In a `default section` columns are directly selected by specifying a list of column names with the `columns` parameter. The specified order of columns defines in which order the columns will be written to the Excel sheet. Formats and conditional formats can be applied to the whole section or to individual columns. The parameters `tag` and `comparison_group` are not allowed in this section. The parameters `log2`, `replace_comparison_tag`, and `remove_tag` have no effect on this section type.
 
-- The **sample group** is used to describe a block of quantitative columns. A
-  sample group is defined by specifying of a column "tag", which is then used
-  to automatically extract all columns that contain the "tag" as a substring.
-  To extract the intensity columns "Intensity Sample_A" and "Intensity
-  Sample_B" one would create a new group and specify "Intensity" as the tag.
-- The **comparison group** allows defining a block of differential expression
-  comparison columns. Adding the parameter "comparison_group: True" defines a
-  comparison group. The columns that belong to a comparison group have a column
-  name that consists of one part that describes the content of the column, for
-  example "P-value" or "Fold change", and another part that describes which
-  samples or experiments are compared, for example "Control vs. Condition". To
-  identify comparison columns, the comparison symbol must be defined with
-  the "tag" parameter, in this example the "tag" corresponds to " vs. ", and
-  the strings that describe the column contents must be listed in the "columns"
-  parameter, in this example ["P-value", "Fold change"]. In this example the
-  comparison group would include the columns "P-value Control vs. Condition" and
-  "Fold change Control vs. Condition".
+##### Additional section parameters
+- Required: `columns: list[str]`<br>
+--- *Note: Description missing* ---
+
+#### Tag sample sections
+In a `tag sample section`, columns are not directly specified with a `columns` parameter but rather by specifying a `tag` that allows the selection of columns containing a specific substring, but that also have a part of the column name different in each CSV file. This allows for example to create a section containing all sample intensity columns, irrespective of how the samples are named. A second, global parameter called `sample_extraction_tag` is used to determine the sample names that together with the specified `tag` make up the column names. The `sample_extraction_tag` is defined in the `settings` area of the template file.
+
+
+##### Additional section parameters
+- Required: `tag: str`<br>
+--- *Note: Description missing* ---
+If no `supheader` is explicitly specified, the `tag` is used instead.
+
+- Optional: `remove_tag: bool`<br>
+--- *Note: Description missing* ---
+
+- Optional: `log2: bool`<br>
+--- *Note: Description missing* ---
+
+
+##### Global settings that specifically affect tag sample sections
+- `log2_tag`
+- `sample_extraction_tag`
+- `evaluate_log2_transformation`
+
+
+##### How does this look like in practice?**
+
+Let's assume we have the following template, containing a `tag sample section` with the name "intensities":
+
+```YAML
+sections:
+  intensities: {tag: "Intensity"}
+
+settings:
+  sample_extraction_tag: "Intensity"
+```
+
+and a CSV file with the following columns
+
+| Protein ID | Intensity sample_1 | Intensity sample_2 |
+| ---------- | ------------------ | ------------------ |
+| P40238     | 1,000,000          | 2,000,000          |
+
+ When generating a report, XlsxReport first extracts sample names by looking for columns containing the `sample_extraction_tag`, removing the tag, and removing leading or trailing white space characters. The remaining strings, in this case "sample_1" and "sample_2", are used as the extracted sample names for all `tag sample sections` of the report template. To assembly the `tag sample section`, columns are selected that contain a combination of the specified `tag`, i.e. "Intensity", and any of the extracted sample names, which are "Intensity sample_1" and "Intensity sample_2".
+
+
+#### The comparison section
+
+--- *Note: this section needs to be rewritten* ---
+
+The **comparison group** allows defining a block of differential expression
+comparison columns. Adding the parameter "comparison_group: True" defines a
+comparison group. The columns that belong to a comparison group have a column
+name that consists of one part that describes the content of the column, for
+example "P-value" or "Fold change", and another part that describes which
+samples or experiments are compared, for example "Control vs. Condition". To
+identify comparison columns, the comparison symbol must be defined with
+the "tag" parameter, in this example the "tag" corresponds to " vs. ", and
+the strings that describe the column contents must be listed in the "columns"
+parameter, in this example ["P-value", "Fold change"]. In this example the
+comparison group would include the columns "P-value Control vs. Condition" and
+"Fold change Control vs. Condition".
+
+#### Common template section parameters
+- `format: str`<br>
+--- *Note: Description missing* ---
+
+- `column_format: str`<br>
+--- *Note: Description missing* ---
+
+- `conditional: str`<br>
+--- *Note: Description missing* ---
+
+- `column_conditional: str`<br>
+--- *Note: Description missing* ---
+
+- `header_format: str`<br>
+--- *Note: Description missing* ---
+
+- `supheader: str`<br>
+--- *Note: Description missing* ---
+
+- `supheader_format: str`<br>
+--- *Note: Description missing* ---
+
+- `width: float`<br>
+--- *Note: Description missing* ---
+
+- `border: bool`<br>
+--- *Note: Description missing* ---
 
 
 ### Format parameters area - `formats`
@@ -107,7 +181,7 @@ Defines default column width. This parameter is overwritten if a `width` section
 If specified this string is added as a suffix to the supheader or header of a tag section if the `log2` section parameter is defined, and a log2 transformation is applied to the column values.
 
 - `sample_extraction_tag: str (default "")`<br>
-String that is used as a substring to collect columns that contain this tag and the  sample names. These columns are then used to extract sample names. The `sample_extraction_tag` should be chosen to only select columns that contain sample names.
+String that is used as a substring to collect columns that contain this tag and the  sample names. From each column first the specified tag is removed, then leading and trailing white space characters (space and underscore) are removed, and the remaining string is used as a sample name. The `sample_extraction_tag` should be chosen to select only columns that contain sample names.
 
 - `append_remaining_columns: bool (default: False)`<br>
 If True, all remaining columns that are not present in any section are added to the end of the Excel sheet, and the section of appended columns is hidden.
