@@ -131,7 +131,7 @@ settings:
   add_autofilter: True
   freeze_cols: 1
   log2_tag: "[log2]"
-  sample_extraction_tag: "MaxLFQ Intensity"
+  sample_extraction_tag: "Intensity"
   supheader_height: 40
   header_height: 95
   column_width: 45
