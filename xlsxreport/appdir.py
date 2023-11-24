@@ -2,12 +2,13 @@ import os
 import shutil
 from typing import Union
 
-import appdirs
+import platformdirs
+
+APPNAME = "XlsxReport"
 
 
 def locate_data_dir():
-    APPNAME = "XlsxReport"
-    return appdirs.user_data_dir(appname=APPNAME, appauthor=False)
+    return platformdirs.user_data_dir(appname="XlsxReport", appauthor=False)
 
 
 def setup_data_dir():

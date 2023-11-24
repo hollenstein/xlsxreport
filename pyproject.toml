@@ -14,7 +14,14 @@ classifiers = [
 ]
 keywords = ["mass spectrometry", "proteomics", "report", "excel"]
 requires-python = ">=3.9"
-dependencies = ["numpy", "pandas", "pyyaml", "xlsxwriter", "click", "appdirs"]
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "xlsxwriter",
+    "click",
+    "platformdirs>=3",
+]
 dynamic = ["version"]
 
 [build-system]

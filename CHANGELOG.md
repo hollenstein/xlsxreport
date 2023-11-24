@@ -6,8 +6,8 @@
 
 ### Changed
 - (!) Replaced the term "config" with "template" throughout the codebase.
-- (!) Replaced the keyword "groups" with "sections" in the yaml template file.
-- (!) Replaced the keyword "args" with "settings" in the yaml template file.
+- (!) Replaced the keyword "groups" with "sections" in yaml template files.
+- (!) Replaced the keyword "args" with "settings" in yaml template files.
 - Changed default value of `evaluate_log2_transformation` to False.
 - Changed default value of `write_supheader` to False.
 - Supheader cells are now still merged when no supheader name is specified.
@@ -16,6 +16,10 @@
 
 ### Removed
 - (!) Removed the `cassiopeia_report` command line script.
+
+### Internal
+- Replaced the `appdirs` library with `platformdirs`, as `appdirs` is officially
+  deprecated.
 
 ----------------------------------------------------------------------------------------
 
