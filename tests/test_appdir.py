@@ -1,5 +1,6 @@
-from unittest.mock import patch
-import os
+import pytest
+from unittest.mock import patch, MagicMock
+import pathlib
 
 import xlsxreport.appdir as appdir
 
@@ -15,56 +16,13 @@ def test_get_default_template_files_returns_yaml_files():
     assert any([fn.name.endswith(".yaml") for fn in default_template_files])
 
 
-import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
-
-
-class TestCopyDefaultTemplates:
-    @patch("xlsxreport.appdir._get_default_template_files")
-    @patch("pathlib.Path.is_file")
-    @patch("shutil.copyfile")
-    def test_files_are_copied(self, mock_copyfile, mock_is_file, mock_get_files):
-        mock_file = MagicMock(spec=Path)
-        mock_file.name = "file1"
-        mock_get_files.return_value = [mock_file]
-        mock_is_file.return_value = False
-
-        appdir._copy_default_templates("mock_dir", False)
-        mock_copyfile.assert_called_once_with(mock_file, Path("mock_dir", "file1"))
-
-    @patch("xlsxreport.appdir._get_default_template_files")
-    @patch("pathlib.Path.is_file")
-    @patch("shutil.copyfile")
-    def test_existing_files_are_not_copied(self, mock_copyfile, mock_is_file, mock_get_files):  # fmt: skip
-        mock_file = MagicMock(spec=Path)
-        mock_file.name = "file1"
-        mock_get_files.return_value = [mock_file]
-        mock_is_file.return_value = True
-
-        appdir._copy_default_templates("mock_dir", False)
-        mock_copyfile.assert_not_called()
-
-    @patch("xlsxreport.appdir._get_default_template_files")
-    @patch("pathlib.Path.is_file")
-    @patch("shutil.copyfile")
-    def test_existing_files_are_overwritten_if_specified(self, mock_copyfile, mock_is_file, mock_get_files):  # fmt: skip
-        mock_file = MagicMock(spec=Path)
-        mock_file.name = "file1"
-        mock_get_files.return_value = [mock_file]
-        mock_is_file.return_value = True
-
-        appdir._copy_default_templates("mock_dir", True)
-        mock_copyfile.assert_called_once_with(mock_file, Path("mock_dir", "file1"))
-
-
 # fmt: off
 @pytest.fixture
 def mock_setup():
     with patch("xlsxreport.appdir._get_default_template_files") as mock_get_files, \
          patch("pathlib.Path.is_file") as mock_is_file, \
          patch("shutil.copyfile") as mock_copyfile:
-        mock_file = MagicMock(spec=Path)
+        mock_file = MagicMock(spec=pathlib.Path)
         mock_file.name = "file1"
         mock_get_files.return_value = [mock_file]
 
@@ -81,7 +39,7 @@ class TestCopyDefaultTemplates:
         self.mock_is_file.return_value = False
         appdir._copy_default_templates("mock_dir", False)
         self.mock_copyfile.assert_called_once_with(
-            self.mock_get_files.return_value[0], Path("mock_dir", "file1")
+            self.mock_get_files.return_value[0], pathlib.Path("mock_dir", "file1")
         )
 
     def test_existing_files_are_not_copied(self, mock_setup):
@@ -93,5 +51,32 @@ class TestCopyDefaultTemplates:
         self.mock_is_file.return_value = False
         appdir._copy_default_templates("mock_dir", True)
         self.mock_copyfile.assert_called_once_with(
-            self.mock_get_files.return_value[0], Path("mock_dir", "file1")
+            self.mock_get_files.return_value[0], pathlib.Path("mock_dir", "file1")
         )
+
+
+class TestGetTemplatePath:
+    @patch("pathlib.Path.is_file")
+    def test_valid_filepath(self, mock_isfile):
+        mock_isfile.return_value = True
+        assert appdir.get_template_path("valid_filepath") == "valid_filepath"
+
+    @patch("pathlib.Path.is_file")
+    @patch("xlsxreport.appdir.get_appdir_templates")
+    @patch("xlsxreport.appdir.locate_appdir")
+    def test_invalid_filepath_found_in_appdir(
+        self, mock_locate_appdir, mock_get_appdir_templates, mock_isfile
+    ):
+        mock_isfile.return_value = False
+        mock_get_appdir_templates.return_value = ["file1", "file2"]
+        mock_locate_appdir.return_value = "/path/to/appdir"
+        assert appdir.get_template_path("file2") == "/path/to/appdir/file2"
+
+    @patch("pathlib.Path.is_file")
+    @patch("xlsxreport.appdir.get_appdir_templates")
+    def test_invalid_filepath_not_found_in_appdir(
+        self, mock_get_appdir_templates, mock_isfile
+    ):
+        mock_isfile.return_value = False
+        mock_get_appdir_templates.return_value = []
+        assert appdir.get_template_path("non_existing_file") is None

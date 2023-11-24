@@ -14,6 +14,11 @@ def locate_appdir() -> str:
     return platformdirs.user_data_dir(appname=APPNAME, appauthor=False)
 
 
+def get_appdir_templates() -> list[str]:
+    """Returns a list of template filenames located in the user app data directory."""
+    return [fn.name for fn in pathlib.Path(locate_appdir()).glob("*.yaml")]
+
+
 def setup_appdir(overwrite_templates: bool = False) -> None:
     """Creates a user specific app data directory and copies default template files.
 
@@ -36,15 +41,12 @@ def get_template_path(template: str) -> Union[str, None]:
     Returns:
         The path to the specified template file or None if the file was not found.
     """
-    template_path = None
-    template = pathlib.Path(template)
-    if template.is_file():
-        template_path = template.as_posix()
+    if pathlib.Path.is_file(template):
+        return template
+    elif template in get_appdir_templates():
+        return pathlib.Path(locate_appdir(), template).as_posix()
     else:
-        for filepath in locate_appdir().iterdir():
-            if filepath.name == template.name:
-                template_path = template.as_posix()
-    return template_path
+        return None
 
 
 def _copy_default_templates(directory: str, overwrite: bool) -> None:
