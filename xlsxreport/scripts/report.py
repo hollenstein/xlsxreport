@@ -11,22 +11,24 @@ from xlsxreport.template import ReportTemplate
 from xlsxreport.compiler import prepare_table_sections
 
 
-OUTFILE_DESCRIPTION = (
-    "Name of the report file, by default the `INFILE` name is used with the file "
-    "extension replaced by '.report.xlsx'."
-)
-OUTPATH_DESCRIPTION = (
-    "Output path of the report file. If specified overrides the `outfile` option."
-)
-SEPARATOR_DESCRIPTION = "Delimiter to use for the input file, default is \\t."
+HELP = {
+    "outfile": (
+        "Name of the report file, by default the `INFILE` name is used with the file "
+        "extension replaced by '.report.xlsx'."
+    ),
+    "outpath": (
+        "Output path of the report file. If specified overrides the `outfile` option."
+    ),
+    "sep": "Delimiter to use for the input file, default is \\t.",
+}
 
 
 @click.command()
 @click.argument("infile", type=click.Path(exists=True))
 @click.argument("template")
-@click.option("--outfile", default="", help=OUTFILE_DESCRIPTION)
-@click.option("--outpath", default="", help=OUTPATH_DESCRIPTION)
-@click.option("--sep", default="\t", help=SEPARATOR_DESCRIPTION)
+@click.option("--outfile", default="", help=HELP["outfile"])
+@click.option("--outpath", default="", help=HELP["outpath"])
+@click.option("--sep", default="\t", help=HELP["sep"])
 def report(infile: str, template: str, outfile: str, outpath: str, sep: str) -> None:
     """Create a formatted Excel report from csv INFILE and a formatting TEMPLATE file.
 
