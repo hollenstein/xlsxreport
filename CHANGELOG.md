@@ -7,7 +7,7 @@
 ### Changed
 - Changed how the `xlsxreport` console scripts works. Now all scripts are called with
   `xlsxreport` and a specific command.
-  - Generating a formatted Excel file is done with `xlsxreport report`
+  - Generating a formatted Excel file is done with `xlsxreport compile`
   - Setting up the app directory is done with `xlsxreport setup`
 - (!) Replaced the term "config" with "template" throughout the codebase.
 - (!) Replaced the keyword "groups" with "sections" in yaml template files.
