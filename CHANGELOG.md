@@ -5,6 +5,10 @@
 ## Upcoming release
 
 ### Changed
+- Changed how the `xlsxreport` console scripts works. Now all scripts are called with
+  `xlsxreport` and a specific command.
+  - Generating a formatted Excel file is done with `xlsxreport compile`
+  - Setting up the app directory is done with `xlsxreport setup`
 - (!) Replaced the term "config" with "template" throughout the codebase.
 - (!) Replaced the keyword "groups" with "sections" in yaml template files.
 - (!) Replaced the keyword "args" with "settings" in yaml template files.
@@ -16,6 +20,7 @@
 
 ### Removed
 - (!) Removed the `cassiopeia_report` command line script.
+- Removed the `xlsxreport_setup` script
 
 ### Internal
 - Replaced the `appdirs` library with `platformdirs`, as `appdirs` is officially

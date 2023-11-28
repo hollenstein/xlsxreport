@@ -1,13 +1,14 @@
+"""Command to setup the xlsxreport app directory and copy default template files."""
 import os
+
 import click
 
 import xlsxreport.appdir
 
 
 @click.command()
-def cli() -> None:
-    """Description of the XlsxReport function."""
-
+def setup_appdir() -> None:
+    """Setup app directory and copy default template files."""
     data_dir = xlsxreport.appdir.locate_appdir()
     if os.path.isdir(data_dir):
         click.echo(f"App data directory for XlsxReport found at:")
@@ -20,7 +21,3 @@ def cli() -> None:
     )
     xlsxreport.appdir.setup_appdir(overwrite_templates=True)
     click.echo(f"  Template files were successfully copied.")
-
-
-if __name__ == "__main__":
-    cli()
