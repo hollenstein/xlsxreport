@@ -165,53 +165,53 @@ class TestEvalDataWithLog2Transformation:
 
 
 def test_eval_standard_section_columns_selects_correct_columns():
-    template_section = {"columns": ["Column 1", "Column 2", "Column 3"]}
+    section_template = {"columns": ["Column 1", "Column 2", "Column 3"]}
     columns = ["Column 1", "Column 2", "Column 4"]
-    selected_columns = compiler.eval_standard_section_columns(columns, template_section)
+    selected_columns = compiler.eval_standard_section_columns(columns, section_template)
     assert selected_columns == ["Column 1", "Column 2"]
 
 
 def test_eval_tag_sample_section_columns_selects_correct_columns():
-    template_section = {"tag": "Tag"}
+    section_template = {"tag": "Tag"}
     columns = ["Tag Sample 1", "Tag Sample 2", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
     extraction_tag = "Atag"
     selected_columns = compiler.eval_tag_sample_section_columns(
-        columns, template_section, extraction_tag
+        columns, section_template, extraction_tag
     )
     assert selected_columns == ["Tag Sample 1", "Tag Sample 2"]
 
 
 def test_eval_comparison_groups_extracts_correct_values():
-    template_section = {
+    section_template = {
         "comparison_group": True,
         "tag": " vs ",
         "columns": ["P", "A"],
     }
     columns = ["P", "A", "P ex1 vs ex2", "A ex1 vs ex2", "P ex1 vs EX3", "A ex1 vs EX3"]
-    comparison_groups = compiler.eval_comparison_groups(columns, template_section)
+    comparison_groups = compiler.eval_comparison_groups(columns, section_template)
     assert comparison_groups == ["ex1 vs ex2", "ex1 vs EX3"]
 
 
 class TestEvalComparisonGroupColumns:
     def test_correct_columns_are_selected(self):
-        template_section = {
+        section_template = {
             "comparison_group": True,
             "tag": " vs ",
             "columns": ["P", "A"],
         }
         columns = ["P", "A", "P ex1 vs ex2", "A ex1 vs ex2", "P ex1 vs EX3", "A ex1 vs EX3"]  # fmt: skip
-        selected_columns = compiler.eval_comparison_group_columns(columns, template_section, "ex1 vs EX3")  # fmt: skip
+        selected_columns = compiler.eval_comparison_group_columns(columns, section_template, "ex1 vs EX3")  # fmt: skip
         expected_columns = ["P ex1 vs EX3", "A ex1 vs EX3"]
         assert selected_columns == expected_columns
 
     def test_column_order_of_section_template_is_used(self):
-        template_section = {
+        section_template = {
             "comparison_group": True,
             "tag": " vs ",
             "columns": ["P", "A"],
         }
         columns = ["A ex1 vs ex2", "P ex1 vs ex2"]  # fmt: skip
-        selected_columns = compiler.eval_comparison_group_columns(columns, template_section, "ex1 vs ex2")  # fmt: skip
+        selected_columns = compiler.eval_comparison_group_columns(columns, section_template, "ex1 vs ex2")  # fmt: skip
         expected_columns = ["P ex1 vs ex2", "A ex1 vs ex2"]
         assert selected_columns == expected_columns
 
@@ -264,61 +264,61 @@ def test_eval_comparison_group_supheader(replace_comparison_tag, expected_suphea
 
 def test_eval_comparison_group_conditional_format_names():
     columns = ["P ex1 vs ex2", "A ex1 vs ex2", "C ex1 vs ex2"]
-    template_section = {"column_conditional": {"P": "cond_1", "A": "cond_2"}}
-    col_conditionals = compiler.eval_comparison_group_conditional_format_names(columns, template_section)  # fmt: skip
+    section_template = {"column_conditional": {"P": "cond_1", "A": "cond_2"}}
+    col_conditionals = compiler.eval_comparison_group_conditional_format_names(columns, section_template)  # fmt: skip
     assert col_conditionals == {"P ex1 vs ex2": "cond_1", "A ex1 vs ex2": "cond_2"}
 
 
 class TestEvalTagSampleHeaders:
     def test_with_remove_tag(self):
-        template_section = {"tag": "Tag", "remove_tag": True}
+        section_template = {"tag": "Tag", "remove_tag": True}
         columns = ["Tag Sample 1", "Tag Sample 2"]
         expected = {"Tag Sample 1": "Sample 1", "Tag Sample 2": "Sample 2"}
-        headers = compiler.eval_tag_sample_headers(columns, template_section)
+        headers = compiler.eval_tag_sample_headers(columns, section_template)
         assert headers == expected
 
     def test_without_remove_tag(self):
-        template_section = {"tag": "Tag", "remove_tag": False}
+        section_template = {"tag": "Tag", "remove_tag": False}
         columns = ["Tag Sample 1", "Tag Sample 2"]
         expected = {"Tag Sample 1": "Tag Sample 1", "Tag Sample 2": "Tag Sample 2"}
-        headers = compiler.eval_tag_sample_headers(columns, template_section)
+        headers = compiler.eval_tag_sample_headers(columns, section_template)
         assert headers == expected
 
     def test_without_remove_tag_and_log2_tag(self):
-        template_section = {"tag": "Tag", "remove_tag": False, "log2": True}
+        section_template = {"tag": "Tag", "remove_tag": False, "log2": True}
         columns = ["Tag Sample 1", "Tag Sample 2"]
         expected = {
             "Tag Sample 1": "Tag Sample 1 [log2]",
             "Tag Sample 2": "Tag Sample 2 [log2]",
         }
-        headers = compiler.eval_tag_sample_headers(columns, template_section, log2_tag="[log2]")  # fmt: skip
+        headers = compiler.eval_tag_sample_headers(columns, section_template, log2_tag="[log2]")  # fmt: skip
         assert headers == expected
 
     def test_with_remove_tag_and_log2_tag(self):
-        template_section = {"tag": "Tag", "remove_tag": True, "log2": True}
+        section_template = {"tag": "Tag", "remove_tag": True, "log2": True}
         columns = ["Tag Sample 1", "Tag Sample 2"]
         expected = {
             "Tag Sample 1": "Sample 1",
             "Tag Sample 2": "Sample 2",
         }
-        headers = compiler.eval_tag_sample_headers(columns, template_section, log2_tag="[log2]")  # fmt: skip
+        headers = compiler.eval_tag_sample_headers(columns, section_template, log2_tag="[log2]")  # fmt: skip
         assert headers == expected
 
 
 class TestEvalTagSampleSupheader:
     def test_with_log2_tag(self):
-        template_section = {"supheader": "Supheader", "log2": True, "tag": "Tag"}
-        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        section_template = {"supheader": "Supheader", "log2": True, "tag": "Tag"}
+        supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
         assert supheader == "Supheader [log2]"
 
     def test_without_log2_tag(self):
-        template_section = {"supheader": "Supheader", "log2": False, "tag": "Tag"}
-        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        section_template = {"supheader": "Supheader", "log2": False, "tag": "Tag"}
+        supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
         assert supheader == "Supheader"
 
     def test_tag_is_used_if_supheader_not_specified(self):
-        template_section = {"tag": "Tag as supheader"}
-        supheader = compiler.eval_tag_sample_supheader(template_section, log2_tag="[log2]")  # fmt: skip
+        section_template = {"tag": "Tag as supheader"}
+        supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
         assert supheader == "Tag as supheader"
 
 
@@ -560,8 +560,8 @@ def test_StandardSectionCompiler(
     report_template, example_table, standard_table_section
 ):
     section_compiler = compiler.StandardSectionCompiler(report_template)
-    template_section = report_template.sections["Standard section 1"]
-    compiled_section = section_compiler.compile(template_section, example_table)
+    section_template = report_template.sections["Standard section 1"]
+    compiled_section = section_compiler.compile(section_template, example_table)
     for attr in standard_table_section.__dataclass_fields__:
         if attr == "data":
             assert compiled_section.data.equals(standard_table_section.data)
@@ -576,8 +576,8 @@ def test_TagSampleSectionCompiler(
     report_template, example_table, tag_sample_table_section
 ):
     section_compiler = compiler.TagSampleSectionCompiler(report_template)
-    template_section = report_template.sections["Tag sample section 1"]
-    compiled_section = section_compiler.compile(template_section, example_table)
+    section_template = report_template.sections["Tag sample section 1"]
+    compiled_section = section_compiler.compile(section_template, example_table)
     for attr in tag_sample_table_section.__dataclass_fields__:
         if attr == "data":
             assert compiled_section.data.equals(tag_sample_table_section.data)
