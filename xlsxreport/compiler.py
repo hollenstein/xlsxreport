@@ -238,6 +238,12 @@ def prepare_table_sections(
 ) -> list[TableSection]:
     """Compile non-empty table sections from a report template and a table.
 
+    First the table sections are compiled from the report template and the table. If the
+    "append_remaining_columns" setting is True, the remaining columns are compiled into
+    a section that is appended to the list of compiled table sections. Duplicate columns
+    are removed from the table sections if the "remove_duplicate_columns" setting is
+    True. Finally, empty table sections are removed from the list of table sections.
+
     Args:
         report_template: The report template describing how table sections should be
             generated.

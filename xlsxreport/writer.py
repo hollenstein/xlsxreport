@@ -9,9 +9,23 @@ from xlsxreport.compiler import TableSection
 
 
 class TableSectionWriter:
-    """Class for writing compiled `TableSections` to an Excel file."""
+    """Class for writing compiled `TableSections` to an Excel file.
+
+    The `TableSectionWriter` provides the method `write_sections` to write a list of
+    compiled `TableSection`s to a worksheet in an Excel file.
+
+    Attributes:
+        workbook: The xlsxwriter.Workbook instance that represents the Excel file to
+            which compiled `TableSection`s will be written.
+    """
 
     def __init__(self, workbook: xlsxwriter.Workbook):
+        """Initialize a TableSectionWriter.
+
+        Args:
+            workbook: The xlsxwriter.Workbook instance that represents the Excel file to
+                which compiled `TableSection`s will be written.
+        """
         self.workbook = workbook
         self._xlsxwriter_formats: dict = {}  # use dictionary hash as key
 
@@ -23,7 +37,7 @@ class TableSectionWriter:
         start_row: int = 0,
         start_column: int = 0,
     ) -> None:
-        """Write a list of sections to the workbook to create a table.
+        """Write a list of compiled `TableSection`s to the `worksheet` in an Excel file.
 
         Args:
             worksheet: The Excel worksheet to write to.
