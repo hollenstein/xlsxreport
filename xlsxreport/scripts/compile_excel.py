@@ -7,7 +7,7 @@ import pandas as pd
 import xlsxwriter
 
 import xlsxreport.appdir
-from xlsxreport.excel_writer import TableSectionWriter
+from xlsxreport.writer import TableSectionWriter
 from xlsxreport.template import ReportTemplate
 from xlsxreport.compiler import prepare_table_sections
 
