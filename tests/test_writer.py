@@ -7,7 +7,7 @@ import pytest
 from xlsxwriter import Workbook as Workbook
 
 import xlsxreport.compiler as compiler
-import xlsxreport.excel_writer as writer
+import xlsxreport.writer as writer
 
 
 class ExcelWriteReadTestManager:

@@ -42,7 +42,7 @@ If you are using Anaconda, you will need to install the XlsxReport package into 
 After XlsxReport has been installed the local AppData directory needs to be setup and the default template files need to be copied. Running the `xlsxreport setup` script creates a new XlsxReport folder in the local user app data directory, for example "C:/User/user_name/AppData/Local/XlsxReport" on Windows 10, and copies the default template files there.
 
 ```
-xlsxreport_setup
+xlsxreport setup
 ```
 
 
@@ -51,5 +51,5 @@ xlsxreport_setup
 To generate a simple excel protein report, run the `xlsxreport report` script with an input and template file. Here is an example with the default maxquant.yaml template file.
 
 ```
-xlsxreport proteinGroups.txt maxquant.yaml
+xlsxreport report proteinGroups.txt maxquant.yaml
 ```

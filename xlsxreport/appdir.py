@@ -41,7 +41,7 @@ def get_template_path(template: str) -> Union[str, None]:
     Returns:
         The path to the specified template file or None if the file was not found.
     """
-    if pathlib.Path.is_file(template):
+    if pathlib.Path(template).is_file():
         return template
     elif template in get_appdir_templates():
         return pathlib.Path(locate_appdir(), template).as_posix()
