@@ -23,6 +23,7 @@ HELP = {
         "Output path of the report file. If specified overrides the `outfile` option."
     ),
     "sep": "Delimiter to use for the input file, default is \\t.",
+    "reveal": "Open the compiled Excel report file in the default application.",
 }
 
 
@@ -31,12 +32,11 @@ HELP = {
 @click.argument("template")
 @click.option("--outfile", help=HELP["outfile"])
 @click.option(
-    "--outpath", help=HELP["outpath"], type=click.Path(exists=True, writable=True)
+    "--outpath", type=click.Path(exists=True, writable=True), help=HELP["outpath"]
 )
 @click.option("--sep", default="\t", help=HELP["sep"])
-def compile_excel_command(
-    infile: str, template: str, outfile: str, outpath: str, sep: str
-) -> None:
+@click.option("--reveal", is_flag=True, default=False, help=HELP["reveal"])
+def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> None:
     """Create a formatted Excel report from a csv INFILE and a formatting TEMPLATE file.
 
     The TEMPLATE argument is first used to look for a file with the specified filepath.
@@ -57,6 +57,8 @@ def compile_excel_command(
     click.echo(f"Report file:   {report_path}")
 
     compile_excel(infile, template_path, report_path, sep)
+    if reveal:
+        click.launch(report_path)
 
 
 def compile_excel(infile: str, template: str, outpath: str, sep: str = "\t") -> None:
