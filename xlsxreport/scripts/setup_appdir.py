@@ -7,7 +7,7 @@ import xlsxreport.appdir
 
 
 @click.command()
-def setup_appdir() -> None:
+def setup_appdir_command() -> None:
     """Setup app directory and copy default template files."""
     data_dir = xlsxreport.appdir.locate_appdir()
     if os.path.isdir(data_dir):

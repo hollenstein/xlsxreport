@@ -6,10 +6,12 @@ import click
 import pandas as pd
 import xlsxwriter
 
-import xlsxreport.appdir
-from xlsxreport.writer import TableSectionWriter
-from xlsxreport.template import ReportTemplate
-from xlsxreport.compiler import prepare_table_sections
+from xlsxreport import (
+    get_template_path,
+    TableSectionWriter,
+    ReportTemplate,
+    prepare_table_sections,
+)
 
 
 HELP = {
@@ -32,35 +34,21 @@ HELP = {
     "--outpath", help=HELP["outpath"], type=click.Path(exists=True, writable=True)
 )
 @click.option("--sep", default="\t", help=HELP["sep"])
-def compile_excel(
+def compile_excel_command(
     infile: str, template: str, outfile: str, outpath: str, sep: str
 ) -> None:
     """Create a formatted Excel report from a csv INFILE and a formatting TEMPLATE file.
 
-    The TEMPLATE argument is first used to look for a file with the specified filepath. If
-    no file is found, the XlsxReport appdata directory is searched for a file with the
-    corresponding name.
-
-    Args:
-        infile: Path to the input csv file.
-        template: Path to the formatting template file.
-        outfile: Name of the report file, by default the INFILE name is used with the
-            file extension replaced by '.report.xlsx'.
-        outpath: Output path of the report file. If specified overrides the `outfile`
-            option.
-        sep: Delimiter to use for the input file, default is \\t.
-
-    Raises:
-        click.ClickException: If the template file is not found.
-        click.ClickException: If the output path directory does not exist.
+    The TEMPLATE argument is first used to look for a file with the specified filepath.
+    If no file is found, the XlsxReport appdata directory is searched for a file with
+    the corresponding name.
     """
-    template_path = xlsxreport.appdir.get_template_path(template)
+    report_path = _get_report_output_path(infile, outfile, outpath)
+    template_path = get_template_path(template)
     if template_path is None:
         raise click.ClickException(
             f"Invalid value for `template`: '{template}' file not found."
         )
-
-    report_path = _get_report_output_path(infile, outfile, outpath)
 
     click.echo(f"Generating formatted Excel report:")
     click.echo(f"----------------------------------")
@@ -68,14 +56,25 @@ def compile_excel(
     click.echo(f"Template file: {template_path}")
     click.echo(f"Report file:   {report_path}")
 
+    compile_excel(infile, template_path, report_path, sep)
+
+
+def compile_excel(infile: str, template: str, outpath: str, sep: str = "\t") -> None:
+    """Creates a formatted Excel report from a csv infile and a report template file.
+
+    Args:
+        infile: Path to the input csv file.
+        template: Path to the formatting template file.
+        outpath: Output path of the Excel report file.
+        sep: Delimiter to use for the input file, by default \\t.
+    """
     with warnings.catch_warnings():
         warnings.simplefilter(action="ignore", category=pd.errors.DtypeWarning)
         table = pd.read_csv(infile, sep=sep)
 
-    report_template = ReportTemplate.load(template_path)
+    report_template = ReportTemplate.load(template)
     table_sections = prepare_table_sections(report_template, table)
-
-    with xlsxwriter.Workbook(report_path) as workbook:
+    with xlsxwriter.Workbook(outpath) as workbook:
         worksheet = workbook.add_worksheet("Report")
         section_writer = TableSectionWriter(workbook)
         section_writer.write_sections(
