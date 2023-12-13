@@ -63,29 +63,46 @@ class ReportTemplate:
         )
         self.settings = {} if settings is None else settings
 
+    def to_dict(self) -> dict[str, dict]:
+        """Returns a dictionary representation of the `ReportTemplate`."""
+        return {
+            "sections": self.sections,
+            "formats": self.formats,
+            "conditional_formats": self.conditional_formats,
+            "settings": self.settings,
+        }
+
+    @classmethod
+    def from_dict(cls, template_document: dict) -> ReportTemplate:
+        """Creates a `ReportTemplate` instance from a dictionary.
+
+        Args:
+            template_document: A dictionary representation of a `ReportTemplate`. The
+                keys "sections", "formats", "conditional_formats", and "settings" are
+                used to initialize the `ReportTemplate` instance.
+
+        Returns:
+            A `ReportTemplate` instance.
+        """
+        return cls(
+            sections=template_document.get("sections", {}),
+            formats=template_document.get("formats", {}),
+            conditional_formats=template_document.get("conditional_formats", {}),
+            settings=template_document.get("settings", {}),
+        )
+
     @classmethod
     def load(cls, filepath) -> ReportTemplate:
         """Loads a report template YAML file and returns a `ReportTemplate` instance."""
         with open(filepath, "r", encoding="utf-8") as file:
             template_data = yaml.safe_load(file)
-        template = cls()
-        template.formats = template_data.get("formats", {})
-        template.conditional_formats = template_data.get("conditional_formats", {})
-        template.sections = template_data.get("sections", {})
-        template.settings = template_data.get("settings", {})
-        return template
+        return cls.from_dict(template_data)
 
     def save(self, filepath) -> None:
         """Saves the `ReportTemplate` to a YAML file."""
-        template_data = {
-            "sections": self.sections,
-            "formats": self.formats,
-            "settings": self.settings,
-            "conditional_formats": self.conditional_formats,
-        }
         with open(filepath, "w", encoding="utf-8") as file:
             yaml.dump(
-                template_data,
+                self.to_dict(),
                 file,
                 version=(1, 2),
                 sort_keys=False,
