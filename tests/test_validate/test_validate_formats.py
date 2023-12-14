@@ -68,7 +68,7 @@ class TestValidateFormatDescriptions:
 
     def test_errors_have_the_correct_error_level(self):
         errors = validate.validate_format_descriptions(self.invalid_formats)
-        assert all([e.error_level == validate.ErrorLevel.CRITICAL for e in errors])
+        assert all([e.error_level == validate.ErrorLevel.ERROR for e in errors])
 
 
 class TestValidateUnusedFormats:

@@ -449,7 +449,7 @@ def validate_format_descriptions(formats_section: dict) -> list[ValidationError]
         except (AttributeError, ValueError):
             error = ValidationError(
                 ValidationErrorType.INVALID_FORMAT,
-                ErrorLevel.CRITICAL,
+                ErrorLevel.ERROR,
                 (MainSections.FORMATS.value, format_name),
                 f"Invalid format description",
             )

@@ -1,6 +1,7 @@
 """This module provides a class for writing compiled TableSections to an Excel file."""
 from __future__ import annotations
 from typing import Collection, Iterable, Optional, Protocol
+import warnings
 
 import pandas as pd
 import xlsxwriter.format
@@ -211,9 +212,15 @@ class TableSectionWriter:
         """
         _hash = _hashable_from_dict(format_description)
         if _hash not in self._xlsxwriter_formats:
-            self._xlsxwriter_formats[_hash] = self.workbook.add_format(
-                format_description
-            )
+            try:
+                xlsx_format = self.workbook.add_format(format_description)
+            except AttributeError:
+                warnings.warn(
+                    f"Invalid xlsxwriter format description: {format_description}",
+                    UserWarning,
+                )
+                xlsx_format = self.workbook.add_format({})
+            self._xlsxwriter_formats[_hash] = xlsx_format
         return self._xlsxwriter_formats[_hash]
 
 

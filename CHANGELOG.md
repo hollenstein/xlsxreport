@@ -17,7 +17,6 @@
 - The `validate` module offers functions for validating the file integrity, data types,
   and content of a YAML template file or a ReportTemplate instance.
 
-
 ### Changed
 - Introduced a new public interface for reading a template file, applying the template
   to a table (which now creates compiled table sections), and for writing compiled table
@@ -32,6 +31,16 @@
 - Changed the default value of the "evaluate_log2_transformation" setting to False.
 - Changed the default value of the "write_supheader" setting to False.
 - Supheader cells are now merged even when no supheader name is specified.
+- Attempting to use an invalid format for compiling an Excel report will now apply no
+  format and emit a warning instead of raising an Exception. This change was introduced
+  to provide a similar behaviour for conditional formats and formats.
+- When attempting to use an invalid format for compiling an Excel report, the compiler
+  will now apply no format and issue a warning instead of raising an exception. This
+  change ensures consistent behavior for both conditional and standard cell formats.
+  This change is also reflected in the validation module. When an invalid format
+  description is identified, it now creates an error with an error level ERROR instead
+  of CRITICAL, indicating that the template could still be utilized to create an Excel
+  format despite the encountered issue.
 
 ### Removed
 - (!) Removed the `cassiopeia_report` command line script.

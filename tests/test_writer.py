@@ -403,12 +403,17 @@ class TestTableSectionWriterGetXlsxFormat:
 
     def test_xlsx_format_with_correct_properties_is_returned(self):
         xlsx_format = self.writer.get_xlsx_format(self.format_description)
-        assert xlsx_format.bold == True and xlsx_format.font_color == "#FF0000"
+        assert xlsx_format.bold == True
+        assert xlsx_format.font_color == "#FF0000"
 
     def test_multiple_calls_return_same_object(self):
         xlsx_format_1 = self.writer.get_xlsx_format(self.format_description)
         xlsx_format_2 = self.writer.get_xlsx_format(self.format_description)
         assert xlsx_format_1 is xlsx_format_2
+
+    def test_creating_an_invalid_format_raises_error(self):
+        with pytest.warns(UserWarning):
+            self.writer.get_xlsx_format({"invalid_key": True})
 
 
 class TestHashableFromDictionary:
