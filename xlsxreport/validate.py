@@ -248,15 +248,6 @@ def validate_template_file_loading(filepath: str) -> list[ValidationError]:
     try:
         with open(filepath, "r", encoding="utf-8") as file:
             _ = yaml.safe_load(file)
-    except FileNotFoundError:
-        description = f"file not found '{filepath}'"
-        error = ValidationError(
-            ValidationErrorType.FILE_ERROR,
-            ErrorLevel.CRITICAL,
-            ("yaml file",),
-            description,
-        )
-        return [error]
     except yaml.scanner.ScannerError:
         description = f"invalid syntax, cannot parse file '{filepath}'"
         error = ValidationError(

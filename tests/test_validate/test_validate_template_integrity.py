@@ -33,11 +33,6 @@ class TestValidateTemplateFileIntegrity:
 
 
 class TestValidateTemplateFileLoading:
-    def test_error_when_file_does_not_exist(self):
-        errors = validate.validate_template_file_loading("not a file")
-        assert len(errors) == 1
-        assert errors[0].error_level == validate.ErrorLevel.CRITICAL
-
     def test_error_when_file_is_not_a_parsable_yaml_file(self, tmp_path):
         content = '"Invalid syntax causes a parser error'
         yaml_path = _create_yaml_file(tmp_path, content)
