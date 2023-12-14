@@ -7,8 +7,6 @@ from typing import Iterable, Optional, Protocol, Sequence
 import numpy as np
 import pandas as pd
 
-from xlsxreport.template import ReportTemplate
-
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
@@ -16,6 +14,28 @@ DEFAULT_FORMAT: dict = {"num_format": "@"}
 REMAINING_COL_FORMAT = {"align": "left", "num_format": "0"}
 NAN_REPLACEMENT_SYMBOL = ""
 WHITESPACE_CHARS = " ."
+
+
+class ReportTemplate(Protocol):
+    """Class to store the template of a report."""
+
+    sections: dict
+    formats: dict
+    conditional_formats: dict
+    settings: dict
+
+
+class SectionCompiler(Protocol):
+    """Protocol for section compilers."""
+
+    def __init__(self, report_template: ReportTemplate):
+        ...
+
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> TableSection | list[TableSection]:
+        """Compile a table section from a section template and a table."""
+        ...
 
 
 class SectionCategory(Enum):
@@ -61,19 +81,6 @@ class TableSection:
                 self.headers[col] = col
             if col not in self.header_formats:
                 self.header_formats[col] = {}
-
-
-class SectionCompiler(Protocol):
-    """Protocol for section compilers."""
-
-    def __init__(self, report_template: ReportTemplate):
-        ...
-
-    def compile(
-        self, section_template: dict, table: pd.DataFrame
-    ) -> TableSection | list[TableSection]:
-        """Compile a table section from a section template and a table."""
-        ...
 
 
 class StandardSectionCompiler:

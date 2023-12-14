@@ -1,11 +1,25 @@
 """This module provides a class for writing compiled TableSections to an Excel file."""
 from __future__ import annotations
-from typing import Collection, Iterable, Optional
+from typing import Collection, Iterable, Optional, Protocol
 
+import pandas as pd
 import xlsxwriter.format
 import xlsxwriter.worksheet
 
-from xlsxreport.compiler import TableSection
+
+class TableSection(Protocol):
+    """Contains information for writing and formatting a section of a table."""
+
+    data: pd.DataFrame
+    column_formats: dict
+    column_conditionals: dict
+    column_widths: dict
+    headers: dict
+    header_formats: dict
+    supheader: str
+    supheader_format: dict
+    section_conditional: dict
+    hide_section: bool
 
 
 class TableSectionWriter:
