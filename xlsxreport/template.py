@@ -21,12 +21,20 @@ Valid ReportTemplate.settings parameters are:
 
 from __future__ import annotations
 from typing import Optional
+import warnings
 
 import yaml
+
+from xlsxreport.validate import (
+    validate_document_entry_types,
+    validate_template_file_integrity,
+)
 
 
 class ReportTemplate:
     """Class to store the template of a report.
+
+    # Mention that
 
     Attributes:
         sections: A dictionary of sections in the report template. The keys are the
@@ -63,6 +71,10 @@ class ReportTemplate:
         )
         self.settings = {} if settings is None else settings
 
+        if errors := validate_document_entry_types(self.to_dict()):
+            error_message = "\n".join([error.message for error in errors])
+            raise ValueError(f"invalid initialization parameters\n{error_message}")
+
     def to_dict(self) -> dict[str, dict]:
         """Returns a dictionary representation of the `ReportTemplate`."""
         return {
@@ -95,6 +107,9 @@ class ReportTemplate:
     def load(cls, filepath) -> ReportTemplate:
         """Loads a report template YAML file and returns a `ReportTemplate` instance."""
         with open(filepath, "r", encoding="utf-8") as file:
+            if errors := validate_template_file_integrity(filepath):
+                error_message = "\n".join([error.description for error in errors])
+                raise ValueError(f"error loading YAML file\n{error_message}")
             template_data = yaml.safe_load(file)
         return cls.from_dict(template_data)
 

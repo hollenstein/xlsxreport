@@ -5,17 +5,22 @@
 ## Upcoming release
 
 ### Added
+- Added the `validate` module, which offers functions for validating YAML template file
+  integrity, checking data types in a template are correct, and confirming that the
+  content of a template is in accordance with the template schema.
+- The `ReportTemplate` class serves as the representation of a YAML template file in
+  Python. It provides methods for both loading a YAML template file and saving to a
+  YAML template file.
+  - When creating a `ReportTemplate` instance, the template is checked for type errors.
+    If type errors are detected, a `ValueError` is raised.
+  - Similarly, when loading a template from a YAML file, a non-parseable YAML file or 
+    the presence of type errors will raise a `ValueError`.
 - Introduced new functionality to the `xlsxreport` console script.
   - The command for generating a formatted Excel file is now `xlsxreport compile`.
   - Added an option to open the compiled Excel file using the `--reveal` flag.
   - The `xlsxreport appdir` command now reveals the location of the app directory.
   - Setting up the app directory can be accomplished with `xlsxreport appdir --setup`
     which creates the app directory and copies default report template files.
-- The `ReportTemplate` class serves as the representation of a YAML template file in
-  Python. It provides methods for both loading a YAML template file and saving to a
-  YAML template file.
-- The `validate` module offers functions for validating the file integrity, data types,
-  and content of a YAML template file or a ReportTemplate instance.
 
 ### Changed
 - Introduced a new public interface for reading a template file, applying the template

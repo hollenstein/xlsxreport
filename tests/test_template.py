@@ -7,7 +7,7 @@ from xlsxreport.template import ReportTemplate
 
 
 @pytest.fixture()
-def template_document():
+def default_template():
     return {
         "sections": {
             "section_1": {
@@ -36,64 +36,71 @@ def template_document():
 
 
 @pytest.fixture()
-def temp_template_path(request, tmp_path):
-    output_path = os.path.join(tmp_path, "template_save.yaml")
-
-    def teardown():
-        if os.path.isfile(output_path):
-            os.remove(output_path)
-
-    request.addfinalizer(teardown)
-    return output_path
+def default_template_path(tmp_path, default_template):
+    file_path = tmp_path / "temp_template.yaml"
+    with open(file_path, "w", encoding="utf-8") as file:
+        yaml.safe_dump(default_template, file, version=(1, 2))
+    return file_path
 
 
-@pytest.fixture()
-def temp_template_file(request, tmp_path, template_document):
-    template_path = os.path.join(tmp_path, "template_load.yaml")
-
-    def teardown():
-        if os.path.isfile(template_path):
-            os.remove(template_path)
-
-    with open(template_path, "w", encoding="utf-8") as file:
-        yaml.safe_dump(template_document, file, version=(1, 2))
-    request.addfinalizer(teardown)
-    return template_path
+def create_yaml_from_string(tmp_path, content: str = ""):
+    file_path = tmp_path / "temp_template.yaml"
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write(content)
+    return file_path
 
 
 class TestReportTemplate:
-    def test_from_dict_creates_template(self, template_document):
-        template = ReportTemplate.from_dict(template_document)
-        assert template.sections == template_document["sections"]
-        assert template.formats == template_document["formats"]
-        assert template.conditional_formats == template_document["conditional_formats"]  # fmt: skip
-        assert template.settings == template_document["settings"]
+    def test_from_dict_creates_template(self, default_template):
+        template = ReportTemplate.from_dict(default_template)
+        assert template.sections == default_template["sections"]
+        assert template.formats == default_template["formats"]
+        assert template.conditional_formats == default_template["conditional_formats"]  # fmt: skip
+        assert template.settings == default_template["settings"]
 
-    def test_to_dict_returns_template_document(self, template_document):
+    def test_to_dict_returns_correct_template_document(self, default_template):
         template = ReportTemplate(
-            sections=template_document["sections"],
-            formats=template_document["formats"],
-            conditional_formats=template_document["conditional_formats"],
-            settings=template_document["settings"],
+            sections=default_template["sections"],
+            formats=default_template["formats"],
+            conditional_formats=default_template["conditional_formats"],
+            settings=default_template["settings"],
         )
-        assert template.to_dict() == template_document
+        assert template.to_dict() == default_template
 
-    def test_round_trip_from_dict_to_dict(self, template_document):
-        template = ReportTemplate.from_dict(template_document)
-        assert template.to_dict() == template_document
+    def test_round_trip_from_dict_to_dict(self, default_template):
+        template = ReportTemplate.from_dict(default_template)
+        assert template.to_dict() == default_template
 
-    def test_load_imports_all_sections_properly(self, temp_template_file, template_document):  # fmt: skip
-        template = ReportTemplate.load(temp_template_file)
-        assert template.sections == template_document["sections"]
-        assert template.formats == template_document["formats"]
-        assert template.conditional_formats == template_document["conditional_formats"]
-        assert template.settings == template_document["settings"]
+    def test_load_imports_all_sections_properly(self, default_template_path, default_template):  # fmt: skip
+        template = ReportTemplate.load(default_template_path)
+        assert template.sections == default_template["sections"]
+        assert template.formats == default_template["formats"]
+        assert template.conditional_formats == default_template["conditional_formats"]
+        assert template.settings == default_template["settings"]
 
-    def test_template_identical_after_load_save_reload(self, temp_template_file, temp_template_path):  # fmt: skip
-        template = ReportTemplate.load(temp_template_file)
-        template.save(temp_template_path)
-        loaded_template = ReportTemplate.load(temp_template_file)
+    def test_template_identical_after_load_save_reload(self, default_template_path, tmp_path):  # fmt: skip
+        template = ReportTemplate.load(default_template_path)
+        saved_template_path = tmp_path / "template_save.yaml"
+        template.save(saved_template_path)
+        loaded_template = ReportTemplate.load(saved_template_path)
         assert template.sections == loaded_template.sections
         assert template.formats == loaded_template.formats
         assert template.conditional_formats == loaded_template.conditional_formats
         assert template.settings == loaded_template.settings
+
+    def test_init_raises_value_error_when_invalid_parameters_are_passed(self):
+        with pytest.raises(ValueError):
+            _ = ReportTemplate(sections="not a dictionary")
+
+    def test_from_dict_with_invalid_template_document_raises_value_error(self):
+        with pytest.raises(ValueError):
+            _ = ReportTemplate.from_dict({"sections": "not a dictionary"})
+
+    @pytest.mark.parametrize(
+        "content",
+        ['"Parser error', "['not a', 'dictrionary']", "sections: not a dictionary"],
+    )
+    def test_loading_an_invalid_yaml_file_raises_a_value_error(self, content, tmp_path):
+        yaml_path = create_yaml_from_string(tmp_path, content)
+        with pytest.raises(ValueError):
+            _ = ReportTemplate.load(yaml_path)
