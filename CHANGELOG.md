@@ -31,9 +31,6 @@
 - Changed the default value of the "evaluate_log2_transformation" setting to False.
 - Changed the default value of the "write_supheader" setting to False.
 - Supheader cells are now merged even when no supheader name is specified.
-- Attempting to use an invalid format for compiling an Excel report will now apply no
-  format and emit a warning instead of raising an Exception. This change was introduced
-  to provide a similar behaviour for conditional formats and formats.
 - When attempting to use an invalid format for compiling an Excel report, the compiler
   will now apply no format and issue a warning instead of raising an exception. This
   change ensures consistent behavior for both conditional and standard cell formats.
