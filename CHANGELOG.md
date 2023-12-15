@@ -21,6 +21,8 @@
   - The `xlsxreport appdir` command now reveals the location of the app directory.
   - Setting up the app directory can be accomplished with `xlsxreport appdir --setup`
     which creates the app directory and copies default report template files.
+  - The `xlsxreport validate` command allows validating a YAML template file, with 
+    detected issues being printed to the console.
 
 ### Changed
 - Introduced a new public interface for reading a template file, applying the template
