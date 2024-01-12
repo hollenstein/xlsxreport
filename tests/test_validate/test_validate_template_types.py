@@ -6,7 +6,7 @@ import xlsxreport.validate as validate
 class TestValidateDocumentEntryTypes_MainSectionTypes:
     @pytest.fixture(autouse=True)
     def _init_template_document(self):
-        self.document = {key: {} for key in validate.REPORT_SCHEMA}
+        self.document = {key: {} for key in validate.TEMPLATE_SCHEMA}
 
     def test_valid_main_section_types_do_not_create_errors(self):
         errors = validate.validate_document_entry_types(self.document)

@@ -17,70 +17,14 @@ import cerberus
 import xlsxwriter
 import yaml
 
+from xlsxreport.schemas import TEMPLATE_SCHEMA, SETTINGS_SCHEMA
+
 
 class MainSections(Enum):
     SECTIONS = "sections"
     FORMATS = "formats"
     CONDITIONAL_FORMATS = "conditional_formats"
     SETTINGS = "settings"
-
-
-SETTINGS_SCHEMA = {
-    "supheader_height": {"type": "float", "min": 0, "default": 20},
-    "header_height": {"type": "float", "min": 0, "default": 20},
-    "column_width": {"type": "float", "min": 0, "default": 64},
-    "log2_tag": {"type": "string", "default": ""},
-    "sample_extraction_tag": {"type": "string", "default": ""},
-    "append_remaining_columns": {"type": "boolean", "default": False},
-    "write_supheader": {"type": "boolean", "default": False},
-    "evaluate_log2_transformation": {"type": "boolean", "default": False},
-    "remove_duplicate_columns": {"type": "boolean", "default": True},
-    "add_autofilter": {"type": "boolean", "default": True},
-    "freeze_cols": {"type": "integer", "min": 0, "default": 1},
-}
-
-
-SECTION_SCHEMA = {
-    "format": {"type": "string"},
-    "column_format": {"type": "dict"},
-    "conditional": {"type": "string"},
-    "column_conditional": {"type": "dict"},
-    "header_format": {"type": "dict"},
-    "supheader": {"type": "string"},
-    "supheader_format": {"type": "dict"},
-    "width": {"type": "float"},
-    "border": {"type": "boolean", "default": False},
-    "columns": {"type": "list"},
-    "tag": {"type": "string"},
-    "remove_tag": {"type": "boolean", "default": False},
-    "log2": {"type": "boolean", "default": False},
-    "comparison_group": {"type": "boolean", "default": False},
-    "replace_comparison_tag": {"type": "string"},
-}
-
-
-REPORT_SCHEMA = {
-    MainSections.SECTIONS.value: {
-        "type": "dict",
-        "keysrules": {"type": "string"},
-        "valuesrules": {"type": "dict", "schema": SECTION_SCHEMA},
-    },
-    MainSections.FORMATS.value: {
-        "type": "dict",
-        "keysrules": {"type": "string"},
-        "valuesrules": {"type": "dict"},
-    },
-    MainSections.CONDITIONAL_FORMATS.value: {
-        "type": "dict",
-        "keysrules": {"type": "string"},
-        "valuesrules": {"type": "dict"},
-    },
-    MainSections.SETTINGS.value: {
-        "type": "dict",
-        "keysrules": {"type": "string"},
-        "schema": SETTINGS_SCHEMA,
-    },
-}
 
 
 SPECIAL_FORMATS = ["header", "supheader"]
@@ -163,7 +107,7 @@ def validate_document_entry_types(template_document: dict) -> list[ValidationErr
     Args:
         template_document: A dictionary representation of a `ReportTemplate`. The values
             of the keys "sections", "formats", "conditional_formats", and "settings" are
-            validated according to the `REPORT_SCHEMA`.
+            validated according to the `TEMPLATE_SCHEMA`.
 
     Returns:
         A list of `ValidationError`s of type TYPE_ERROR and level CRITICAL. Each entry
@@ -173,7 +117,7 @@ def validate_document_entry_types(template_document: dict) -> list[ValidationErr
     validator = cerberus.Validator()
     validator.allow_unknown = True
     validator.require_all = False
-    validator.validate(template_document, REPORT_SCHEMA)
+    validator.validate(template_document, TEMPLATE_SCHEMA)
 
     errors = []
     for field, description in _flatten_cerberus_errors(validator.errors):
