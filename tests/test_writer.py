@@ -184,9 +184,10 @@ class TestIntegrationTableSectionWriteColumn:
         assert written_col_width > 100
 
     def test_conditional_format_applied_to_correct_area(self):
-        conditional_format = list(self.worksheet.conditional_formatting)[0]
-        conditional_format.cells.ranges[0].top == [(3, 2)]
-        conditional_format.cells.ranges[0].bottom == [(5, 2)]
+        conditional_format_one = list(self.worksheet.conditional_formatting)[0]
+        cell_ranges = list(conditional_format_one.cells.ranges)
+        cell_ranges[0].top == [(3, 2)]
+        cell_ranges[0].bottom == [(5, 2)]
 
 
 class TestTableSectionWriteColumn:
@@ -288,7 +289,9 @@ class TestIntegrationTableSectionWriteSupheader:
     @pytest.mark.parametrize("num_columns", [2, 4, 10])
     def test_supheader_cell_is_merged(self, num_columns):
         worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=num_columns)  # fmt: skip
-        merged_cells = list(worksheet.merged_cells.ranges[0].cells)
+        # Note that the cell ranges are not be equally sorted in different openpyxl versions
+        cell_ranges = list(worksheet.merged_cells.ranges)
+        merged_cells = list(cell_ranges[0].cells)
         assert merged_cells == [(1, i) for i in range(1, num_columns + 1)]
 
     def test_no_merge_applied_when_written_with_only_one_column(self):
