@@ -25,6 +25,9 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+tests = ["pytest >= 7.1.2", "openpyxl >= 3.0.10"]
+
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
