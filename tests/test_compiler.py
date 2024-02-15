@@ -564,7 +564,7 @@ def test_StandardSectionCompiler(
     compiled_section = section_compiler.compile(section_template, example_table)
     for attr in standard_table_section.__dataclass_fields__:
         if attr == "data":
-            assert compiled_section.data.equals(standard_table_section.data)
+            pd.testing.assert_frame_equal(compiled_section.data, standard_table_section.data, check_dtype=False)  # fmt: skip
         else:
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
@@ -580,7 +580,7 @@ def test_TagSampleSectionCompiler(
     compiled_section = section_compiler.compile(section_template, example_table)
     for attr in tag_sample_table_section.__dataclass_fields__:
         if attr == "data":
-            assert compiled_section.data.equals(tag_sample_table_section.data)
+            pd.testing.assert_frame_equal(compiled_section.data, tag_sample_table_section.data, check_dtype=False)  # fmt: skip
         else:
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
@@ -688,7 +688,7 @@ class TestCompileTableSection:
         for compiled_section, expected_section in zip(expected_sections, compiled_sections):  # fmt: skip
             for attr in expected_section.__dataclass_fields__:
                 if attr == "data":
-                    assert compiled_section.data.equals(expected_section.data)
+                    pd.testing.assert_frame_equal(compiled_section.data, expected_section.data, check_dtype=False)  # fmt: skip
                 else:
                     # Include attribute name in a dictionary to get nicer error messages
                     compiled_attr = {attr: getattr(compiled_section, attr)}

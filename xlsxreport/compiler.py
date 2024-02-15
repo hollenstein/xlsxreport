@@ -1,4 +1,5 @@
 """Contains functions for compiling table sections from a report template and a table."""
+
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
@@ -28,8 +29,7 @@ class ReportTemplate(Protocol):
 class SectionCompiler(Protocol):
     """Protocol for section compilers."""
 
-    def __init__(self, report_template: ReportTemplate):
-        ...
+    def __init__(self, report_template: ReportTemplate): ...
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
@@ -366,7 +366,10 @@ def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     Returns:
         A copy of the table with only the selected columns NaN values replaced.
     """
-    data = table[columns].astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
+    data = table[columns]
+    nan_values = data.isna()
+    data = data.astype("object")
+    data[nan_values] = NAN_REPLACEMENT_SYMBOL
     return data
 
 
@@ -400,7 +403,10 @@ def eval_data_with_log2_transformation(
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
         data = np.log2(data)
-    data = data.astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
+
+    nan_values = data.isna()
+    data = data.astype("object")
+    data[nan_values] = NAN_REPLACEMENT_SYMBOL
     return data
 
 
