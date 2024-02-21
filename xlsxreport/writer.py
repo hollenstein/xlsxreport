@@ -1,11 +1,12 @@
 """This module provides a class for writing compiled TableSections to an Excel file."""
+
 from __future__ import annotations
 from typing import Collection, Iterable, Optional, Protocol
 import warnings
 
 import pandas as pd
-import xlsxwriter.format
-import xlsxwriter.worksheet
+import xlsxwriter.format  # type: ignore
+import xlsxwriter.worksheet  # type: ignore
 
 
 class TableSection(Protocol):
@@ -67,7 +68,7 @@ class TableSectionWriter:
                 sections at. The first column as seen in Excel starts at 0. The default
                 is 0.
         """
-        settings: dict = settings if settings is not None else {}
+        settings = settings if settings is not None else {}
         write_supheader: bool = settings.get("write_supheader", False)
         supheader_height: float = settings.get("supheader_height", 20)
         header_height: float = settings.get("header_height", 20)

@@ -8,8 +8,11 @@
   "sections" main section, including the parameter types and for some a default value.
 """
 
+from __future__ import annotations
+from typing import Any
 
-SETTINGS_SCHEMA = {
+
+SETTINGS_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "supheader_height": {"type": "float", "min": 0, "default": 20},
     "header_height": {"type": "float", "min": 0, "default": 20},
     "column_width": {"type": "float", "min": 0, "default": 64},
@@ -24,7 +27,7 @@ SETTINGS_SCHEMA = {
 }
 
 
-SECTION_SCHEMA = {
+SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "format": {"type": "string"},
     "column_format": {"type": "dict"},
     "conditional": {"type": "string"},
@@ -43,7 +46,7 @@ SECTION_SCHEMA = {
 }
 
 
-TEMPLATE_SCHEMA = {
+TEMPLATE_SCHEMA: dict[str, dict[str, Any]] = {
     "sections": {
         "type": "dict",
         "keysrules": {"type": "string"},

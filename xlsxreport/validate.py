@@ -6,15 +6,15 @@ Main API functions:
 - validate_template_content(template_document: dict)
 """
 
-
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 import logging
+from typing import Any
 import warnings
 
-import cerberus
-import xlsxwriter
+import cerberus  # type: ignore
+import xlsxwriter  # type: ignore
 import yaml
 
 from xlsxreport.schemas import TEMPLATE_SCHEMA, SETTINGS_SCHEMA
@@ -52,7 +52,7 @@ class ValidationErrorType(Enum):
 class ValidationError:
     error_type: ValidationErrorType
     error_level: ErrorLevel
-    field: tuple[str]
+    field: tuple[str, ...]
     description: str
 
     def __post_init__(self):
@@ -210,7 +210,7 @@ def validate_template_file_loading(filepath: str) -> list[ValidationError]:
 
 
 def validate_template_document_root_type(
-    template_document: dict | any,
+    template_document: dict | Any,
 ) -> list[ValidationError]:
     """Check if the root of the YAML document is a dictionary.
 

@@ -316,7 +316,7 @@ def compile_remaining_column_table_section(
     Returns:
         A compiled table section containing all columns not present in other sections.
     """
-    observed_columns = set()
+    observed_columns: set = set()
     for section in table_sections:
         observed_columns.update(section.data.columns)
     selected_cols = [column for column in table if column not in observed_columns]
@@ -336,7 +336,7 @@ def compile_remaining_column_table_section(
 
 def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
     """Remove duplicate columns from table sections, keeping only the first occurance."""
-    observed_columns = set()
+    observed_columns: set = set()
     for section in table_sections:
         to_remove = [col for col in section.data.columns if col in observed_columns]
         section.data = section.data.drop(columns=to_remove)
@@ -402,7 +402,7 @@ def eval_data_with_log2_transformation(
         if not data.select_dtypes(exclude=["number"]).columns.empty:
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
-        data = np.log2(data)
+        data = np.log2(data)  # type: ignore
 
     nan_values = data.isna()
     data = data.astype("object")
@@ -709,8 +709,8 @@ def eval_column_conditional_formats(
     Returns:
         A dictionary containing conditional format descriptions for each column.
     """
-    default_format = {}
-    column_formats = {}
+    default_format: dict = {}
+    column_formats: dict = {}
     for col in columns:
         format_name = None
         if "column_conditional" in section_template:
@@ -838,7 +838,7 @@ def identify_template_section_category(section_template: dict) -> SectionCategor
     return SectionCategory.UNKNOWN
 
 
-def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> bool:
+def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.bool_:
     """Evaluates whether intensities are likely to be log transformed.
 
     Assumes that intensities are log transformed if all values are smaller or
