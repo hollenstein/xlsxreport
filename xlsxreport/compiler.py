@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Iterable, Optional, Protocol, Sequence
+import re
 
 import numpy as np
 import pandas as pd
@@ -434,24 +435,28 @@ def eval_tag_sample_section_columns(
 
     Args:
         columns: A list of column names to select from.
-        section_template: A dictionary containing the columns to be selected as the
-            values of the "columns" key.
-        extraction_tag: The tag used to extract sample names from the columns.
+        section_template: A dictionary containing the key "tag", which is a regular
+            expression pattern used to select the section columns.
+        extraction_tag: A regular expression pattern used to select columns containing
+            the sample names. Samples names are extracted from the columns by removing
+            the matched pattern and stripping whitespace characters from the result.
+            All selected columns must contain any of the sample names t
 
     Returns:
         A list of sample columns that contain the `section_template["tag"]`.
     """
     samples = []
-    for col in columns:
-        if extraction_tag not in col or col == extraction_tag:
-            continue
-        samples.append(col.replace(extraction_tag, "").strip(WHITESPACE_CHARS))
+    for col in [c for c in columns if re.search(extraction_tag, c)]:
+        sample_string = re.sub(extraction_tag, "", col).strip(WHITESPACE_CHARS)
+        if sample_string:
+            samples.append(sample_string)
 
     selected_columns = []
-    for col in columns:
-        sample_query = col.replace(section_template["tag"], "").strip(WHITESPACE_CHARS)
-        if section_template["tag"] in col and sample_query in samples:
+    for col in [c for c in columns if re.search(section_template["tag"], c)]:
+        sample_string = re.sub(section_template["tag"], "", col).strip(WHITESPACE_CHARS)
+        if sample_string in samples:
             selected_columns.append(col)
+
     return selected_columns
 
 

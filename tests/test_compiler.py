@@ -171,14 +171,41 @@ def test_eval_standard_section_columns_selects_correct_columns():
     assert selected_columns == ["Column 1", "Column 2"]
 
 
-def test_eval_tag_sample_section_columns_selects_correct_columns():
-    section_template = {"tag": "Tag"}
-    columns = ["Tag Sample 1", "Tag Sample 2", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
-    extraction_tag = "Atag"
-    selected_columns = compiler.eval_tag_sample_section_columns(
-        columns, section_template, extraction_tag
+class TestEvalTagSampleSectionColumns:
+    def test_selects_correct_columns_with_different_extraction_tag(self):
+        section_template = {"tag": "Tag"}
+        columns = ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
+        extraction_tag = "Atag"
+        selected_columns = compiler.eval_tag_sample_section_columns(
+            columns, section_template, extraction_tag
+        )
+        assert selected_columns == ["Tag Sample 1", "Tag Sample 2"]
+
+    def test_selects_correct_columns_with_identical_tag_and_extraction_tag(self):
+        section_template = {"tag": "Tag"}
+        columns = ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
+        selected_columns = compiler.eval_tag_sample_section_columns(
+            columns, section_template, extraction_tag=section_template["tag"]
+        )
+        assert selected_columns == ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3"]
+
+    @pytest.mark.parametrize(
+        "tag, expected_selection",
+        [
+            ("Tag", ["Tag S1", "Tag S2", "S3 Tag"]),
+            ("^Tag", ["Tag S1", "Tag S2"]),
+            ("^Tag.", ["Tag S1", "Tag S2"]),
+            (".Tag$", ["S3 Tag"]),
+            ("^Tag.|.Tag$", ["Tag S1", "Tag S2", "S3 Tag"]),
+        ],
     )
-    assert selected_columns == ["Tag Sample 1", "Tag Sample 2"]
+    def test_correct_columns_selected_with_regex_tag(self, tag, expected_selection):
+        section_template = {"tag": tag}
+        columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
+        selected_columns = compiler.eval_tag_sample_section_columns(
+            columns, section_template, extraction_tag=section_template["tag"]
+        )
+        assert selected_columns == expected_selection
 
 
 def test_eval_comparison_groups_extracts_correct_values():

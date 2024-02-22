@@ -64,8 +64,7 @@ In a `default section` columns are directly selected by specifying a list of col
 --- *Note: Description missing* ---
 
 #### Tag sample sections
-In a `tag sample section`, columns are not directly specified with a `columns` parameter but rather by specifying a `tag` that allows the selection of columns containing a specific substring, but that also have a part of the column name different in each CSV file. This allows for example to create a section containing all sample intensity columns, irrespective of how the samples are named. A second, global parameter called `sample_extraction_tag` is used to determine the sample names that together with the specified `tag` make up the column names. The `sample_extraction_tag` is defined in the `settings` area of the template file.
-
+In a `tag sample section`, columns are not directly specified with a `columns` parameter but rather by specifying a `tag` that allows the selection of columns containing a specific substring, but that also have a part of the column name different in each CSV file. The `tag` is used as a regular expression pattern to find matching colummns. This allows for example to create a section containing all "Intensity" columns, irrespective of how the samples are named. A second, global parameter called `sample_extraction_tag` is used to determine the sample names that together with the specified `tag` make up the column names. The `sample_extraction_tag` is also a regular expression pattern that is used to find the corresponding part in column names and extract the sample names as the remainder. The `sample_extraction_tag` is defined in the `settings` area of the template file.
 
 ##### Additional section parameters
 - Required: `tag: str`<br>
@@ -103,7 +102,7 @@ and a CSV file with the following columns
 | ---------- | ------------------ | ------------------ |
 | P40238     | 1,000,000          | 2,000,000          |
 
- When generating a report, XlsxReport first extracts sample names by looking for columns containing the `sample_extraction_tag`, removing the tag, and removing leading or trailing white space characters. The remaining strings, in this case "sample_1" and "sample_2", are used as the extracted sample names for all `tag sample sections` of the report template. To assembly the `tag sample section`, columns are selected that contain a combination of the specified `tag`, i.e. "Intensity", and any of the extracted sample names, which are "Intensity sample_1" and "Intensity sample_2".
+ When generating a report, XlsxReport first extracts sample names by looking for columns matching the `sample_extraction_tag` regular expression pattern, removing the matched string, and removing leading or trailing white space characters. The remaining strings, in this case "sample_1" and "sample_2", are used as the extracted sample names for all `tag sample sections` of the report template. To assemble the "intensities" section, columns are selected that match the regular expression pattern specified with `tag`, i.e. "Intensity", and any of the extracted sample names, which resulst in the selection of the columns "Intensity sample_1" and "Intensity sample_2".
 
 
 #### The comparison section
