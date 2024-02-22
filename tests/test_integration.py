@@ -11,6 +11,9 @@ from xlsxreport.template import ReportTemplate
 from xlsxreport.compiler import prepare_table_sections
 
 
+TESTDATA_DIRECTORY = os.path.join(os.path.dirname(__file__), "testdata")
+
+
 @pytest.fixture()
 def temp_excel_path(request, tmp_path):
     output_path = os.path.join(tmp_path, "output.xlsx")
@@ -25,8 +28,8 @@ def temp_excel_path(request, tmp_path):
 
 class TestCorrectCreationOfFormattedExcelFile:
     def test_new_xlsx_report_implementation(self, temp_excel_path):
-        template_path = "./tests/testdata/mq_protein_template.yaml"
-        mq_path = "./tests/testdata/mq_proteinGroups.txt"
+        template_path = os.path.join(TESTDATA_DIRECTORY, "mq_protein_template.yaml")
+        mq_path = os.path.join(TESTDATA_DIRECTORY, "mq_proteinGroups.txt")
         table = pd.read_csv(mq_path, sep="\t")
 
         report_template = ReportTemplate.load(template_path)
@@ -38,7 +41,7 @@ class TestCorrectCreationOfFormattedExcelFile:
                 worksheet, table_sections, settings=report_template.settings
             )
 
-        reference_excel_path = "./tests/testdata/mq_proteinGroups.xlsx"
+        reference_excel_path = os.path.join(TESTDATA_DIRECTORY, "mq_proteinGroups.xlsx")
         with open(reference_excel_path, "rb") as f1, open(temp_excel_path, "rb") as f2:
             wb1 = openpyxl.load_workbook(f1)
             wb2 = openpyxl.load_workbook(f2)
