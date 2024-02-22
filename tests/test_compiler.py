@@ -641,6 +641,20 @@ class TestComparisonSectionCompiler:
         assert compiled_sections[1].supheader == "ex1 / EX3"
 
 
+class TestGetSectionCompiler:
+    @pytest.mark.parametrize("section_category", list(compiler.SectionCategory))
+    def test_value_error_is_only_raised_for_unknown_section_category(self, section_category):  # fmt: skip
+        if section_category != compiler.SectionCategory.UNKNOWN:
+            compiler.get_section_compiler(section_category)
+        else:
+            with pytest.raises(ValueError):
+                compiler.get_section_compiler(section_category)
+
+    def test_not_implemented_error_is_raised_for_section_category_with_no_compiler(self):  # fmt: skip
+        with pytest.raises(NotImplementedError):
+            compiler.get_section_compiler("not a section category")
+
+
 class TestPrepareTableSections:
     def test_only_non_empty_sections_are_returned(self, report_template):
         table = pd.DataFrame({"Tag Sample 1": [1], "Tag Sample 2": [1]})

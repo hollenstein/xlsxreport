@@ -222,21 +222,21 @@ class ComparisonSectionCompiler:
         return table_sections
 
 
-def get_section_compiler(section_template: dict) -> type[SectionCompiler]:
-    """Get the section compiler function for a section template."""
-    section_category = identify_template_section_category(section_template)
+def get_section_compiler(section_category: SectionCategory) -> type[SectionCompiler]:
+    """Get the appropriate section compiler for a section category."""
+    compiler_map: dict[SectionCategory, type[SectionCompiler]] = {
+        SectionCategory.STANDARD: StandardSectionCompiler,
+        SectionCategory.TAG_SAMPLE: TagSampleSectionCompiler,
+        SectionCategory.COMPARISON: ComparisonSectionCompiler,
+    }
+
     if section_category == SectionCategory.UNKNOWN:
         raise ValueError("Unknown section category.")
-    elif section_category == SectionCategory.STANDARD:
-        return StandardSectionCompiler
-    elif section_category == SectionCategory.TAG_SAMPLE:
-        return TagSampleSectionCompiler
-    elif section_category == SectionCategory.COMPARISON:
-        return ComparisonSectionCompiler
-    else:
+    if section_category not in compiler_map:
         raise NotImplementedError(
             f"Section compiler not implemented for category {section_category}."
         )
+    return compiler_map[section_category]
 
 
 def prepare_table_sections(
@@ -289,7 +289,7 @@ def compile_table_sections(
         if section_category == SectionCategory.UNKNOWN:
             continue
 
-        SectionCompilerClass = get_section_compiler(section_template)
+        SectionCompilerClass = get_section_compiler(section_category)
         section_compiler = SectionCompilerClass(report_template)
         compiled_section = section_compiler.compile(section_template, table)
         if isinstance(compiled_section, TableSection):
