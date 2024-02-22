@@ -27,10 +27,14 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 tests = ["pytest >= 7.1.2", "openpyxl >= 3.0.10"]
+dev = ["nox", "pytest >= 7.1.2", "openpyxl >= 3.0.10"]
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+xlsxreport = ["default_templates/*.yaml"]
 
 [tool.setuptools.dynamic]
 version = { attr = "xlsxreport.__version__" }
