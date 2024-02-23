@@ -1,10 +1,11 @@
 """Command to compile a formatted Excel from a csv file and a formatting template."""
+
 import os
 import warnings
 
 import click
 import pandas as pd
-import xlsxwriter
+import xlsxwriter  # type: ignore
 
 from xlsxreport import (
     get_template_path,
