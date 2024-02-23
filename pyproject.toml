@@ -40,8 +40,7 @@ xlsxreport = ["default_templates/*.yaml"]
 version = { attr = "xlsxreport.__version__" }
 
 [project.scripts]
-xlsxreport_setup = "xlsxreport.scripts.setup_appdata_dir:cli"
-xlsxreport = "xlsxreport.scripts.report:cli"
+xlsxreport = "xlsxreport.scripts.cli:cli"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
