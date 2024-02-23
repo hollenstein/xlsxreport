@@ -1,6 +1,6 @@
 [project]
 name = "xlsxreport"
-description = "Automatic generation of formatted excel reports from MS results"
+description = "Automated generation of formatted excel reports from MS results"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 authors = [
