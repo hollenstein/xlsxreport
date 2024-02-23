@@ -225,19 +225,13 @@ class ComparisonSectionCompiler:
 
 def get_section_compiler(section_category: SectionCategory) -> type[SectionCompiler]:
     """Get the appropriate section compiler for a section category."""
-    compiler_map: dict[SectionCategory, type[SectionCompiler]] = {
-        SectionCategory.STANDARD: StandardSectionCompiler,
-        SectionCategory.TAG_SAMPLE: TagSampleSectionCompiler,
-        SectionCategory.COMPARISON: ComparisonSectionCompiler,
-    }
-
     if section_category == SectionCategory.UNKNOWN:
         raise ValueError("Unknown section category.")
-    if section_category not in compiler_map:
+    if section_category not in _CATEGORY_COMPILER_MAP:
         raise NotImplementedError(
             f"Section compiler not implemented for category {section_category}."
         )
-    return compiler_map[section_category]
+    return _CATEGORY_COMPILER_MAP[section_category]
 
 
 def prepare_table_sections(
@@ -863,3 +857,10 @@ def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.b
     data = np.array(data, dtype=float)
     mask = np.isfinite(data)
     return np.all(data[mask].flatten() <= 64)
+
+
+_CATEGORY_COMPILER_MAP: dict[SectionCategory, type[SectionCompiler]] = {
+    SectionCategory.STANDARD: StandardSectionCompiler,
+    SectionCategory.TAG_SAMPLE: TagSampleSectionCompiler,
+    SectionCategory.COMPARISON: ComparisonSectionCompiler,
+}
