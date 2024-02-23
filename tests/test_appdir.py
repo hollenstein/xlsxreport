@@ -12,7 +12,8 @@ def test_locate_appdir(user_data_dir):
 
 
 def test_get_default_template_files_returns_yaml_files():
-    default_template_files = appdir._get_default_template_files()
+    default_template_files = list(appdir._get_default_template_files())
+    assert len(default_template_files) > 0
     assert any([fn.name.endswith(".yaml") for fn in default_template_files])
 
 
