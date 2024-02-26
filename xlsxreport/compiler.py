@@ -34,7 +34,7 @@ class SectionCompiler(Protocol):
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
-    ) -> TableSection | list[TableSection]:
+    ) -> CompiledTableSection | list[CompiledTableSection]:
         """Compile a table section from a section template and a table."""
         ...
 
@@ -49,7 +49,7 @@ class SectionCategory(Enum):
 
 
 @dataclass
-class TableSection:
+class CompiledTableSection:
     """Contains information for writing and formatting a section of a table.
 
     Note that the `data` DataFrame must not contain any NaN values.
@@ -92,7 +92,9 @@ class StandardSectionCompiler:
         self.conditional_formats = report_template.conditional_formats
         self.settings = report_template.settings
 
-    def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> CompiledTableSection:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(table.columns, section_template)
         data = eval_data(table, selected_cols)
@@ -115,7 +117,7 @@ class StandardSectionCompiler:
         )
         hide_section = section_template.get("hide_section", False)
 
-        return TableSection(
+        return CompiledTableSection(
             data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
@@ -137,7 +139,9 @@ class TagSampleSectionCompiler:
         self.conditional_formats = report_template.conditional_formats
         self.settings = report_template.settings
 
-    def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> CompiledTableSection:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_tag_sample_section_columns(
             table.columns, section_template, self.settings["sample_extraction_tag"]
@@ -171,7 +175,7 @@ class TagSampleSectionCompiler:
         )
         hide_section = section_template.get("hide_section", False)
 
-        return TableSection(
+        return CompiledTableSection(
             data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
@@ -193,7 +197,7 @@ class ComparisonSectionCompiler:
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
-    ) -> list[TableSection]:
+    ) -> list[CompiledTableSection]:
         """Compile table sections from a comparison section template and a table."""
 
         comparison_groups = eval_comparison_groups(table.columns, section_template)
@@ -237,7 +241,7 @@ def get_section_compiler(section_category: SectionCategory) -> type[SectionCompi
 def prepare_table_sections(
     report_template: ReportTemplate,
     table: pd.DataFrame,
-) -> list[TableSection]:
+) -> list[CompiledTableSection]:
     """Compile non-empty table sections from a report template and a table.
 
     First the table sections are compiled from the report template and the table. If the
@@ -267,7 +271,7 @@ def prepare_table_sections(
 
 def compile_table_sections(
     report_template: ReportTemplate, table: pd.DataFrame
-) -> list[TableSection]:
+) -> list[CompiledTableSection]:
     """Compile table sections from a report template and a table.
 
     Args:
@@ -287,7 +291,7 @@ def compile_table_sections(
         SectionCompilerClass = get_section_compiler(section_category)
         section_compiler = SectionCompilerClass(report_template)
         compiled_section = section_compiler.compile(section_template, table)
-        if isinstance(compiled_section, TableSection):
+        if isinstance(compiled_section, CompiledTableSection):
             table_sections.append(compiled_section)
         else:
             table_sections.extend(compiled_section)
@@ -297,9 +301,9 @@ def compile_table_sections(
 
 def compile_remaining_column_table_section(
     report_template: ReportTemplate,
-    table_sections: Iterable[TableSection],
+    table_sections: Iterable[CompiledTableSection],
     table: pd.DataFrame,
-) -> TableSection:
+) -> CompiledTableSection:
     """Compile a table section containing all columns not present in other sections.
 
     Args:
@@ -329,7 +333,7 @@ def compile_remaining_column_table_section(
     return section
 
 
-def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
+def prune_table_sections(table_sections: Iterable[CompiledTableSection]) -> None:
     """Remove duplicate columns from table sections, keeping only the first occurance."""
     observed_columns: set = set()
     for section in table_sections:
@@ -345,8 +349,8 @@ def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
 
 
 def remove_empty_table_sections(
-    table_sections: Iterable[TableSection],
-) -> list[TableSection]:
+    table_sections: Iterable[CompiledTableSection],
+) -> list[CompiledTableSection]:
     """Returns a list of non-empty table sections."""
     return [section for section in table_sections if not section.data.empty]
 

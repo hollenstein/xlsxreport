@@ -77,12 +77,12 @@ def compile_excel(infile: str, template: str, outpath: str, sep: str = "\t") -> 
         table = pd.read_csv(infile, sep=sep)
 
     report_template = ReportTemplate.load(template)
-    table_sections = prepare_table_sections(report_template, table)
+    compiled_table_sections = prepare_table_sections(report_template, table)
     with xlsxwriter.Workbook(outpath) as workbook:
         worksheet = workbook.add_worksheet("Report")
         section_writer = TableSectionWriter(workbook)
         section_writer.write_sections(
-            worksheet, table_sections, settings=report_template.settings
+            worksheet, compiled_table_sections, settings=report_template.settings
         )
 
 

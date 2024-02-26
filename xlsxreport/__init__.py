@@ -11,8 +11,8 @@ Exposes the following functions and classes:
         table (pandas.DataFrame) and a `ReportTemplate`.
     - ReportTemplate (class): Python representation of a YAML template file. Can be
         used to load, edit, and save report template files.
-    - TableSectionWriter (class): Provides an interface for writing a list of compiled
-        `TableSection`s to an Excel file by using the `xlsxwriter` package.
+    - TableSectionWriter (class): Provides an interface for writing a list of
+        `CompiledTableSection`s to an Excel file by using the `xlsxwriter` package.
 """
 
 from xlsxreport.appdir import get_template_path

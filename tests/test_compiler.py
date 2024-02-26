@@ -66,8 +66,8 @@ def example_table() -> pd.DataFrame:
 
 
 @pytest.fixture()
-def standard_table_section(report_template, example_table) -> compiler.TableSection:
-    table_section = compiler.TableSection(
+def standard_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
+    table_section = compiler.CompiledTableSection(
         data=example_table[["Column 1", "Column 2"]].copy(),
         column_formats={
             "Column 1": report_template.formats["float"],
@@ -94,8 +94,8 @@ def standard_table_section(report_template, example_table) -> compiler.TableSect
 
 
 @pytest.fixture()
-def tag_sample_table_section(report_template, example_table) -> compiler.TableSection:
-    table_section = compiler.TableSection(
+def tag_sample_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
+    table_section = compiler.CompiledTableSection(
         data=np.log2(example_table[["Tag Sample 1", "Tag Sample 2"]].copy()),
         column_formats={
             "Tag Sample 1": report_template.formats["float"],
@@ -778,9 +778,9 @@ class TestCompileRemaininColumnTableSection:
 class TestPruneTableSections:
     def test_duplicate_columns_removed_from_latter_sections(self):
         sections = [
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C3"])),
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C4"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C3"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C4"])),
         ]
         compiler.prune_table_sections(sections)
         assert sections[0].data.columns.tolist() == ["C1", "C2"]
@@ -789,8 +789,8 @@ class TestPruneTableSections:
 
     def test_removal_of_all_columns_from_a_section_returns_an_empty_section(self):
         sections = [
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
         ]
         compiler.prune_table_sections(sections)
         assert sections[0].data.columns.tolist() == ["C1", "C2"]
@@ -798,8 +798,8 @@ class TestPruneTableSections:
 
     def test_unique_columns_not_removed(self):
         sections = [
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.TableSection(data=pd.DataFrame(columns=["C3", "C4"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C3", "C4"])),
         ]
         compiler.prune_table_sections(sections)
         for section in sections:
@@ -812,8 +812,8 @@ class TestPruneTableSections:
 
     def test_column_removed_from_all_section_parameters(self):
         sections = [
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.TableSection(data=pd.DataFrame(columns=["C1", "C3"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C3"])),
         ]
         compiler.prune_table_sections(sections)
         assert sections[1].data.columns.tolist() == ["C3"]
@@ -826,9 +826,9 @@ class TestPruneTableSections:
 
 def test_remove_empty_table_sections():
     sections = [
-        compiler.TableSection(data=pd.DataFrame({"C1": [1]})),
-        compiler.TableSection(data=pd.DataFrame({})),
-        compiler.TableSection(data=pd.DataFrame({"C2": [1]})),
+        compiler.CompiledTableSection(data=pd.DataFrame({"C1": [1]})),
+        compiler.CompiledTableSection(data=pd.DataFrame({})),
+        compiler.CompiledTableSection(data=pd.DataFrame({"C2": [1]})),
     ]
     filtered_sections = compiler.remove_empty_table_sections(sections)
     assert all([not s.data.empty for s in filtered_sections])

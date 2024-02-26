@@ -42,8 +42,8 @@ class ExcelWriteReadTestManager:
 
 
 @pytest.fixture()
-def table_section() -> compiler.TableSection:
-    section = compiler.TableSection(
+def table_section() -> compiler.CompiledTableSection:
+    section = compiler.CompiledTableSection(
         data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
         column_widths={"Column 1": 10, "Column 2": 10},
     )
@@ -61,10 +61,10 @@ class TestTableSectionWriteSections:
 
     @pytest.fixture(autouse=True)
     def _init_table_sections(self):
-        section_1 = compiler.TableSection(
+        section_1 = compiler.CompiledTableSection(
             data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
         )
-        section_2 = compiler.TableSection(
+        section_2 = compiler.CompiledTableSection(
             data=pd.DataFrame({"Column 3": [1, 2, 3], "Column 4": ["A", "B", "C"]}),
         )
         self.headers = list(section_1.headers) + list(section_2.headers)

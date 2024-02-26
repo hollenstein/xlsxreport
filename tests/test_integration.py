@@ -33,12 +33,12 @@ class TestCorrectCreationOfFormattedExcelFile:
         table = pd.read_csv(mq_path, sep="\t")
 
         report_template = ReportTemplate.load(template_path)
-        table_sections = prepare_table_sections(report_template, table)
+        compiled_table_sections = prepare_table_sections(report_template, table)
         with xlsxwriter.Workbook(temp_excel_path) as workbook:
             worksheet = workbook.add_worksheet("Proteins")
             section_writer = TableSectionWriter(workbook)
             section_writer.write_sections(
-                worksheet, table_sections, settings=report_template.settings
+                worksheet, compiled_table_sections, settings=report_template.settings
             )
 
         reference_excel_path = os.path.join(TESTDATA_DIRECTORY, "mq_proteinGroups.xlsx")
