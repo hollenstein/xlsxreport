@@ -283,7 +283,8 @@ def compile_table_sections(
         A list of compiled table sections.
     """
     table_sections = []
-    for section_template in report_template.sections.values():
+    for section in report_template.sections.values():
+        section_template = section.to_dict()
         section_category = identify_template_section_category(section_template)
         if section_category == SectionCategory.UNKNOWN:
             continue

@@ -4,6 +4,7 @@ import pandas as pd
 
 import xlsxreport.compiler as compiler
 from xlsxreport.template import ReportTemplate
+from xlsxreport.section import TemplateSection
 
 
 @pytest.fixture()
@@ -587,7 +588,7 @@ def test_StandardSectionCompiler(
     report_template, example_table, standard_table_section
 ):
     section_compiler = compiler.StandardSectionCompiler(report_template)
-    section_template = report_template.sections["Standard section 1"]
+    section_template = report_template.sections["Standard section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)
     for attr in standard_table_section.__dataclass_fields__:
         if attr == "data":
@@ -603,7 +604,7 @@ def test_TagSampleSectionCompiler(
     report_template, example_table, tag_sample_table_section
 ):
     section_compiler = compiler.TagSampleSectionCompiler(report_template)
-    section_template = report_template.sections["Tag sample section 1"]
+    section_template = report_template.sections["Tag sample section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)
     for attr in tag_sample_table_section.__dataclass_fields__:
         if attr == "data":
@@ -689,7 +690,7 @@ class TestPrepareTableSections:
         assert all([not s.data.empty for s in compiled_sections])
 
     def test_duplicate_columns_are_removed(self, report_template, example_table):
-        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
         compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
         observed_columns = []
         for section in compiled_sections:
@@ -697,7 +698,7 @@ class TestPrepareTableSections:
         assert len(set(observed_columns)) == len(observed_columns)
 
     def test_duplicate_columns_are_kept_when_setting_is_false(self, report_template, example_table):  # fmt: skip
-        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
         report_template.settings["remove_duplicate_columns"] = False
         compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
         assert compiled_sections[-1].data.columns.tolist() == ["Column 1"]
@@ -705,7 +706,7 @@ class TestPrepareTableSections:
     def test_empty_sections_caused_by_removal_of_duplicate_columns_are_not_returned(
         self, report_template, example_table
     ):
-        report_template.sections["Another section"] = {"columns": ["Column 1"]}
+        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
         compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
         assert all([not s.data.empty for s in compiled_sections])
 
@@ -747,7 +748,7 @@ class TestCompileTableSection:
     def test_invalid_sections_are_not_compiled(
         self, report_template, example_table, section
     ):
-        report_template.sections = {"invalid": section}
+        report_template.sections = {"invalid": TemplateSection(section)}
         compiled_sections = compiler.compile_table_sections(report_template, example_table)  # fmt: skip
         assert len(compiled_sections) == 0
 

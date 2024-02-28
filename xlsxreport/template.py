@@ -29,6 +29,7 @@ from xlsxreport.validate import (
     validate_document_entry_types,
     validate_template_file_integrity,
 )
+from xlsxreport.section import TemplateSection
 
 
 class ReportTemplate:
@@ -64,21 +65,27 @@ class ReportTemplate:
                 template.
             settings: A dictionary of settings for the report template.
         """
-        self.sections = {} if sections is None else sections
-        self.formats = {} if formats is None else formats
-        self.conditional_formats = (
-            {} if conditional_formats is None else conditional_formats
-        )
-        self.settings = {} if settings is None else settings
-
-        if errors := validate_document_entry_types(self.to_dict()):
+        document = {
+            "sections": {} if sections is None else sections,
+            "formats": {} if formats is None else formats,
+            "conditional_formats": (
+                {} if conditional_formats is None else conditional_formats
+            ),
+            "settings": {} if settings is None else settings,
+        }
+        if errors := validate_document_entry_types(document):
             error_message = "\n".join([error.message for error in errors])
             raise ValueError(f"invalid initialization parameters\n{error_message}")
+
+        self.sections = {k: TemplateSection(p) for k, p in document["sections"].items()}
+        self.formats = document["formats"]
+        self.conditional_formats = document["conditional_formats"]
+        self.settings = document["settings"]
 
     def to_dict(self) -> dict[str, dict]:
         """Returns a dictionary representation of the `ReportTemplate`."""
         return {
-            "sections": self.sections,
+            "sections": {k: section.to_dict() for k, section in self.sections.items()},
             "formats": self.formats,
             "conditional_formats": self.conditional_formats,
             "settings": self.settings,

@@ -51,13 +51,6 @@ def create_yaml_from_string(tmp_path, content: str = ""):
 
 
 class TestReportTemplate:
-    def test_from_dict_creates_template(self, default_template):
-        template = ReportTemplate.from_dict(default_template)
-        assert template.sections == default_template["sections"]
-        assert template.formats == default_template["formats"]
-        assert template.conditional_formats == default_template["conditional_formats"]  # fmt: skip
-        assert template.settings == default_template["settings"]
-
     def test_to_dict_returns_correct_template_document(self, default_template):
         template = ReportTemplate(
             sections=default_template["sections"],
@@ -67,26 +60,20 @@ class TestReportTemplate:
         )
         assert template.to_dict() == default_template
 
-    def test_round_trip_from_dict_to_dict(self, default_template):
+    def test_from_dict_to_dict_roundtrip(self, default_template):
         template = ReportTemplate.from_dict(default_template)
         assert template.to_dict() == default_template
 
     def test_load_imports_all_sections_properly(self, default_template_path, default_template):  # fmt: skip
         template = ReportTemplate.load(default_template_path)
-        assert template.sections == default_template["sections"]
-        assert template.formats == default_template["formats"]
-        assert template.conditional_formats == default_template["conditional_formats"]
-        assert template.settings == default_template["settings"]
+        assert template.to_dict() == default_template
 
     def test_template_identical_after_load_save_reload(self, default_template_path, tmp_path):  # fmt: skip
         template = ReportTemplate.load(default_template_path)
         saved_template_path = tmp_path / "template_save.yaml"
         template.save(saved_template_path)
         loaded_template = ReportTemplate.load(saved_template_path)
-        assert template.sections == loaded_template.sections
-        assert template.formats == loaded_template.formats
-        assert template.conditional_formats == loaded_template.conditional_formats
-        assert template.settings == loaded_template.settings
+        assert template.to_dict() == loaded_template.to_dict()
 
     def test_init_raises_value_error_when_invalid_parameters_are_passed(self):
         with pytest.raises(ValueError):
