@@ -9,6 +9,8 @@ import re
 import numpy as np
 import pandas as pd
 
+from xlsxreport.section import SectionCategory
+
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
@@ -34,18 +36,9 @@ class SectionCompiler(Protocol):
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
-    ) -> CompiledTableSection | list[CompiledTableSection]:
+    ) -> list[CompiledTableSection]:
         """Compile a table section from a section template and a table."""
         ...
-
-
-class SectionCategory(Enum):
-    """Enum for section categories."""
-
-    UNKNOWN = -1
-    STANDARD = 1
-    TAG_SAMPLE = 2
-    COMPARISON = 3
 
 
 @dataclass
@@ -94,7 +87,7 @@ class StandardSectionCompiler:
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
-    ) -> CompiledTableSection:
+    ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(table.columns, section_template)
         data = eval_data(table, selected_cols)
@@ -116,8 +109,7 @@ class StandardSectionCompiler:
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
-
-        return CompiledTableSection(
+        compiled_section = CompiledTableSection(
             data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
@@ -129,6 +121,7 @@ class StandardSectionCompiler:
             section_conditional=section_conditional,
             hide_section=hide_section,
         )
+        return [compiled_section]
 
 
 class TagSampleSectionCompiler:
@@ -141,7 +134,7 @@ class TagSampleSectionCompiler:
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
-    ) -> CompiledTableSection:
+    ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_tag_sample_section_columns(
             table.columns, section_template, self.settings["sample_extraction_tag"]
@@ -174,8 +167,7 @@ class TagSampleSectionCompiler:
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
-
-        return CompiledTableSection(
+        compiled_section = CompiledTableSection(
             data=data,
             column_formats=col_formats,
             column_conditionals=col_conditionals,
@@ -187,13 +179,14 @@ class TagSampleSectionCompiler:
             section_conditional=section_conditional,
             hide_section=hide_section,
         )
+        return [compiled_section]
 
 
 class ComparisonSectionCompiler:
     """Compiler for comparison table sections."""
 
     def __init__(self, report_template: ReportTemplate):
-        self.standard_compiler = StandardSectionCompiler(report_template)
+        self.std_compiler = StandardSectionCompiler(report_template)
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
@@ -218,7 +211,7 @@ class ComparisonSectionCompiler:
             std_section_template["column_conditional"] = col_conditionals
             std_section_template["supheader"] = supheader
 
-            table_section = self.standard_compiler.compile(std_section_template, table)
+            table_section = self.std_compiler.compile(std_section_template, table)[0]
             table_section.headers = eval_comparison_group_headers(
                 selected_cols, section_template, comparison_group
             )
@@ -229,8 +222,6 @@ class ComparisonSectionCompiler:
 
 def get_section_compiler(section_category: SectionCategory) -> type[SectionCompiler]:
     """Get the appropriate section compiler for a section category."""
-    if section_category == SectionCategory.UNKNOWN:
-        raise ValueError("Unknown section category.")
     if section_category not in _CATEGORY_COMPILER_MAP:
         raise NotImplementedError(
             f"Section compiler not implemented for category {section_category}."
@@ -282,22 +273,18 @@ def compile_table_sections(
     Returns:
         A list of compiled table sections.
     """
-    table_sections = []
+    all_compiled_sections = []
     for section in report_template.sections.values():
         section_template = section.to_dict()
-        section_category = identify_template_section_category(section_template)
-        if section_category == SectionCategory.UNKNOWN:
+        if section.category == SectionCategory.UNKNOWN:
             continue
 
-        SectionCompilerClass = get_section_compiler(section_category)
-        section_compiler = SectionCompilerClass(report_template)
-        compiled_section = section_compiler.compile(section_template, table)
-        if isinstance(compiled_section, CompiledTableSection):
-            table_sections.append(compiled_section)
-        else:
-            table_sections.extend(compiled_section)
+        _SectionCompiler = get_section_compiler(section.category)
+        section_compiler = _SectionCompiler(report_template)
+        compiled_sections = section_compiler.compile(section_template, table)
+        all_compiled_sections.extend(compiled_sections)
 
-    return table_sections
+    return all_compiled_sections
 
 
 def compile_remaining_column_table_section(
@@ -329,7 +316,7 @@ def compile_remaining_column_table_section(
         "width": DEFAULT_COL_WIDTH,
         "hide_section": True,
     }
-    section = section_compiler.compile(section_template, table)
+    section = section_compiler.compile(section_template, table)[0]
     del section_compiler.formats[-1]
     return section
 
@@ -818,28 +805,6 @@ def eval_section_conditional_format(
     section_format_name = section_template.get("conditional", None)
     section_conditional = format_templates.get(section_format_name, {}).copy()
     return section_conditional
-
-
-def identify_template_section_category(section_template: dict) -> SectionCategory:
-    """Identify the category of a section template.
-
-    Args:
-        section_template: A dictionary containing the section template.
-
-    Returns:
-        A SectionCategory enum value.
-    """
-    is_comp_group = section_template.get("comparison_group", False)
-    has_tag = "tag" in section_template
-    has_columns = "columns" in section_template
-
-    if is_comp_group and has_columns and has_tag:
-        return SectionCategory.COMPARISON
-    if has_tag and not has_columns and not is_comp_group:
-        return SectionCategory.TAG_SAMPLE
-    if has_columns and not has_tag and not is_comp_group:
-        return SectionCategory.STANDARD
-    return SectionCategory.UNKNOWN
 
 
 def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.bool_:

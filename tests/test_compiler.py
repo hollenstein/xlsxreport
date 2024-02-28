@@ -589,7 +589,7 @@ def test_StandardSectionCompiler(
 ):
     section_compiler = compiler.StandardSectionCompiler(report_template)
     section_template = report_template.sections["Standard section 1"].to_dict()
-    compiled_section = section_compiler.compile(section_template, example_table)
+    compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in standard_table_section.__dataclass_fields__:
         if attr == "data":
             pd.testing.assert_frame_equal(compiled_section.data, standard_table_section.data, check_dtype=False)  # fmt: skip
@@ -605,7 +605,7 @@ def test_TagSampleSectionCompiler(
 ):
     section_compiler = compiler.TagSampleSectionCompiler(report_template)
     section_template = report_template.sections["Tag sample section 1"].to_dict()
-    compiled_section = section_compiler.compile(section_template, example_table)
+    compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in tag_sample_table_section.__dataclass_fields__:
         if attr == "data":
             pd.testing.assert_frame_equal(compiled_section.data, tag_sample_table_section.data, check_dtype=False)  # fmt: skip
@@ -667,20 +667,6 @@ class TestComparisonSectionCompiler:
         compiled_sections = self.section_compiler.compile(self.section_template, self.table)  # fmt: skip
         assert compiled_sections[0].supheader == "ex1 / ex2"
         assert compiled_sections[1].supheader == "ex1 / EX3"
-
-
-class TestGetSectionCompiler:
-    @pytest.mark.parametrize("section_category", list(compiler.SectionCategory))
-    def test_value_error_is_only_raised_for_unknown_section_category(self, section_category):  # fmt: skip
-        if section_category != compiler.SectionCategory.UNKNOWN:
-            compiler.get_section_compiler(section_category)
-        else:
-            with pytest.raises(ValueError):
-                compiler.get_section_compiler(section_category)
-
-    def test_not_implemented_error_is_raised_for_section_category_with_no_compiler(self):  # fmt: skip
-        with pytest.raises(NotImplementedError):
-            compiler.get_section_compiler("not a section category")
 
 
 class TestPrepareTableSections:
@@ -833,37 +819,3 @@ def test_remove_empty_table_sections():
     ]
     filtered_sections = compiler.remove_empty_table_sections(sections)
     assert all([not s.data.empty for s in filtered_sections])
-
-
-class TestIdentifyTemplateSectionCategory:
-    def test_identify_standard_section(self):
-        section_template = {"columns": []}
-        section_category = compiler.identify_template_section_category(section_template)
-        assert section_category == compiler.SectionCategory.STANDARD
-
-    def test_identify_tag_sample_section(self):
-        section_template = {"tag": ""}
-        section_category = compiler.identify_template_section_category(section_template)
-        assert section_category == compiler.SectionCategory.TAG_SAMPLE
-
-    @pytest.mark.parametrize(
-        "section_template",
-        [{"comparison_group": True, "columns": [], "tag": ""}],
-    )
-    def test_identify_comparison_section(self, section_template):
-        section_category = compiler.identify_template_section_category(section_template)
-        assert section_category == compiler.SectionCategory.COMPARISON
-
-    @pytest.mark.parametrize(
-        "section_template",
-        [
-            {"format": "str"},
-            {"columns": [], "tag": ""},
-            {"columns": [], "comparison_group": True},
-            {"tag": "", "comparison_group": True},
-            {"columns": [], "tag": "", "comparison_group": False},
-        ],
-    )
-    def test_identify_unknown_section(self, section_template):
-        section_category = compiler.identify_template_section_category(section_template)
-        assert section_category == compiler.SectionCategory.UNKNOWN
