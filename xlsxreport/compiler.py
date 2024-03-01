@@ -97,7 +97,7 @@ class StandardSectionCompiler:
         col_conditionals = eval_column_conditional_formats(
             selected_cols, section_template, self.conditional_formats
         )
-        default_width = self.settings.get("column_width", DEFAULT_COL_WIDTH)
+        default_width = self.settings["column_width"]
         col_widths = eval_column_widths(selected_cols, section_template, default_width)
         headers = {c: c for c in selected_cols}
         header_formats = eval_header_formats(
@@ -143,7 +143,7 @@ class TagSampleSectionCompiler:
             table,
             selected_cols,
             section_template,
-            self.settings.get("evaluate_log2_transformation", False),
+            self.settings["evaluate_log2_transformation"],
         )
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
@@ -151,16 +151,16 @@ class TagSampleSectionCompiler:
         col_conditionals = eval_column_conditional_formats(
             selected_cols, section_template, self.conditional_formats
         )
-        default_width = self.settings.get("column_width", DEFAULT_COL_WIDTH)
+        default_width = self.settings["column_width"]
         col_widths = eval_column_widths(selected_cols, section_template, default_width)
         headers = eval_tag_sample_headers(
-            selected_cols, section_template, self.settings.get("log2_tag", "")
+            selected_cols, section_template, self.settings["log2_tag"]
         )
         header_formats = eval_header_formats(
             selected_cols, section_template, self.formats
         )
         supheader = eval_tag_sample_supheader(
-            section_template, self.settings.get("log2_tag", "")
+            section_template, self.settings["log2_tag"]
         )
         supheader_format = eval_supheader_format(section_template, self.formats)
         section_conditional = eval_section_conditional_format(
@@ -250,12 +250,12 @@ def prepare_table_sections(
         A list of non-empty, compiled table sections.
     """
     compiled_table_sections = compile_table_sections(report_template, table)
-    if report_template.settings.get("append_remaining_columns", False):
+    if report_template.settings["append_remaining_columns"]:
         remaining_section = compile_remaining_column_table_section(
             report_template, compiled_table_sections, table
         )
         compiled_table_sections.append(remaining_section)
-    if report_template.settings.get("remove_duplicate_columns", True):
+    if report_template.settings["remove_duplicate_columns"]:
         prune_table_sections(compiled_table_sections)
     return remove_empty_table_sections(compiled_table_sections)
 

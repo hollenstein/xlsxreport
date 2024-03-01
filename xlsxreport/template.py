@@ -30,6 +30,7 @@ from xlsxreport.validate import (
     validate_template_file_integrity,
 )
 from xlsxreport.section import TemplateSection
+from xlsxreport.settings import TemplateSettings
 
 
 class ReportTemplate:
@@ -80,7 +81,7 @@ class ReportTemplate:
         self.sections = {k: TemplateSection(p) for k, p in document["sections"].items()}
         self.formats = document["formats"]
         self.conditional_formats = document["conditional_formats"]
-        self.settings = document["settings"]
+        self.settings = TemplateSettings(document["settings"])
 
     def to_dict(self) -> dict[str, dict]:
         """Returns a dictionary representation of the `ReportTemplate`."""
@@ -88,7 +89,7 @@ class ReportTemplate:
             "sections": {k: section.to_dict() for k, section in self.sections.items()},
             "formats": self.formats,
             "conditional_formats": self.conditional_formats,
-            "settings": self.settings,
+            "settings": self.settings.to_dict(),
         }
 
     @classmethod
