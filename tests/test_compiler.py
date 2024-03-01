@@ -318,6 +318,16 @@ class TestEvalTagSampleHeaders:
         headers = compiler.eval_tag_sample_headers(columns, section_template, log2_tag="[log2]")  # fmt: skip
         assert headers == expected
 
+    def test_empty_log2_tag_does_not_modify_header(self):
+        section_template = {"tag": "Tag", "remove_tag": False, "log2": True}
+        columns = ["Tag Sample 1", "Tag Sample 2"]
+        expected = {
+            "Tag Sample 1": "Tag Sample 1",
+            "Tag Sample 2": "Tag Sample 2",
+        }
+        headers = compiler.eval_tag_sample_headers(columns, section_template, log2_tag="")  # fmt: skip
+        assert headers == expected
+
 
 class TestEvalTagSampleSupheader:
     def test_with_log2_tag(self):
@@ -328,6 +338,11 @@ class TestEvalTagSampleSupheader:
     def test_without_log2_tag(self):
         section_template = {"supheader": "Supheader", "log2": False}
         supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
+        assert supheader == "Supheader"
+
+    def test_empty_log2_tag_does_not_modify_supheader(self):
+        section_template = {"supheader": "Supheader", "log2": True}
+        supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="")  # fmt: skip
         assert supheader == "Supheader"
 
 

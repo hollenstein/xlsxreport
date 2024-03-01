@@ -589,13 +589,13 @@ def eval_tag_sample_headers(
     """
     tag = section_template["tag"]
     remove_tag = section_template.get("remove_tag", False)
-    add_log2_tag = section_template.get("log2", False) and not remove_tag
+    add_log2_tag = section_template.get("log2", False) and not remove_tag and log2_tag
     if remove_tag:
         headers = {col: re.sub(tag, "", col).strip() for col in columns}
     else:
         headers = {col: col for col in columns}
 
-    if add_log2_tag:
+    if add_log2_tag and log2_tag:
         headers = {c: f"{h} {log2_tag}" for c, h in headers.items()}
     return headers
 
@@ -617,8 +617,9 @@ def eval_tag_sample_supheader(
     Returns:
         The supheader name for the section.
     """
+    add_log2_tag = section_template.get("log2", False) and log2_tag
     supheader = section_template.get("supheader", "")
-    if supheader and section_template.get("log2", False):
+    if add_log2_tag and supheader:
         supheader = f"{supheader} {log2_tag}"
     return supheader
 
