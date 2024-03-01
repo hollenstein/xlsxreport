@@ -25,7 +25,7 @@ STANDARD_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
 }
 
 
-SAMPLE_TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "tag": {"required": True, "type": "string"},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
@@ -48,14 +48,14 @@ class SectionCategory(Enum):
 
     UNKNOWN = -1
     STANDARD = 1
-    TAG_SAMPLE = 2
+    TAG = 2
     COMPARISON = 3
 
 
 _template_section_schemas = {
     SectionCategory.UNKNOWN: OPTIONAL_SECTION_PARAMS,
     SectionCategory.STANDARD: STANDARD_SECTION_SCHEMA,
-    SectionCategory.TAG_SAMPLE: SAMPLE_TAG_SECTION_SCHEMA,
+    SectionCategory.TAG: TAG_SECTION_SCHEMA,
     SectionCategory.COMPARISON: COMPARISON_SECTION_SCHEMA,
 }
 

@@ -17,7 +17,6 @@ SETTINGS_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "header_height": {"type": "float", "min": 0, "default": 20},
     "column_width": {"type": "float", "min": 0, "default": 64},
     "log2_tag": {"type": "string", "default": ""},
-    "sample_extraction_tag": {"type": "string", "default": ""},
     "append_remaining_columns": {"type": "boolean", "default": False},
     "write_supheader": {"type": "boolean", "default": False},
     "evaluate_log2_transformation": {"type": "boolean", "default": False},

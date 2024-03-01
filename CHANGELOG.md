@@ -35,12 +35,12 @@
 - (!) Replaced the term "config" with "template" throughout the codebase.
 - (!) Replaced the template keyword "groups" with "sections" in yaml template files.
 - (!) Replaced the template keyword "args" with "settings" in yaml template files.
+- (!) Replaced the "tag sample section" category with a simpler "tag section".
+  - The "tag" parameter of the "tag section" is used as a regular expression pattern 
+    instead of simply looking for an exact match. This change allows for more flexible
+    matching of columns and makes the additional selection of samples via a "sample_extraction_tag" obsolete.
 - Changed the default value of the "evaluate_log2_transformation" setting to False.
 - Changed the default value of the "write_supheader" setting to False.
-- The "sample_extraction_tag" setting is now used as a regular expression pattern
-  instead of looking for an exact match.
-- The "tag" parameter of the "tag sample section" is now used as a regular expression
-  pattern instead of simply looking for an exact match.
 - Supheader cells are now merged even when no supheader name is specified.
 - When attempting to use an invalid format for compiling an Excel report, the compiler
   will now apply no format and issue a warning instead of raising an exception. This
@@ -54,7 +54,8 @@
 - (!) Removed the `cassiopeia_report` command line script.
 - (!) Removed the `xlsxreport_setup` script.
 - (!) Removed `xlsxreport.writer.Datasheet` and `xlsxreport.writer.Reportbook`, which
-  previously represented the public interface for creating a formatted Excel report. 
+  previously represented the public interface for creating a formatted Excel report.
+- (!) Removed the "sample_extraction_tag" setting.
 
 ### Internal
 - Replaced the `appdirs` library with `platformdirs`, as `appdirs` is officially

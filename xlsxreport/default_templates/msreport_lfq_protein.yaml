@@ -70,7 +70,7 @@ sections:
     border: True,
   }
   quantified_events: {
-    tag: "Events",
+    tag: "Events.(?!total)",
     width: 25,
     format: "int",
     conditional: "num_events",
@@ -163,15 +163,14 @@ conditional_formats:
   }
 
 
-settings: 
-  write_supheader: True
-  append_remaining_columns: True
-  remove_duplicate_columns: True
-  add_autofilter: True
-  freeze_cols: 1
-  evaluate_log2_transformation: True
-  log2_tag: "[log2]"
-  sample_extraction_tag: "Expression"
+settings:
   supheader_height: 40
   header_height: 95
   column_width: 45
+  log2_tag: "[log2]"
+  append_remaining_columns: True
+  write_supheader: True
+  evaluate_log2_transformation: True
+  remove_duplicate_columns: True
+  add_autofilter: True
+  freeze_cols: 1

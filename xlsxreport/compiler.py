@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Iterable, Optional, Protocol, Sequence
 import re
 
@@ -124,8 +123,8 @@ class StandardSectionCompiler:
         return [compiled_section]
 
 
-class TagSampleSectionCompiler:
-    """Compiler for tag sample table sections."""
+class TagSectionCompiler:
+    """Compiler for tag table sections."""
 
     def __init__(self, report_template: ReportTemplate):
         self.formats = report_template.formats
@@ -136,9 +135,7 @@ class TagSampleSectionCompiler:
         self, section_template: dict, table: pd.DataFrame
     ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
-        selected_cols = eval_tag_sample_section_columns(
-            table.columns, section_template, self.settings["sample_extraction_tag"]
-        )
+        selected_cols = eval_tag_section_columns(table.columns, section_template)
         data = eval_data_with_log2_transformation(
             table,
             selected_cols,
@@ -414,35 +411,20 @@ def eval_standard_section_columns(
     return selected_columns
 
 
-def eval_tag_sample_section_columns(
-    columns: Iterable[str], section_template: dict, extraction_tag: str
+def eval_tag_section_columns(
+    columns: Iterable[str], section_template: dict
 ) -> list[str]:
-    """Extract tag sample columns.
+    """Extract columns using a regex pattern.
 
     Args:
         columns: A list of column names to select from.
         section_template: A dictionary containing the key "tag", which is a regular
             expression pattern used to select the section columns.
-        extraction_tag: A regular expression pattern used to select columns containing
-            the sample names. Samples names are extracted from the columns by removing
-            the matched pattern and stripping whitespace characters from the result.
-            All selected columns must contain any of the sample names t
 
     Returns:
-        A list of sample columns that contain the `section_template["tag"]`.
+        A list of sample columns matching the pattern in `section_template["tag"]`.
     """
-    samples = []
-    for col in [c for c in columns if re.search(extraction_tag, c)]:
-        sample_string = re.sub(extraction_tag, "", col).strip(WHITESPACE_CHARS)
-        if sample_string:
-            samples.append(sample_string)
-
-    selected_columns = []
-    for col in [c for c in columns if re.search(section_template["tag"], c)]:
-        sample_string = re.sub(section_template["tag"], "", col).strip(WHITESPACE_CHARS)
-        if sample_string in samples:
-            selected_columns.append(col)
-
+    selected_columns = [c for c in columns if re.search(section_template["tag"], c)]
     return selected_columns
 
 
@@ -594,11 +576,11 @@ def eval_tag_sample_headers(
 
     Args:
         columns: A list of column names to select from.
-        section_template: A dictionary with "tag" containing the substring that will be
-            removed from the headers if "remove_tag" is True. The "log2" key determines
-            whether to add the `log2_tag` to the headers, however, if "remove_tag" is
-            True the `log2_tag` will never be added. The "remove_tag" and "log"
-            keys are optional and by default False.
+        section_template: A dictionary with "tag" containing the regex pattern that will
+            be removed from the headers if "remove_tag" is True. The "log2" key
+            determines whether to add the `log2_tag` to the headers, however, if
+            "remove_tag" is True the `log2_tag` will never be added. The "remove_tag"
+            and "log" keys are optional and by default False.
         log2_tag: The substring that will be added to the column names if `log2` is
             True.
 
@@ -609,7 +591,7 @@ def eval_tag_sample_headers(
     remove_tag = section_template.get("remove_tag", False)
     add_log2_tag = section_template.get("log2", False) and not remove_tag
     if remove_tag:
-        headers = {col: col.replace(tag, "").strip() for col in columns}
+        headers = {col: re.sub(tag, "", col).strip() for col in columns}
     else:
         headers = {col: col for col in columns}
 
@@ -625,20 +607,18 @@ def eval_tag_sample_supheader(
     """Returns the supheader name for a tag sample section.
 
     Args:
-        columns: A list of column names to select from.
-        section_template: A dictionary with "tag" containing the substring that will be
-            removed from the headers if "remove_tag" is True. The "log2" key determines
-            whether to add the `log2_tag` to the headers, however, if "remove_tag" is
-            True the `log2_tag` will never be added. The "remove_tag" and "log"
-            keys are optional and by default False.
-        log2_tag: The substring that will be added to the column names if `log2` is
-            True.
+        section_template: A dictionary with "supheader" containing the supheader name,
+            if "supheader" is not present an empty string is used. The "log2" key
+            determines whether to add the `log2_tag` to the supheader name. The "log"
+            key is optional and by default False.
+        log2_tag: The substring that will be added to the column names if
+            `section_template["log"]` is True.
 
     Returns:
         The supheader name for the section.
     """
-    supheader = section_template.get("supheader", section_template["tag"])
-    if section_template.get("log2", False):
+    supheader = section_template.get("supheader", "")
+    if supheader and section_template.get("log2", False):
         supheader = f"{supheader} {log2_tag}"
     return supheader
 
@@ -831,6 +811,6 @@ def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.b
 
 _CATEGORY_COMPILER_MAP: dict[SectionCategory, type[SectionCompiler]] = {
     SectionCategory.STANDARD: StandardSectionCompiler,
-    SectionCategory.TAG_SAMPLE: TagSampleSectionCompiler,
+    SectionCategory.TAG: TagSectionCompiler,
     SectionCategory.COMPARISON: ComparisonSectionCompiler,
 }

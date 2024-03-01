@@ -32,16 +32,17 @@ sections:
     },
   }
   unqiue_spectral_count: {
-    tag: "Unique Spectral Count",
+    tag: "(?<!Combined).Unique Spectral Count$",
     format: "int",
     conditional: "count",
     header_format: {"rotation": 90},
     supheader: "Unique Spectral Count",
     supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, border: True,
+    remove_tag: True,
+    border: True,
   }
   total_spectral_count: {
-    tag: "Total Spectral Count",
+    tag: "(?<!Combined).Total Spectral Count$",
     format: "int",
     conditional: "count",
     header_format: {"rotation": 90},
@@ -51,7 +52,7 @@ sections:
     border: True,
   }
   spectral_count: {
-    tag: "Spectral Count",
+    tag: "(?<!Combined)(?<!Unique)(?<!Total).Spectral Count$",
     format: "int",
     conditional: "count",
     header_format: {"rotation": 90},
@@ -60,19 +61,8 @@ sections:
     remove_tag: True,
     border: True,
   }
-  lfq_intensity: {
-    tag: "MaxLFQ Intensity",
-    format: "float",
-    conditional: "intensity",
-    header_format: {"rotation": 90},
-    supheader: "LFQ intensity",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    log2: True,
-    border: True,
-  }
   intensity: {
-    tag: "Intensity",
+    tag: "(?<!MaxLFQ).Intensity$",
     format: "float",
     conditional: "intensity",
     header_format: {"rotation": 90},
@@ -82,6 +72,18 @@ sections:
     log2: True,
     border: True,
   }
+  lfq_intensity: {
+    tag: ".MaxLFQ Intensity$",
+    format: "float",
+    conditional: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "LFQ intensity",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    log2: True,
+    border: True,
+  }
+
 
 
 formats:
@@ -113,13 +115,12 @@ conditional_formats:
 
 
 settings:
-  write_supheader: True
-  append_remaining_columns: True
-  remove_duplicate_columns: True
-  add_autofilter: True
-  freeze_cols: 1
-  log2_tag: "[log2]"
-  sample_extraction_tag: "MaxLFQ Intensity"
   supheader_height: 40
   header_height: 95
   column_width: 45
+  log2_tag: "[log2]"
+  append_remaining_columns: True
+  write_supheader: True
+  remove_duplicate_columns: True
+  add_autofilter: True
+  freeze_cols: 1

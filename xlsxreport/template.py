@@ -4,24 +4,10 @@ The `ReportTemplate` class is a Python representation of a YAML report template 
 contains the configuration instructions for compiling a table into a formatted Excel.
 The `ReportTemplate` class provides methods for loading a report template from a YAML
 file, and saving the template to a YAML file.
-
-Valid ReportTemplate.settings parameters are:
-    supheader_height: float (default: 20)
-    header_height: float (default: 20)
-    column_width: float (default: 64)
-    log2_tag: str
-    sample_extraction_tag: str
-    append_remaining_columns: bool (default: False)
-    write_supheader: bool (default: False)
-    evaluate_log2_transformation: bool (default: False)
-    remove_duplicate_columns: bool (default: True)
-    add_autofilter: bool (default: True)
-    freeze_cols: int (default: 1)
 """
 
 from __future__ import annotations
 from typing import Optional
-import warnings
 
 import yaml
 

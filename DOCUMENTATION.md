@@ -63,13 +63,12 @@ In a `default section` columns are directly selected by specifying a list of col
 - Required: `columns: list[str]`<br>
 --- *Note: Description missing* ---
 
-#### Tag sample sections
-In a `tag sample section`, columns are not directly specified with a `columns` parameter but rather by specifying a `tag` that allows the selection of columns containing a specific substring, but that also have a part of the column name different in each CSV file. The `tag` is used as a regular expression pattern to find matching colummns. This allows for example to create a section containing all "Intensity" columns, irrespective of how the samples are named. A second, global parameter called `sample_extraction_tag` is used to determine the sample names that together with the specified `tag` make up the column names. The `sample_extraction_tag` is also a regular expression pattern that is used to find the corresponding part in column names and extract the sample names as the remainder. The `sample_extraction_tag` is defined in the `settings` area of the template file.
+#### Tag sections
+In a `tag section`, columns are not directly specified with a `columns` parameter but rather by specifying a `tag` that allows the selection of columns containing a specific string, but that also have a part of the column name different in each CSV file. The `tag` is used as a regular expression pattern to find matching colummns. This allows for example to create a section containing all "Intensity" columns, irrespective of how the samples are named. 
 
 ##### Additional section parameters
 - Required: `tag: str`<br>
 --- *Note: Description missing* ---
-If no `supheader` is explicitly specified, the `tag` is used instead.
 
 - Optional: `remove_tag: bool`<br>
 --- *Note: Description missing* ---
@@ -80,7 +79,6 @@ If no `supheader` is explicitly specified, the `tag` is used instead.
 
 ##### Global settings that specifically affect tag sample sections
 - `log2_tag`
-- `sample_extraction_tag`
 - `evaluate_log2_transformation`
 
 
@@ -90,19 +88,16 @@ Let's assume we have the following template, containing a `tag sample section` w
 
 ```YAML
 sections:
-  intensities: {tag: "Intensity"}
-
-settings:
-  sample_extraction_tag: "Intensity"
+  intensities: {tag: "^Intensity"}
 ```
 
 and a CSV file with the following columns
 
-| Protein ID | Intensity sample_1 | Intensity sample_2 |
-| ---------- | ------------------ | ------------------ |
-| P40238     | 1,000,000          | 2,000,000          |
+| Protein ID | Intensity sample_1 | Intensity sample_2 | Total Intensity |
+| ---------- | ------------------ | ------------------ | --------------- |
+| P40238     | 1,000,000          | 2,000,000          | 3,000,000       |
 
- When generating a report, XlsxReport first extracts sample names by looking for columns matching the `sample_extraction_tag` regular expression pattern, removing the matched string, and removing leading or trailing white space characters. The remaining strings, in this case "sample_1" and "sample_2", are used as the extracted sample names for all `tag sample sections` of the report template. To assemble the "intensities" section, columns are selected that match the regular expression pattern specified with `tag`, i.e. "Intensity", and any of the extracted sample names, which resulst in the selection of the columns "Intensity sample_1" and "Intensity sample_2".
+ When generating a report, XlsxReport selects columns that match the regular expression pattern specified with `tag`, i.e. "^Intensity.", which resulst in the selection of the columns "Intensity sample_1" and "Intensity sample_2". The specified patterns requires that a column starts with "Intensity", therefore the column "Total Intensity" is not selected.
 
 
 #### The comparison section
@@ -178,9 +173,6 @@ Defines default column width. This parameter is overwritten if a `width` section
 
 - `log2_tag: str (default "")`<br>
 If specified this string is added as a suffix to the supheader or header of a tag section if the `log2` section parameter is defined, and a log2 transformation is applied to the column values.
-
-- `sample_extraction_tag: str (default "")`<br>
-String that is used as a substring to collect columns that contain this tag and the  sample names. From each column first the specified tag is removed, then leading and trailing white space characters (space and underscore) are removed, and the remaining string is used as a sample name. The `sample_extraction_tag` should be chosen to select only columns that contain sample names.
 
 - `append_remaining_columns: bool (default: False)`<br>
 If True, all remaining columns that are not present in any section are added to the end of the Excel sheet, and the section of appended columns is hidden.

@@ -37,7 +37,7 @@ sections:
     },
   }
   spectral_count: {
-    tag: "MS/MS count",
+    tag: "^MS/MS count.",
     format: "int",
     conditional: "count",
     header_format: {"rotation": 90},
@@ -47,7 +47,7 @@ sections:
     border: True,
   }
   ibaq_intensity: {
-    tag: "iBAQ",
+    tag: "^iBAQ.(?!peptides)",
     format: "float",
     conditional: "intensity",
     header_format: {"rotation": 90},
@@ -58,7 +58,7 @@ sections:
     border: True,
   }
   intensity: {
-    tag: "Intensity",
+    tag: "^Intensity.",
     format: "float",
     conditional: "intensity",
     header_format: {"rotation": 90},
@@ -69,7 +69,7 @@ sections:
     border: True,
   }
   lfq_intensity: {
-    tag: "LFQ intensity",
+    tag: "^LFQ intensity.",
     format: "float",
     conditional: "intensity",
     header_format: {"rotation": 90},
@@ -129,6 +129,5 @@ settings:
   header_height: 95
   column_width: 45
   log2_tag: "[log2]"
-  sample_extraction_tag: "Intensity"
   append_remaining_columns: True
   write_supheader: True

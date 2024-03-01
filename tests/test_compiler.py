@@ -44,7 +44,6 @@ def report_template() -> ReportTemplate:
         },
         settings={
             "column_width": 10,
-            "sample_extraction_tag": "Tag",
             "log2_tag": "[log2]",
             "remove_duplicate_columns": True,
         },
@@ -172,29 +171,18 @@ def test_eval_standard_section_columns_selects_correct_columns():
     assert selected_columns == ["Column 1", "Column 2"]
 
 
-class TestEvalTagSampleSectionColumns:
-    def test_selects_correct_columns_with_different_extraction_tag(self):
-        section_template = {"tag": "Tag"}
-        columns = ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
-        extraction_tag = "Atag"
-        selected_columns = compiler.eval_tag_sample_section_columns(
-            columns, section_template, extraction_tag
-        )
-        assert selected_columns == ["Tag Sample 1", "Tag Sample 2"]
-
+class TestEvalTagSectionColumns:
     def test_selects_correct_columns_with_identical_tag_and_extraction_tag(self):
         section_template = {"tag": "Tag"}
         columns = ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
-        selected_columns = compiler.eval_tag_sample_section_columns(
-            columns, section_template, extraction_tag=section_template["tag"]
-        )
+        selected_columns = compiler.eval_tag_section_columns(columns, section_template)
         assert selected_columns == ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3"]
 
     @pytest.mark.parametrize(
         "tag, expected_selection",
         [
-            ("Tag", ["Tag S1", "Tag S2", "S3 Tag"]),
-            ("^Tag", ["Tag S1", "Tag S2"]),
+            ("Tag", ["Tag S1", "Tag S2", "S3 Tag", "Tag"]),
+            ("^Tag", ["Tag S1", "Tag S2", "Tag"]),
             ("^Tag.", ["Tag S1", "Tag S2"]),
             (".Tag$", ["S3 Tag"]),
             ("^Tag.|.Tag$", ["Tag S1", "Tag S2", "S3 Tag"]),
@@ -203,9 +191,7 @@ class TestEvalTagSampleSectionColumns:
     def test_correct_columns_selected_with_regex_tag(self, tag, expected_selection):
         section_template = {"tag": tag}
         columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
-        selected_columns = compiler.eval_tag_sample_section_columns(
-            columns, section_template, extraction_tag=section_template["tag"]
-        )
+        selected_columns = compiler.eval_tag_section_columns(columns, section_template)
         assert selected_columns == expected_selection
 
 
@@ -335,19 +321,14 @@ class TestEvalTagSampleHeaders:
 
 class TestEvalTagSampleSupheader:
     def test_with_log2_tag(self):
-        section_template = {"supheader": "Supheader", "log2": True, "tag": "Tag"}
+        section_template = {"supheader": "Supheader", "log2": True}
         supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
         assert supheader == "Supheader [log2]"
 
     def test_without_log2_tag(self):
-        section_template = {"supheader": "Supheader", "log2": False, "tag": "Tag"}
+        section_template = {"supheader": "Supheader", "log2": False}
         supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
         assert supheader == "Supheader"
-
-    def test_tag_is_used_if_supheader_not_specified(self):
-        section_template = {"tag": "Tag as supheader"}
-        supheader = compiler.eval_tag_sample_supheader(section_template, log2_tag="[log2]")  # fmt: skip
-        assert supheader == "Tag as supheader"
 
 
 class TestEvalColumnFormats:
@@ -600,10 +581,8 @@ def test_StandardSectionCompiler(
             assert compiled_attr == expected_section_attr
 
 
-def test_TagSampleSectionCompiler(
-    report_template, example_table, tag_sample_table_section
-):
-    section_compiler = compiler.TagSampleSectionCompiler(report_template)
+def test_TagSectionCompiler(report_template, example_table, tag_sample_table_section):
+    section_compiler = compiler.TagSectionCompiler(report_template)
     section_template = report_template.sections["Tag sample section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in tag_sample_table_section.__dataclass_fields__:
