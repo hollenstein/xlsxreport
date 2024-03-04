@@ -38,6 +38,7 @@ SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "border": {"type": "boolean", "default": False},
     "columns": {"type": "list"},
     "tag": {"type": "string"},
+    "labels": {"type": "list"},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
     "comparison_group": {"type": "boolean", "default": False},
