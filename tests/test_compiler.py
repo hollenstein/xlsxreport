@@ -4,7 +4,7 @@ import pandas as pd
 
 import xlsxreport.compiler as compiler
 from xlsxreport.template import ReportTemplate
-from xlsxreport.section import TemplateSection
+from xlsxreport.template import TemplateSection
 
 
 @pytest.fixture()

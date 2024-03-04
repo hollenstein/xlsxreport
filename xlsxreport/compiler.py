@@ -8,7 +8,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from xlsxreport.section import SectionCategory
+from xlsxreport.template import SectionCategory
 
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()

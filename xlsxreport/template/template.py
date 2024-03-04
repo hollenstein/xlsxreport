@@ -1,4 +1,4 @@
-"""Module for storing and loading report templates in YAML format.
+"""Module for storing, loading and manipulating report templates.
 
 The `ReportTemplate` class is a Python representation of a YAML report template file and
 contains the configuration instructions for compiling a table into a formatted Excel.
@@ -15,8 +15,8 @@ from xlsxreport.validate import (
     validate_document_entry_types,
     validate_template_file_integrity,
 )
-from xlsxreport.section import TemplateSection
-from xlsxreport.settings import TemplateSettings
+from xlsxreport.template.section import TemplateSection
+from xlsxreport.template.settings import TemplateSettings
 
 
 class ReportTemplate:

@@ -3,7 +3,7 @@ import os
 import pytest
 import yaml
 
-from xlsxreport.template import ReportTemplate
+from xlsxreport.template.template import ReportTemplate
 
 
 @pytest.fixture()
