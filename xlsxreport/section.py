@@ -32,6 +32,14 @@ TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     **OPTIONAL_SECTION_PARAMS,
 }
 
+LABEL_TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+    "tag": {"required": True, "type": "string"},
+    "labels": {"required": True, "type": "list"},
+    "remove_tag": {"type": "boolean", "default": False},
+    "log2": {"type": "boolean", "default": False},
+    **OPTIONAL_SECTION_PARAMS,
+}
+
 
 COMPARISON_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "comparison_group": {"required": True, "type": "boolean"},
@@ -49,13 +57,15 @@ class SectionCategory(Enum):
     UNKNOWN = -1
     STANDARD = 1
     TAG = 2
-    COMPARISON = 3
+    LABEL_TAG = 3
+    COMPARISON = 4
 
 
 _template_section_schemas = {
     SectionCategory.UNKNOWN: OPTIONAL_SECTION_PARAMS,
     SectionCategory.STANDARD: STANDARD_SECTION_SCHEMA,
     SectionCategory.TAG: TAG_SECTION_SCHEMA,
+    SectionCategory.LABEL_TAG: LABEL_TAG_SECTION_SCHEMA,
     SectionCategory.COMPARISON: COMPARISON_SECTION_SCHEMA,
 }
 

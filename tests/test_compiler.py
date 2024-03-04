@@ -19,8 +19,18 @@ def report_template() -> ReportTemplate:
     }
 
     tag_sample_section_template = {
-        "format": "float",
         "tag": "Tag",
+        "format": "float",
+        "supheader": "Supheader",
+        "conditional": "cond_1",
+        "remove_tag": True,
+        "log2": True,
+    }
+
+    label_tag_sample_section_template = {
+        "tag": "Tag",
+        "labels": ["Sample 1"],
+        "format": "float",
         "supheader": "Supheader",
         "conditional": "cond_1",
         "remove_tag": True,
@@ -30,7 +40,8 @@ def report_template() -> ReportTemplate:
     report_template = ReportTemplate(
         sections={
             "Standard section 1": standard_section_template,
-            "Tag sample section 1": tag_sample_section_template,
+            "Tag section 1": tag_sample_section_template,
+            "Label tag section 1": label_tag_sample_section_template,
         },
         formats={
             "header": {"bold": True, "align": "center"},
@@ -89,6 +100,30 @@ def standard_table_section(report_template, example_table) -> compiler.CompiledT
         supheader=report_template.sections["Standard section 1"]["supheader"],
         supheader_format=report_template.formats["supheader"],
         section_conditional=report_template.conditional_formats["cond_2"],
+    )
+    return table_section
+
+
+@pytest.fixture()
+def label_tag_sample_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
+    table_section = compiler.CompiledTableSection(
+        data=np.log2(example_table[["Tag Sample 1"]].copy()),
+        column_formats={
+            "Tag Sample 1": report_template.formats["float"],
+        },
+        column_conditionals={
+            "Tag Sample 1": {},
+        },
+        column_widths={
+            "Tag Sample 1": 10,
+        },
+        header_formats={
+            "Tag Sample 1": report_template.formats["header"],
+        },
+        headers={"Tag Sample 1": "Sample 1"},
+        supheader="Supheader [log2]",
+        supheader_format=report_template.formats["supheader"],
+        section_conditional=report_template.conditional_formats["cond_1"],
     )
     return table_section
 
@@ -171,28 +206,38 @@ def test_eval_standard_section_columns_selects_correct_columns():
     assert selected_columns == ["Column 1", "Column 2"]
 
 
-class TestEvalTagSectionColumns:
-    def test_selects_correct_columns_with_identical_tag_and_extraction_tag(self):
-        section_template = {"tag": "Tag"}
-        columns = ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3", "Atag Sample 1", "Atag Sample 2", "Atag Sample"]  # fmt: skip
-        selected_columns = compiler.eval_tag_section_columns(columns, section_template)
-        assert selected_columns == ["Tag Sample 1", "Tag Sample 2", "Tag Sample 3"]
+@pytest.mark.parametrize(
+    "tag, expected_selection",
+    [
+        ("Tag", ["Tag S1", "Tag S2", "S3 Tag", "Tag"]),
+        ("^Tag", ["Tag S1", "Tag S2", "Tag"]),
+        ("^Tag.", ["Tag S1", "Tag S2"]),
+        (".Tag$", ["S3 Tag"]),
+        ("^Tag.|.Tag$", ["Tag S1", "Tag S2", "S3 Tag"]),
+    ],
+)
+def test_eval_tag_section_columns(tag, expected_selection):
+    columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
+    section_template = {"tag": tag}
+    selected_columns = compiler.eval_tag_section_columns(columns, section_template)
+    assert selected_columns == expected_selection
 
-    @pytest.mark.parametrize(
-        "tag, expected_selection",
-        [
-            ("Tag", ["Tag S1", "Tag S2", "S3 Tag", "Tag"]),
-            ("^Tag", ["Tag S1", "Tag S2", "Tag"]),
-            ("^Tag.", ["Tag S1", "Tag S2"]),
-            (".Tag$", ["S3 Tag"]),
-            ("^Tag.|.Tag$", ["Tag S1", "Tag S2", "S3 Tag"]),
-        ],
-    )
-    def test_correct_columns_selected_with_regex_tag(self, tag, expected_selection):
-        section_template = {"tag": tag}
-        columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
-        selected_columns = compiler.eval_tag_section_columns(columns, section_template)
-        assert selected_columns == expected_selection
+
+@pytest.mark.parametrize(
+    "tag, labels, expected_selection",
+    [
+        ("Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2", "S3 Tag"]),
+        ("^Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2"]),
+        ("Tag", ["S2"], ["Tag S2"]),
+        (".Tag$", ["S1", "S2", "S3"], ["S3 Tag"]),
+        (".Tag$", ["S1", "S2"], []),
+    ],
+)
+def test_eval_label_tag_section_columns(tag, labels, expected_selection):
+    columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
+    section_template = {"tag": tag, "labels": labels}
+    selected_columns = compiler.eval_label_tag_section_columns(columns, section_template)  # fmt: skip
+    assert selected_columns == expected_selection
 
 
 def test_eval_comparison_groups_extracts_correct_values():
@@ -598,7 +643,7 @@ def test_StandardSectionCompiler(
 
 def test_TagSectionCompiler(report_template, example_table, tag_sample_table_section):
     section_compiler = compiler.TagSectionCompiler(report_template)
-    section_template = report_template.sections["Tag sample section 1"].to_dict()
+    section_template = report_template.sections["Tag section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in tag_sample_table_section.__dataclass_fields__:
         if attr == "data":
@@ -607,6 +652,22 @@ def test_TagSectionCompiler(report_template, example_table, tag_sample_table_sec
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
             expected_section_attr = {attr: getattr(tag_sample_table_section, attr)}
+            assert compiled_attr == expected_section_attr
+
+
+def test_LabelTagSectionCompiler(report_template, example_table, label_tag_sample_table_section):  # fmt: skip
+    section_compiler = compiler.LabelTagSectionCompiler(report_template)
+    section_template = report_template.sections["Label tag section 1"].to_dict()
+    compiled_section = section_compiler.compile(section_template, example_table)[0]
+    for attr in label_tag_sample_table_section.__dataclass_fields__:
+        if attr == "data":
+            pd.testing.assert_frame_equal(compiled_section.data, label_tag_sample_table_section.data, check_dtype=False)  # fmt: skip
+        else:
+            # Include attribute name in a dictionary to get nicer error messages
+            compiled_attr = {attr: getattr(compiled_section, attr)}
+            expected_section_attr = {
+                attr: getattr(label_tag_sample_table_section, attr)
+            }
             assert compiled_attr == expected_section_attr
 
 

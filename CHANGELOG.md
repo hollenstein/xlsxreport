@@ -15,6 +15,10 @@
     If type errors are detected, a `ValueError` is raised.
   - Similarly, when loading a template from a YAML file, a non-parseable YAML file or 
     the presence of type errors will raise a `ValueError`.
+- Add a new template section type called "label tag section". This section resembles
+  the "tag section" but offers the ability to specify a list of additional labels for
+  further column filtering after tag matching. It's primarily designed for in-code
+  template creation or updates, where the labels are known or extracted from the data.
 - Introduced new functionality to the `xlsxreport` console script.
   - The command for generating a formatted Excel file is now `xlsxreport compile`.
   - Added an option to open the compiled Excel file using the `--reveal` flag.

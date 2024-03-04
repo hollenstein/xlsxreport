@@ -179,6 +179,62 @@ class TagSectionCompiler:
         return [compiled_section]
 
 
+class LabelTagSectionCompiler:
+    """Compiler for tag table sections."""
+
+    def __init__(self, report_template: ReportTemplate):
+        self.formats = report_template.formats
+        self.conditional_formats = report_template.conditional_formats
+        self.settings = report_template.settings
+
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> list[CompiledTableSection]:
+        """Compile a table section from a standard section template and a table."""
+        selected_cols = eval_label_tag_section_columns(table.columns, section_template)
+        data = eval_data_with_log2_transformation(
+            table,
+            selected_cols,
+            section_template,
+            self.settings["evaluate_log2_transformation"],
+        )
+        col_formats = eval_column_formats(
+            selected_cols, section_template, self.formats, DEFAULT_FORMAT
+        )
+        col_conditionals = eval_column_conditional_formats(
+            selected_cols, section_template, self.conditional_formats
+        )
+        default_width = self.settings["column_width"]
+        col_widths = eval_column_widths(selected_cols, section_template, default_width)
+        headers = eval_tag_sample_headers(
+            selected_cols, section_template, self.settings["log2_tag"]
+        )
+        header_formats = eval_header_formats(
+            selected_cols, section_template, self.formats
+        )
+        supheader = eval_tag_sample_supheader(
+            section_template, self.settings["log2_tag"]
+        )
+        supheader_format = eval_supheader_format(section_template, self.formats)
+        section_conditional = eval_section_conditional_format(
+            section_template, self.conditional_formats
+        )
+        hide_section = section_template.get("hide_section", False)
+        compiled_section = CompiledTableSection(
+            data=data,
+            column_formats=col_formats,
+            column_conditionals=col_conditionals,
+            column_widths=col_widths,
+            headers=headers,
+            header_formats=header_formats,
+            supheader=supheader,
+            supheader_format=supheader_format,
+            section_conditional=section_conditional,
+            hide_section=hide_section,
+        )
+        return [compiled_section]
+
+
 class ComparisonSectionCompiler:
     """Compiler for comparison table sections."""
 
@@ -425,6 +481,28 @@ def eval_tag_section_columns(
         A list of sample columns matching the pattern in `section_template["tag"]`.
     """
     selected_columns = [c for c in columns if re.search(section_template["tag"], c)]
+    return selected_columns
+
+
+def eval_label_tag_section_columns(
+    columns: Iterable[str], section_template: dict
+) -> list[str]:
+    """Extract columns using a regex pattern.
+
+    Args:
+        columns: A list of column names to select from.
+        section_template: A dictionary containing the key "tag", which is a regular
+            expression pattern used to select the section columns.
+
+    Returns:
+        A list of sample columns matching the pattern in `section_template["tag"]`.
+    """
+    selected_columns = []
+    column_query = [c for c in columns if re.search(section_template["tag"], c)]
+    for column in column_query:
+        match = re.sub(section_template["tag"], "", column).strip(WHITESPACE_CHARS)
+        if match in section_template["labels"]:
+            selected_columns.append(column)
     return selected_columns
 
 
@@ -813,5 +891,6 @@ def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.b
 _CATEGORY_COMPILER_MAP: dict[SectionCategory, type[SectionCompiler]] = {
     SectionCategory.STANDARD: StandardSectionCompiler,
     SectionCategory.TAG: TagSectionCompiler,
+    SectionCategory.LABEL_TAG: LabelTagSectionCompiler,
     SectionCategory.COMPARISON: ComparisonSectionCompiler,
 }
