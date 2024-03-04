@@ -80,6 +80,9 @@ class TemplateSection:
 
         self._validator = cerberus.Validator(require_all=False, allow_unknown=False)
 
+    def __contains__(self, key: str) -> bool:
+        return key in self.data
+
     def __getitem__(self, key: str) -> str | float | bool | list | dict:
         if key not in self.schema:
             raise KeyError(f"Invalid {self.category.name} section parameter '{key}'")
