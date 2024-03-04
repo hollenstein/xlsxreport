@@ -434,11 +434,11 @@ def eval_data_with_log2_transformation(
         optionally values are log2 transformed.
     """
     data = table[columns].copy()
-    apply_log_transformation = section_template.get("log2", False)
-    if evaluate_log_state and _intensities_in_logspace(data):
-        apply_log_transformation = False
+    apply_log_transform = section_template.get("log2", False)
+    if apply_log_transform and evaluate_log_state and _intensities_in_logspace(data):
+        apply_log_transform = False
 
-    if apply_log_transformation:
+    if apply_log_transform:
         if not data.select_dtypes(exclude=["number"]).columns.empty:
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
