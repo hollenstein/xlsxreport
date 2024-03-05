@@ -34,12 +34,19 @@ class TemplateSettings(UserDict):
 
         output = []
         for parameter in self.schema:
-            value = repr(self.get(parameter))
+            value = _format_value(self.get(parameter), quote_char='"')
             if parameter not in self.data:
-                value += " (default)"
+                value = f"{value} (default)"
             output.append(f"{parameter:<{length}} : {value}")
         return "\n".join(output)
 
     def to_dict(self) -> dict:
         """Return a copy of the settings as a dictionary."""
         return deepcopy(self.data)
+
+
+def _format_value(value, quote_char):
+    if isinstance(value, str):
+        return f"{quote_char}{value}{quote_char}"
+    else:
+        return str(value)
