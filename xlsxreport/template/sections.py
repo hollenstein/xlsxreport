@@ -19,6 +19,9 @@ class ReportTemplateSections(UserDict):
         if isinstance(key, int):
             return self.data[_get_section_name_from_position(self.data, key)]
 
+    def __setitem__(self, key: str, value: dict | TemplateSection) -> None:
+        self.add(key, value)
+
     def __repr__(self):
         length = max([len(key) for key in self.data])
         section_count = len(self.data)
