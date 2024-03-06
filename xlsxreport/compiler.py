@@ -69,7 +69,15 @@ class CompiledTableSection:
     def __post_init__(self):
         nan_columns = self.data.columns[self.data.isnull().any()].tolist()
         if nan_columns:
-            raise ValueError(f"`data` contains NaN values in columns: {nan_columns}")
+            raise ValueError(
+                f"Compiled section contains NaN values in columns: {nan_columns}"
+            )
+        if self.data.columns.size != self.data.columns.nunique():
+            duplicates = self.data.columns[self.data.columns.duplicated()].unique()
+            duplicate_message = ", ".join([f"'{c}'" for c in duplicates])
+            raise ValueError(
+                f"Compiled section contains duplicate columns: {duplicate_message}"
+            )
 
         for col in self.data.columns:
             if col not in self.column_formats:
