@@ -76,6 +76,8 @@ class TemplateSection:
     """Representation of a report section."""
 
     def __init__(self, data: dict):
+        if not isinstance(data, dict):
+            raise TypeError("Section data must be a dictionary")
         self.category = _identify_section_category(data)
         self.schema = deepcopy(_template_section_schemas[self.category])
         self.data = data
