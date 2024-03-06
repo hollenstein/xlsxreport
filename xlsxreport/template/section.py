@@ -124,7 +124,7 @@ class TemplateSection:
             return default
 
     def to_dict(self) -> dict:
-        """Return the section as a dictionary."""
+        """Return a copy of the section as a dictionary."""
         return deepcopy(self.data)
 
 
