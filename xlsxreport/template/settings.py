@@ -7,7 +7,7 @@ import cerberus  # type: ignore
 from xlsxreport.schemas import SETTINGS_SCHEMA
 
 
-class TemplateSettings(UserDict):
+class ReportTemplateSettings(UserDict):
     """Representation of report template settings."""
 
     def __init__(self, data: dict):

@@ -5,7 +5,7 @@ from copy import deepcopy
 from xlsxreport.template._repr import dict_to_string
 
 
-class TemplateFormats(UserDict):
+class ReportTemplateFormats(UserDict):
     """Representation of report template settings."""
 
     def __init__(self, data: dict[str, dict]):

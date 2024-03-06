@@ -1,11 +1,11 @@
 from __future__ import annotations
 from collections import UserDict
-from typing import Any, Optional
+from typing import Any
 
 from xlsxreport.template.section import TemplateSection
 
 
-class TemplateSections(UserDict):
+class ReportTemplateSections(UserDict):
     __marker = object()
 
     def __init__(self, sections: dict[str, dict]):

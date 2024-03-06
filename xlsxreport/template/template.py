@@ -15,9 +15,9 @@ from xlsxreport.validate import (
     validate_document_entry_types,
     validate_template_file_integrity,
 )
-from xlsxreport.template.sections import TemplateSections
-from xlsxreport.template.settings import TemplateSettings
-from xlsxreport.template.formats import TemplateFormats
+from xlsxreport.template.sections import ReportTemplateSections
+from xlsxreport.template.settings import ReportTemplateSettings
+from xlsxreport.template.formats import ReportTemplateFormats
 
 
 class ReportTemplate:
@@ -65,10 +65,12 @@ class ReportTemplate:
             error_message = "\n".join([error.message for error in errors])
             raise ValueError(f"invalid initialization parameters\n{error_message}")
 
-        self.sections = TemplateSections(document["sections"])
-        self.formats = TemplateFormats(document["formats"])
-        self.conditional_formats = TemplateFormats(document["conditional_formats"])
-        self.settings = TemplateSettings(document["settings"])
+        self.sections = ReportTemplateSections(document["sections"])
+        self.formats = ReportTemplateFormats(document["formats"])
+        self.conditional_formats = ReportTemplateFormats(
+            document["conditional_formats"]
+        )
+        self.settings = ReportTemplateSettings(document["settings"])
 
     def to_dict(self) -> dict[str, dict]:
         """Returns a dictionary representation of the `ReportTemplate`."""
