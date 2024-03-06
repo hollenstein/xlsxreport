@@ -20,12 +20,20 @@ WHITESPACE_CHARS = " ."
 
 
 class ReportTemplate(Protocol):
-    """Class to store the template of a report."""
+    """Abstract class representing a report template."""
 
-    sections: dict
+    sections: dict[str, TemplateSection]
     formats: dict
     conditional_formats: dict
     settings: dict
+
+
+class TemplateSection(Protocol):
+    """Abstract class representing a section of a report template."""
+
+    category: SectionCategory
+
+    def to_dict(self) -> dict: ...
 
 
 class SectionCompiler(Protocol):
