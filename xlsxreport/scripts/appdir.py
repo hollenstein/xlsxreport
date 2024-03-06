@@ -1,4 +1,5 @@
 """Command to setup the xlsxreport app directory and copy default template files."""
+
 import os
 
 import click
@@ -8,7 +9,10 @@ import xlsxreport.appdir
 
 HELP = {
     "setup": "Create XlsxReport app directory and copy default report template files.",
-    "overwrite": "Overwrite existing report template files when creating the app directory.",
+    "overwrite": (
+        "Overwrite existing report template files when creating the app directory "
+        "with the '--setup' option."
+    ),
     "reveal": "Reveal the app directory in the file explorer.",
 }
 
