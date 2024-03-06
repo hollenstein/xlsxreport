@@ -5,6 +5,8 @@ from typing import Any
 
 import cerberus  # type: ignore
 
+from xlsxreport.template._repr import dict_to_string
+
 
 OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
     "format": {"type": "string"},
@@ -102,7 +104,15 @@ class TemplateSection:
         self.data[key] = value
 
     def __repr__(self) -> str:
-        return self.data.__repr__()
+        prefix = f"{self.category.name} section: "
+        lines = dict_to_string(
+            self.data,
+            indent=4,
+            line_length=80,
+            double_quotes=True,
+            prefix=prefix,
+        )
+        return "\n".join(lines)
 
     def get(self, key: str, default: Any = None) -> Any:
         """Get a section parameter or return a default value if not found."""
