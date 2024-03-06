@@ -1,13 +1,17 @@
 from __future__ import annotations
 from collections import UserDict
-from typing import Any
+from typing import Any, Optional
 
 from xlsxreport.template.section import TemplateSection
 
 
 class TemplateSections(UserDict):
-    def __init__(self, sections):
-        self.data = {k: TemplateSection(v) for k, v in sections.items()}
+    __marker = object()
+
+    def __init__(self, sections: dict[str, dict]):
+        self.data: dict[str, TemplateSection] = {
+            k: TemplateSection(v) for k, v in sections.items()
+        }
 
     def __getitem__(self, key: str | int) -> TemplateSection:
         if isinstance(key, str):
@@ -50,34 +54,87 @@ class TemplateSections(UserDict):
         else:
             self.data = _switch_key_positions(self.data, section_name, to)
 
-    def add_section(self, name: str, section: dict) -> None:
+    def add(self, section_name: str, section: dict | TemplateSection) -> None:
         """Add a new section to the template.
 
         Args:
-            name: The name of the new section.
-            section: The parameters of the new section.
+            section_name: The name of the new section.
+            section: The parameters of the new section or a TemplateSection object.
         """
-        self.data[name] = TemplateSection(section)
+        if not isinstance(section, TemplateSection):
+            self.data[section_name] = TemplateSection(section)
+        else:
+            self.data[section_name] = section
 
-    def insert_section(self, name: str, section: dict, to: str | int) -> None:
+    def insert(
+        self, section_name: str, section: dict | TemplateSection, to: str | int
+    ) -> None:
         """Insert a new section into the template at the specified position.
 
         Args:
-            name: The name of the new section.
-            section: The parameters of the new section.
+            section_name: The name of the new section.
+            section: The parameters of the new section or a TemplateSection object.
             to: The index to insert the new section at or the name of the section to
                 insert the new section before. If a negative position is specified it is
                 counted from the end of the dict. I.e. -1 will insert the key-value pair
                 before the last entry in the dict. If a secttion name is specified, the
                 new section is inserted before the specified section.
         """
-        template_section = TemplateSection(section)
-        if isinstance(to, int):
-            self.data = _insert_item_at_position(self.data, name, template_section, to)
+        if not isinstance(section, TemplateSection):
+            template_section = TemplateSection(section)
         else:
-            self.data = _insert_item_before_key(self.data, name, template_section, to)
+            template_section = section
+
+        if isinstance(to, int):
+            self.data = _insert_item_at_position(
+                self.data, section_name, template_section, to
+            )
+        else:
+            self.data = _insert_item_before_key(
+                self.data, section_name, template_section, to
+            )
+
+    def pop(self, section: str | int, default: Any = __marker) -> TemplateSection | Any:
+        """Remove the indicated section from the template and return it.
+
+        Args:
+            section: The name or index of the section to remove.
+            default: The value to return if the section is not found.
+
+        Returns:
+            The removed section.
+        """
+        if isinstance(section, int):
+            try:
+                section_name = _get_section_name_from_position(self.data, section)
+            except ValueError:
+                if default is self.__marker:
+                    raise
+                return default
+        else:
+            if section not in self.data:
+                if default is self.__marker:
+                    raise KeyError(section)
+                return default
+            section_name = section
+
+        return self.data.pop(section_name)
+
+    def remove(self, section: str | int) -> None:
+        """Remove the indicated section from the template.
+
+        Args:
+            section: The name or index of the section to remove.
+        """
+        if isinstance(section, int):
+            section_name = _get_section_name_from_position(self.data, section)
+        else:
+            section_name = section
+
+        del self.data[section_name]
 
     def to_dict(self) -> dict[str, dict]:
+        """Return a copy of the sections as dictionaries."""
         return {k: v.to_dict() for k, v in self.data.items()}
 
 
@@ -155,6 +212,3 @@ def _insert_item_before_key(
     values = list(_dict.values())
     values.insert(index, value)
     return dict(zip(keys, values))
-
-
-_insert_item_before_key({"A": 1, "B": 2, "C": 3, "D": 4, "E": 5}, "X", "x", "C")
