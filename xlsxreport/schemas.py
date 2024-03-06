@@ -30,7 +30,7 @@ SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
     "format": {"type": "string"},
     "column_format": {"type": "dict"},
     "conditional": {"type": "string"},
-    "column_conditional": {"type": "dict"},
+    "column_conditional_format": {"type": "dict"},
     "header_format": {"type": "dict"},
     "supheader": {"type": "string"},
     "supheader_format": {"type": "dict"},

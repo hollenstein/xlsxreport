@@ -15,7 +15,7 @@ def default_template():
                 "width": 70,
                 "columns": ["Column 1", "Column 2"],
                 "column_format": {"Column 1": "int"},
-                "column_conditional": {"Column 1": "conditional"},
+                "column_conditional_format": {"Column 1": "conditional"},
             },
             "section_2": {"columns": ["Column 3"]},
         },

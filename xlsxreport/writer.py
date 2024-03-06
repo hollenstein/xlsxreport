@@ -14,7 +14,7 @@ class CompiledTableSection(Protocol):
 
     data: pd.DataFrame
     column_formats: dict
-    column_conditionals: dict
+    column_conditional_formats: dict
     column_widths: dict
     headers: dict
     header_formats: dict
@@ -141,7 +141,7 @@ class TableSectionWriter:
                 values=section.data[column],
                 header_format=section.header_formats[column],
                 values_format=section.column_formats[column],
-                conditional_format=section.column_conditionals[column],
+                conditional_format=section.column_conditional_formats[column],
                 column_width=section.column_widths[column],
             )
         if section.section_conditional:

@@ -24,7 +24,7 @@ sections:
       "Protein Probability": "float",
       "Q-value": "float",
     },
-    column_conditional: {"Sequence coverage": "data_bar"},
+    column_conditional_format: {"Sequence coverage": "data_bar"},
   }
   spectral_count: {
     tag: "Spectral count",
@@ -85,7 +85,7 @@ sections:
     tag: " vs ",
     replace_comparison_tag: " / ",
     columns: ["P-value", "Adjusted p-value", "Ratio [log2]", "Average expression"],
-    column_conditional: {
+    column_conditional_format: {
         "P-value": "pvalue",
         "Adjusted p-value": "pvalue",
         "Ratio [log2]": "ratio",

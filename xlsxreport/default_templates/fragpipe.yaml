@@ -27,7 +27,7 @@ sections:
       "Combined Spectral Count": "int", 
       "Combined Unique Spectral Count": "int", 
     },
-    column_conditional: {
+    column_conditional_format: {
       "Combined Total Peptides": "count",
     },
   }

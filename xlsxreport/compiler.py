@@ -57,7 +57,7 @@ class CompiledTableSection:
 
     data: pd.DataFrame
     column_formats: dict = field(default_factory=dict)
-    column_conditionals: dict = field(default_factory=dict)
+    column_conditional_formats: dict = field(default_factory=dict)
     column_widths: dict = field(default_factory=dict)
     headers: dict = field(default_factory=dict)
     header_formats: dict = field(default_factory=dict)
@@ -82,8 +82,8 @@ class CompiledTableSection:
         for col in self.data.columns:
             if col not in self.column_formats:
                 self.column_formats[col] = {}
-            if col not in self.column_conditionals:
-                self.column_conditionals[col] = {}
+            if col not in self.column_conditional_formats:
+                self.column_conditional_formats[col] = {}
             if col not in self.column_widths:
                 self.column_widths[col] = DEFAULT_COL_WIDTH
             if col not in self.headers:
@@ -127,7 +127,7 @@ class StandardSectionCompiler:
         compiled_section = CompiledTableSection(
             data=data,
             column_formats=col_formats,
-            column_conditionals=col_conditionals,
+            column_conditional_formats=col_conditionals,
             column_widths=col_widths,
             headers=headers,
             header_formats=header_formats,
@@ -183,7 +183,7 @@ class TagSectionCompiler:
         compiled_section = CompiledTableSection(
             data=data,
             column_formats=col_formats,
-            column_conditionals=col_conditionals,
+            column_conditional_formats=col_conditionals,
             column_widths=col_widths,
             headers=headers,
             header_formats=header_formats,
@@ -239,7 +239,7 @@ class LabelTagSectionCompiler:
         compiled_section = CompiledTableSection(
             data=data,
             column_formats=col_formats,
-            column_conditionals=col_conditionals,
+            column_conditional_formats=col_conditionals,
             column_widths=col_widths,
             headers=headers,
             header_formats=header_formats,
@@ -277,7 +277,7 @@ class ComparisonSectionCompiler:
 
             std_section_template = section_template.copy()
             std_section_template["columns"] = selected_cols
-            std_section_template["column_conditional"] = col_conditionals
+            std_section_template["column_conditional_format"] = col_conditionals
             std_section_template["supheader"] = supheader
 
             table_section = self.std_compiler.compile(std_section_template, table)[0]
@@ -398,7 +398,7 @@ def prune_table_sections(table_sections: Iterable[CompiledTableSection]) -> None
         section.data = section.data.drop(columns=to_remove)
         for col in to_remove:
             del section.column_formats[col]
-            del section.column_conditionals[col]
+            del section.column_conditional_formats[col]
             del section.column_widths[col]
             del section.headers[col]
             del section.header_formats[col]
@@ -646,13 +646,14 @@ def eval_comparison_group_conditional_format_names(
 
     Args:
         columns: A list of column names.
-        section_template: A dictionary with a "column_conditional" key containing a
-            dictionary with column names as keys and conditional format names as values.
+        section_template: A dictionary with a "column_conditional_format" key containing
+            a dictionary with column names as keys and conditional format names as
+            values.
 
     Returns:
         A dictionary containing conditional format names for each column.
     """
-    conditional_formats = section_template.get("column_conditional", {})
+    conditional_formats = section_template.get("column_conditional_format", {})
     col_conditionals = {}
     for tag, format_name in conditional_formats.items():
         for column in columns:
@@ -779,8 +780,8 @@ def eval_column_conditional_formats(
     column_formats: dict = {}
     for col in columns:
         format_name = None
-        if "column_conditional" in section_template:
-            format_name = section_template["column_conditional"].get(col, None)
+        if "column_conditional_format" in section_template:
+            format_name = section_template["column_conditional_format"].get(col, None)
         column_formats[col] = format_templates.get(format_name, default_format).copy()
     return column_formats
 

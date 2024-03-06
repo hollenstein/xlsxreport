@@ -13,7 +13,7 @@ def report_template() -> ReportTemplate:
         "format": "str",
         "columns": ["Column 1", "Column 2", "Column 3"],
         "column_format": {"Column 1": "float"},
-        "column_conditional": {"Column 1": "cond_1"},
+        "column_conditional_format": {"Column 1": "cond_1"},
         "supheader": "Supheader",
         "conditional": "cond_2",
     }
@@ -84,7 +84,7 @@ def standard_table_section(report_template, example_table) -> compiler.CompiledT
             "Column 1": report_template.formats["float"],
             "Column 2": report_template.formats["str"],
         },
-        column_conditionals={
+        column_conditional_formats={
             "Column 1": report_template.conditional_formats["cond_1"],
             "Column 2": {},
         },
@@ -111,7 +111,7 @@ def label_tag_sample_table_section(report_template, example_table) -> compiler.C
         column_formats={
             "Tag Sample 1": report_template.formats["float"],
         },
-        column_conditionals={
+        column_conditional_formats={
             "Tag Sample 1": {},
         },
         column_widths={
@@ -136,7 +136,7 @@ def tag_sample_table_section(report_template, example_table) -> compiler.Compile
             "Tag Sample 1": report_template.formats["float"],
             "Tag Sample 2": report_template.formats["float"],
         },
-        column_conditionals={
+        column_conditional_formats={
             "Tag Sample 1": {},
             "Tag Sample 2": {},
         },
@@ -323,7 +323,7 @@ def test_eval_comparison_group_supheader(replace_comparison_tag, expected_suphea
 
 def test_eval_comparison_group_conditional_format_names():
     columns = ["P ex1 vs ex2", "A ex1 vs ex2", "C ex1 vs ex2"]
-    section_template = {"column_conditional": {"P": "cond_1", "A": "cond_2"}}
+    section_template = {"column_conditional_format": {"P": "cond_1", "A": "cond_2"}}
     col_conditionals = compiler.eval_comparison_group_conditional_format_names(columns, section_template)  # fmt: skip
     assert col_conditionals == {"P ex1 vs ex2": "cond_1", "A ex1 vs ex2": "cond_2"}
 
@@ -452,17 +452,17 @@ class TestEvalColumnConditionalFormats:
     @pytest.fixture(autouse=True)
     def _init_inputs(self):
         self.columns = ["Column 1", "Column 2"]
-        self.section_template = {"column_conditional": {"Column 1": "cond_1"}}
+        self.section_template = {"column_conditional_format": {"Column 1": "cond_1"}}
         self.conditional_format_templates = {"cond_1": {"type": "2_color_scale"}}
 
-    def test_with_no_column_conditional_defined_in_the_section_template(self):
+    def test_with_no_column_conditional_format_defined_in_the_section_template(self):
         column_formats = compiler.eval_column_conditional_formats(
             self.columns, {}, self.conditional_format_templates
         )
         expected_formats = {"Column 1": {}, "Column 2": {}}
         assert column_formats == expected_formats
 
-    def test_with_column_conditional_defined_in_the_section_template(self):
+    def test_with_column_conditional_format_defined_in_the_section_template(self):
         column_formats = compiler.eval_column_conditional_formats(
             self.columns, self.section_template, self.conditional_format_templates
         )
@@ -478,7 +478,7 @@ class TestEvalColumnConditionalFormats:
         assert column_formats == expected_formats
 
     def test_that_each_returned_format_is_a_unique_instance(self):
-        self.section_template["column_conditional"] = {"Column 1": "cond_1", "Column 2": "cond_1"}  # fmt: skip
+        self.section_template["column_conditional_format"] = {"Column 1": "cond_1", "Column 2": "cond_1"}  # fmt: skip
         column_formats = compiler.eval_column_conditional_formats(
             self.columns, self.section_template, self.conditional_format_templates
         )
@@ -609,12 +609,12 @@ class TestEvalSectionConditionalFormats:
         self.section_template = {"conditional": "cond_1"}
         self.conditional_format_templates = {"cond_1": {"type": "2_color_scale"}}
 
-    def test_with_no_column_conditional_defined_in_the_section_template(self):
+    def test_with_no_column_conditional_format_defined_in_the_section_template(self):
         column_formats = compiler.eval_section_conditional_format({}, self.conditional_format_templates)  # fmt: skip
         expected_formats = {}
         assert column_formats == expected_formats
 
-    def test_with_column_conditional_defined_in_the_section_template(self):
+    def test_with_column_conditional_format_defined_in_the_section_template(self):
         column_formats = compiler.eval_section_conditional_format(self.section_template, self.conditional_format_templates)  # fmt: skip
         expected_formats = self.conditional_format_templates["cond_1"]
         assert column_formats == expected_formats
@@ -687,7 +687,7 @@ class TestComparisonSectionCompiler:
             "comparison_group": True,
             "tag": " vs ",
             "columns": ["P", "A"],
-            "column_conditional": {
+            "column_conditional_format": {
                 "P": "cond_1",
                 "A": "cond_2",
             },
@@ -706,12 +706,12 @@ class TestComparisonSectionCompiler:
 
     def test_correct_application_of_conditional_formats(self):
         compiled_sections = self.section_compiler.compile(self.section_template, self.table)  # fmt: skip
-        expected_column_conditionals = {
+        expected_column_conditional_formats = {
             "P ex1 vs ex2": {"type": "2_color_scale"},
             "A ex1 vs ex2": {"type": "3_color_scale"},
         }
-        observed_column_conditionsls = compiled_sections[0].column_conditionals
-        assert observed_column_conditionsls == expected_column_conditionals
+        observed_column_conditional_formats = compiled_sections[0].column_conditional_formats  # fmt: skip
+        assert observed_column_conditional_formats == expected_column_conditional_formats  # fmt: skip
 
     def test_compiled_sections_have_correct_headers(self):
         compiled_sections = self.section_compiler.compile(self.section_template, self.table)  # fmt: skip
@@ -847,7 +847,7 @@ class TestPruneTableSections:
         for section in sections:
             assert len(section.data.columns) == 2
             assert len(sections[1].column_formats) == 2
-            assert len(sections[1].column_conditionals) == 2
+            assert len(sections[1].column_conditional_formats) == 2
             assert len(sections[1].column_widths) == 2
             assert len(sections[1].headers) == 2
             assert len(sections[1].header_formats) == 2
@@ -860,7 +860,7 @@ class TestPruneTableSections:
         compiler.prune_table_sections(sections)
         assert sections[1].data.columns.tolist() == ["C3"]
         assert list(sections[1].column_formats) == ["C3"]
-        assert list(sections[1].column_conditionals) == ["C3"]
+        assert list(sections[1].column_conditional_formats) == ["C3"]
         assert list(sections[1].column_widths) == ["C3"]
         assert list(sections[1].headers) == ["C3"]
         assert list(sections[1].header_formats) == ["C3"]
