@@ -37,6 +37,11 @@ class ReportTemplate:
         settings: A dictionary of settings for the report template.
     """
 
+    sections: ReportTemplateSections
+    formats: ReportTemplateFormats
+    conditional_formats: ReportTemplateFormats
+    settings: ReportTemplateSettings
+
     def __init__(
         self,
         sections: Optional[dict] = None,

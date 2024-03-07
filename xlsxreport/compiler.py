@@ -1,8 +1,10 @@
 """Contains functions for compiling table sections from a report template and a table."""
 
 from __future__ import annotations
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, Protocol, Sequence
+from collections.abc import Mapping, MutableMapping
 import re
 
 import numpy as np
@@ -22,10 +24,17 @@ WHITESPACE_CHARS = " ."
 class ReportTemplate(Protocol):
     """Abstract class representing a report template."""
 
-    sections: dict[str, TemplateSection]
-    formats: dict
-    conditional_formats: dict
-    settings: dict
+    @property
+    def sections(self) -> Mapping[str, TemplateSection]: ...
+
+    @property
+    def formats(self) -> MutableMapping[str, Mapping]: ...
+
+    @property
+    def conditional_formats(self) -> Mapping[str, Mapping]: ...
+
+    @property
+    def settings(self) -> Mapping: ...
 
 
 class TemplateSection(Protocol):
@@ -101,7 +110,7 @@ class StandardSectionCompiler:
         self.settings = report_template.settings
 
     def compile(
-        self, section_template: dict, table: pd.DataFrame
+        self, section_template: Mapping, table: pd.DataFrame
     ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(table.columns, section_template)
@@ -148,7 +157,7 @@ class TagSectionCompiler:
         self.settings = report_template.settings
 
     def compile(
-        self, section_template: dict, table: pd.DataFrame
+        self, section_template: Mapping, table: pd.DataFrame
     ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_tag_section_columns(table.columns, section_template)
@@ -204,7 +213,7 @@ class LabelTagSectionCompiler:
         self.settings = report_template.settings
 
     def compile(
-        self, section_template: dict, table: pd.DataFrame
+        self, section_template: Mapping, table: pd.DataFrame
     ) -> list[CompiledTableSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_label_tag_section_columns(table.columns, section_template)
@@ -258,7 +267,7 @@ class ComparisonSectionCompiler:
         self.std_compiler = StandardSectionCompiler(report_template)
 
     def compile(
-        self, section_template: dict, table: pd.DataFrame
+        self, section_template: Mapping, table: pd.DataFrame
     ) -> list[CompiledTableSection]:
         """Compile table sections from a comparison section template and a table."""
 
@@ -275,7 +284,7 @@ class ComparisonSectionCompiler:
                 section_template, comparison_group
             )
 
-            std_section_template = section_template.copy()
+            std_section_template = deepcopy(dict(section_template))
             std_section_template["columns"] = selected_cols
             std_section_template["column_conditional_format"] = col_conditionals
             std_section_template["supheader"] = supheader
@@ -378,15 +387,16 @@ def compile_remaining_column_table_section(
     selected_cols = [column for column in table if column not in observed_columns]
 
     section_compiler = StandardSectionCompiler(report_template)
-    section_compiler.formats[-1] = REMAINING_COL_FORMAT
+    _format_name = "_" * (max([len(i) for i in section_compiler.formats]) + 1)
+    section_compiler.formats[_format_name] = REMAINING_COL_FORMAT
     section_template = {
         "columns": selected_cols,
-        "format": -1,
+        "format": _format_name,
         "width": DEFAULT_COL_WIDTH,
         "hide_section": True,
     }
     section = section_compiler.compile(section_template, table)[0]
-    del section_compiler.formats[-1]
+    del section_compiler.formats[_format_name]
     return section
 
 
@@ -432,7 +442,7 @@ def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
 def eval_data_with_log2_transformation(
     table: pd.DataFrame,
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     evaluate_log_state: bool,
 ) -> pd.DataFrame:
     """Selects columns from the table and applies a log2 transformation if specified.
@@ -467,7 +477,7 @@ def eval_data_with_log2_transformation(
 
 
 def eval_standard_section_columns(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
     """Select columns from the template that are present in the table.
 
@@ -484,7 +494,7 @@ def eval_standard_section_columns(
 
 
 def eval_tag_section_columns(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
     """Extract columns using a regex pattern.
 
@@ -501,7 +511,7 @@ def eval_tag_section_columns(
 
 
 def eval_label_tag_section_columns(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
     """Extract columns using a regex pattern.
 
@@ -522,7 +532,9 @@ def eval_label_tag_section_columns(
     return selected_columns
 
 
-def eval_comparison_groups(columns: Iterable[str], section_template: dict) -> list[str]:
+def eval_comparison_groups(
+    columns: Iterable[str], section_template: Mapping
+) -> list[str]:
     """Extract comparison groups from the columns of a table.
 
     Args:
@@ -552,7 +564,7 @@ def eval_comparison_groups(columns: Iterable[str], section_template: dict) -> li
 
 
 def eval_comparison_group_columns(
-    columns: Iterable[str], section_template: dict, comparison_group: str
+    columns: Iterable[str], section_template: Mapping, comparison_group: str
 ) -> list[str]:
     """Extract columns from a table that belong to a comparison group.
 
@@ -578,7 +590,7 @@ def eval_comparison_group_columns(
 
 
 def eval_comparison_group_headers(
-    columns: Iterable[str], section_template: dict, comparison_group: str
+    columns: Iterable[str], section_template: Mapping, comparison_group: str
 ) -> dict[str, str]:
     """Returns header names for each column.
 
@@ -611,7 +623,7 @@ def eval_comparison_group_headers(
 
 
 def eval_comparison_group_supheader(
-    section_template: dict, comparison_group: str
+    section_template: Mapping, comparison_group: str
 ) -> str:
     """Returns the supheader name for a comparison group.
 
@@ -636,7 +648,7 @@ def eval_comparison_group_supheader(
 
 
 def eval_comparison_group_conditional_format_names(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> dict[str, str]:
     """Returns conditional format names for each column.
 
@@ -664,7 +676,7 @@ def eval_comparison_group_conditional_format_names(
 
 def eval_tag_sample_headers(
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     log2_tag: str = "",
 ) -> dict[str, str]:
     """Returns header names for each column.
@@ -696,7 +708,7 @@ def eval_tag_sample_headers(
 
 
 def eval_tag_sample_supheader(
-    section_template: dict,
+    section_template: Mapping,
     log2_tag: str,
 ) -> str:
     """Returns the supheader name for a tag sample section.
@@ -721,8 +733,8 @@ def eval_tag_sample_supheader(
 
 def eval_column_formats(
     columns: Sequence[str],
-    section_template: dict,
-    format_templates: dict,
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
     default_format: Optional[dict] = None,
 ) -> dict[str, dict]:
     """Returns format descriptions for each column in the section.
@@ -751,7 +763,7 @@ def eval_column_formats(
         if "column_format" in section_template:
             format_name = section_template["column_format"].get(col, section_format)
 
-        column_formats[col] = format_templates.get(format_name, default_format).copy()
+        column_formats[col] = dict(format_templates.get(format_name, default_format))
     if section_template.get("border", False):
         column_formats[columns[0]]["left"] = BORDER_TYPE
         column_formats[columns[-1]]["right"] = BORDER_TYPE
@@ -760,8 +772,8 @@ def eval_column_formats(
 
 def eval_column_conditional_formats(
     columns: Iterable[str],
-    section_template: dict,
-    format_templates: dict,
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
 ) -> dict[str, dict]:
     """Returns conditional format descriptions for each column in the section.
 
@@ -776,19 +788,20 @@ def eval_column_conditional_formats(
     Returns:
         A dictionary containing conditional format descriptions for each column.
     """
-    default_format: dict = {}
     column_formats: dict = {}
     for col in columns:
-        format_name = None
+        col_format: dict = {}
         if "column_conditional_format" in section_template:
-            format_name = section_template["column_conditional_format"].get(col, None)
-        column_formats[col] = format_templates.get(format_name, default_format).copy()
+            if col in section_template["column_conditional_format"]:
+                format_name = section_template["column_conditional_format"][col]
+                col_format = dict(format_templates.get(format_name, col_format))
+        column_formats[col] = col_format
     return column_formats
 
 
 def eval_column_widths(
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     default_width: float = 64,
 ) -> dict[str, float]:
     """Returns column widths for each column in the section.
@@ -809,7 +822,9 @@ def eval_column_widths(
 
 
 def eval_header_formats(
-    columns: Sequence[str], section_template: dict, format_templates: dict
+    columns: Sequence[str],
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
 ) -> dict[str, dict]:
     """Returns format descriptions for each column header in the section.
 
@@ -838,7 +853,9 @@ def eval_header_formats(
     return column_header_formats
 
 
-def eval_supheader_format(section_template: dict, format_templates: dict) -> dict:
+def eval_supheader_format(
+    section_template: Mapping, format_templates: Mapping[str, Mapping]
+) -> dict:
     """Returns a format descriptions for the supheader.
 
     Supheader format description defined in the `section_template` updates the one from
@@ -864,7 +881,7 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
 
 
 def eval_section_conditional_format(
-    section_template: dict, format_templates: dict
+    section_template: Mapping, format_templates: Mapping[str, Mapping]
 ) -> dict:
     """Returns a conditional format description of a section.
 
@@ -879,7 +896,7 @@ def eval_section_conditional_format(
         A dictionary containing a conditional format description.
     """
     section_format_name = section_template.get("conditional_format", None)
-    section_conditional_format = format_templates.get(section_format_name, {}).copy()
+    section_conditional_format = dict(format_templates.get(section_format_name, {}))
     return section_conditional_format
 
 

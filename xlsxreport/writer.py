@@ -1,7 +1,7 @@
 """This module provides a class for writing compiled table sections to an Excel file."""
 
 from __future__ import annotations
-from typing import Collection, Iterable, Optional, Protocol
+from typing import Collection, Iterable, Mapping, Optional, Protocol
 import warnings
 
 import pandas as pd
@@ -49,7 +49,7 @@ class TableSectionWriter:
         self,
         worksheet: xlsxwriter.worksheet.Worksheet,
         sections: Iterable[CompiledTableSection],
-        settings: Optional[dict] = None,
+        settings: Optional[Mapping] = None,
         start_row: int = 0,
         start_column: int = 0,
     ) -> None:
