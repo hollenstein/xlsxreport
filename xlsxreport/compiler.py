@@ -15,8 +15,8 @@ from xlsxreport.template import SectionCategory
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
-DEFAULT_FORMAT: dict = {"num_format": "@"}
-REMAINING_COL_FORMAT = {"align": "left", "num_format": "0"}
+DEFAULT_FORMAT = {"num_format": "General"}
+REMAINING_COL_FORMAT = {"num_format": "General"}
 NAN_REPLACEMENT_SYMBOL = ""
 WHITESPACE_CHARS = " ."
 
