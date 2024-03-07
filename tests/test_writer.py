@@ -42,16 +42,16 @@ class ExcelWriteReadTestManager:
 
 
 @pytest.fixture()
-def table_section() -> compiler.CompiledTableSection:
-    section = compiler.CompiledTableSection(
+def compiled_section() -> compiler.CompiledSection:
+    section = compiler.CompiledSection(
         data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
         column_widths={"Column 1": 10, "Column 2": 10},
     )
     return section
 
 
-class TestTableSectionWriteSections:
-    """Tests for TableSectionWriter.write_section():
+class TestSectionWriter_WriteSections:
+    """Tests for SectionWriter.write_section():
     - Test that multiple sections are written with correct column and row positions
     - Test that supheader, header and row heights are set with correct values and on
     correct coordinates
@@ -60,28 +60,28 @@ class TestTableSectionWriteSections:
     """
 
     @pytest.fixture(autouse=True)
-    def _init_table_sections(self):
-        section_1 = compiler.CompiledTableSection(
+    def _init_compiled_sections(self):
+        section_1 = compiler.CompiledSection(
             data=pd.DataFrame({"Column 1": [1, 2, 3], "Column 2": ["A", "B", "C"]}),
         )
-        section_2 = compiler.CompiledTableSection(
+        section_2 = compiler.CompiledSection(
             data=pd.DataFrame({"Column 3": [1, 2, 3], "Column 4": ["A", "B", "C"]}),
         )
         self.headers = list(section_1.headers) + list(section_2.headers)
-        self.table_sections = [section_1, section_2]
+        self.compiled_sections = [section_1, section_2]
         self.col_num = 4
         self.row_num = 3
         self.column_values = []
-        for section in self.table_sections:
+        for section in self.compiled_sections:
             self.column_values.extend([section.data[c].tolist() for c in section.data.columns])  # fmt: skip
 
     @pytest.mark.parametrize("start_row", [0, 2, 10])
     def test_all_section_headers_correctly_written_with_different_start_rows(self, start_row):  # fmt: skip
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer.write_sections(
                 excel_manager.worksheet,
-                self.table_sections,
+                self.compiled_sections,
                 settings={"write_supheader": False},
                 start_row=start_row,
             )
@@ -90,10 +90,10 @@ class TestTableSectionWriteSections:
 
     def test_all_section_values_are_written_to_the_correct_position(self):
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer.write_sections(
                 excel_manager.worksheet,
-                self.table_sections,
+                self.compiled_sections,
                 settings={"write_supheader": False},
             )
         sheet_columns = list(excel_manager.loaded_worksheet.columns)
@@ -104,9 +104,9 @@ class TestTableSectionWriteSections:
     @pytest.mark.parametrize("start_col", [0, 2, 10])
     def test_start_column_correctly_applied(self, start_col):
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer.write_sections(
-                excel_manager.worksheet, self.table_sections, start_column=start_col
+                excel_manager.worksheet, self.compiled_sections, start_column=start_col
             )
         sheet = excel_manager.loaded_worksheet
         for empty_column in list(sheet.columns)[:start_col]:
@@ -120,10 +120,10 @@ class TestTableSectionWriteSections:
         self, write_supheader, start_row
     ):
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer.write_sections(
                 excel_manager.worksheet,
-                self.table_sections,
+                self.compiled_sections,
                 settings={"write_supheader": write_supheader},
                 start_row=start_row,
             )
@@ -132,13 +132,15 @@ class TestTableSectionWriteSections:
         assert [cell.value for cell in sheet_rows[header_row]] == self.headers
 
 
-class TestIntegrationTableSectionWriteColumn:
+class TestSectionWriter_WriteColumn_Integration:
+    """Integration test for writing columns with SectionWriter._write_column."""
+
     @pytest.fixture(autouse=True)
     def _init_section_writer_with_write_column(self):
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed
         row, column = 2, 2
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer._write_column(
                 excel_manager.worksheet,
                 row=row - 1,
@@ -190,11 +192,11 @@ class TestIntegrationTableSectionWriteColumn:
         cell_ranges[0].bottom == [(5, 2)]
 
 
-class TestTableSectionWriteColumn:
+class TestSectionWriter_WriteColumn:
     @pytest.fixture(autouse=True)
     def _init_section_writer(self):
         self.worksheet_mock = MagicMock(name="worksheet_mock")
-        self.section_writer = writer.TableSectionWriter(Workbook())
+        self.section_writer = writer.SectionWriter(Workbook())
 
     @pytest.fixture(autouse=True)
     def _init_arguments_for_write_column(self):
@@ -253,20 +255,21 @@ class TestTableSectionWriteColumn:
         self.worksheet_mock.conditional_format.assert_not_called()
 
 
-class TestIntegrationTableSectionWriteSupheader:
+class TestSectionWriter_WriteSupheader_Integration:
+    """Integration test for writing supheaders with SectionWriter._write_supheader."""
+
     def _create_worksheet_with_section_writer_and_write_supheader(
         self, row: int = 1, column: int = 1, num_columns: int = 1, supheader = "Supheader"  # fmt: skip
     ):
-        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
-        TableSectionWriter. After using the TableSectionWriter to write a supheader to
-        the worksheet, it is then safed to a buffer and loaded with openpyxl. The loaded
-        worksheet is returned.
+        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a SectionWriter.
+        After using the SectionWriter to write a supheader to the worksheet, it is then
+        safed to a buffer and loaded with openpyxl. The loaded worksheet is returned.
 
         Note that row and column are specified as one indexed, whereas xlsxwriter is
         zero indexed.
         """
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer._write_supheader(
                 worksheet=excel_manager.worksheet,
                 row=row - 1,
@@ -304,23 +307,24 @@ class TestIntegrationTableSectionWriteSupheader:
         assert len(worksheet.merged_cells.ranges) == 1
 
 
-class TestIntegrationTableSectionWriteSection:
+class TestSectionWriter_WriteSection_Integration:
+    """Integration test for writing sections with SectionWriter._write_section."""
+
     def _create_worksheet_with_section_writer_and_write_section(
-        self, table_section, write_supheader
+        self, compiled_section, write_supheader
     ):
-        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a
-        TableSectionWriter. After using the TableSectionWriter to write a section to the
-        worksheet, it is then safed to a buffer and loaded with openpyxl. The loaded
-        worksheet is returned.
+        """Creates an xlsxwriter.workbook, an xlsxwriter.worksheet and a SectionWriter.
+        After using the SectionWriter to write a section to the worksheet, it is then
+        safed to a buffer and loaded with openpyxl. The loaded worksheet is returned.
 
         Note that row and column are specified as one indexed, whereas xlsxwriter is
         zero indexed.
         """
         with ExcelWriteReadTestManager() as excel_manager:
-            section_writer = writer.TableSectionWriter(excel_manager.workbook)
+            section_writer = writer.SectionWriter(excel_manager.workbook)
             section_writer._write_section(
                 excel_manager.worksheet,
-                table_section,
+                compiled_section,
                 start_row=0,
                 start_column=0,
                 write_supheader=write_supheader,
@@ -328,80 +332,80 @@ class TestIntegrationTableSectionWriteSection:
         return excel_manager.loaded_worksheet
 
     @pytest.mark.parametrize("write_supheader", [True, False])
-    def test_correct_number_of_columns_written(self, table_section, write_supheader):
+    def test_correct_number_of_columns_written(self, compiled_section, write_supheader):
         worksheet = self._create_worksheet_with_section_writer_and_write_section(
-            table_section, write_supheader=write_supheader
+            compiled_section, write_supheader=write_supheader
         )
-        assert len(list(worksheet.columns)) == table_section.data.shape[1]
+        assert len(list(worksheet.columns)) == compiled_section.data.shape[1]
 
     @pytest.mark.parametrize("write_supheader, num_headers", [(True, 2), (False, 1)])
-    def test_correct_number_of_rows_written(self, table_section, write_supheader, num_headers):  # fmt: skip
+    def test_correct_number_of_rows_written(self, compiled_section, write_supheader, num_headers):  # fmt: skip
         worksheet = self._create_worksheet_with_section_writer_and_write_section(
-            table_section, write_supheader=write_supheader
+            compiled_section, write_supheader=write_supheader
         )
         for column in worksheet.columns:
-            assert len(column) == table_section.data.shape[0] + num_headers
+            assert len(column) == compiled_section.data.shape[0] + num_headers
 
     @pytest.mark.parametrize("write_supheader", [True, False])
-    def test_supheader_correctly_added_or_ommitted(self, table_section, write_supheader):  # fmt: skip
-        table_section.supheader = "A supheader name"
+    def test_supheader_correctly_added_or_ommitted(self, compiled_section, write_supheader):  # fmt: skip
+        compiled_section.supheader = "A supheader name"
         worksheet = self._create_worksheet_with_section_writer_and_write_section(
-            table_section, write_supheader=write_supheader
+            compiled_section, write_supheader=write_supheader
         )
         # Note that xlsxwriter is zero indexed whereas pyopenxl is one indexed.
         if write_supheader:
-            assert worksheet.cell(row=1, column=1).value == table_section.supheader
+            assert worksheet.cell(row=1, column=1).value == compiled_section.supheader
         else:
-            assert worksheet.cell(row=1, column=1).value != table_section.supheader
+            assert worksheet.cell(row=1, column=1).value != compiled_section.supheader
 
 
-class TestTableSectionWriteSection:
+class TestSectionWriter_WriteSection:
     @pytest.fixture(autouse=True)
     def _init_section_writer(self):
         self.worksheet_mock = MagicMock(name="worksheet_mock")
-        self.section_writer = writer.TableSectionWriter(Workbook())
+        self.section_writer = writer.SectionWriter(Workbook())
 
     @pytest.mark.parametrize("write_supheader", [True, False])
-    def test_conditional_format_called_with_correct_arguments(self, table_section, write_supheader):  # fmt: skip
-        table_section.section_conditional_format = {"bold": True}
+    def test_conditional_format_called_with_correct_arguments(self, compiled_section, write_supheader):  # fmt: skip
+        compiled_section.section_conditional_format = {"bold": True}
 
         self.section_writer._write_section(
             self.worksheet_mock,
-            table_section,
+            compiled_section,
             start_row=0,
             start_column=0,
             write_supheader=write_supheader,
         )
 
-        rows, cols = table_section.data.shape
+        rows, cols = compiled_section.data.shape
         data_start_row = 2 if write_supheader else 1
         data_end_row = data_start_row + rows - 1
         self.worksheet_mock.conditional_format.assert_called_once_with(
             data_start_row, 0, data_end_row, cols - 1, {"bold": True}
         )
 
-    def test_conditional_format_not_called_when_conditionaL_format_is_empty(self, table_section):  # fmt: skip
-        table_section.section_conditional_format = {}
-        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
+    def test_conditional_format_not_called_when_conditionaL_format_is_empty(self, compiled_section):  # fmt: skip
+        compiled_section.section_conditional_format = {}
+        self.section_writer._write_section(self.worksheet_mock, compiled_section, 0, 0, True)  # fmt: skip
         self.worksheet_mock.conditional_format.assert_not_called()
 
-    def test_set_column_not_called_when_hide_section_is_false(self, table_section):
-        table_section.hide_section = False
-        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
+    def test_set_column_not_called_when_hide_section_is_false(self, compiled_section):
+        compiled_section.hide_section = False
+        self.section_writer._write_section(self.worksheet_mock, compiled_section, 0, 0, True)  # fmt: skip
         self.worksheet_mock.set_column.assert_not_called()
 
-    def test_set_column_called_correctly_when_hide_section_is_false(self, table_section):  # fmt: skip
-        table_section.hide_section = True
-        self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
+    def test_set_column_called_correctly_when_hide_section_is_false(self, compiled_section):  # fmt: skip
+        compiled_section.hide_section = True
+        self.section_writer._write_section(self.worksheet_mock, compiled_section, 0, 0, True)  # fmt: skip
         self.worksheet_mock.set_column.assert_called_once_with(
-            0, table_section.data.shape[1] - 1, options={"level": 1, "collapsed": True, "hidden": True}  # fmt: skip
+            0, compiled_section.data.shape[1] - 1, options={"level": 1, "collapsed": True, "hidden": True}  # fmt: skip
         )
 
 
-class TestTableSectionWriterGetXlsxFormat:
+class TestSectionWriter_GetXlsxFormat:
     @pytest.fixture(autouse=True)
     def _init_section_writer(self):
-        self.writer = writer.TableSectionWriter(Workbook())
+        self.writer = writer.SectionWriter(Workbook())
         self.format_description = {"bold": True, "font_color": "#FF0000"}
 
     def test_xlsx_format_with_correct_properties_is_returned(self):

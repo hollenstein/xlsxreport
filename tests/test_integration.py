@@ -6,9 +6,9 @@ import openpyxl
 import xlsxwriter
 
 import xlsxreport
-from xlsxreport.writer import TableSectionWriter
+from xlsxreport.writer import SectionWriter
 from xlsxreport.template import ReportTemplate
-from xlsxreport.compiler import prepare_table_sections
+from xlsxreport.compiler import prepare_compiled_sections
 
 
 TESTDATA_DIRECTORY = os.path.join(os.path.dirname(__file__), "testdata")
@@ -33,12 +33,12 @@ class TestCorrectCreationOfFormattedExcelFile:
         table = pd.read_csv(mq_path, sep="\t")
 
         report_template = ReportTemplate.load(template_path)
-        compiled_table_sections = prepare_table_sections(report_template, table)
+        compiled_sections = prepare_compiled_sections(report_template, table)
         with xlsxwriter.Workbook(temp_excel_path) as workbook:
             worksheet = workbook.add_worksheet("Proteins")
-            section_writer = TableSectionWriter(workbook)
+            section_writer = SectionWriter(workbook)
             section_writer.write_sections(
-                worksheet, compiled_table_sections, settings=report_template.settings
+                worksheet, compiled_sections, settings=report_template.settings
             )
 
         reference_excel_path = os.path.join(TESTDATA_DIRECTORY, "mq_proteinGroups.xlsx")

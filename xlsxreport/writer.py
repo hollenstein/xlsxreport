@@ -1,4 +1,4 @@
-"""This module provides a class for writing compiled table sections to an Excel file."""
+"""This module provides a class for writing compiled sections to an Excel file."""
 
 from __future__ import annotations
 from typing import Collection, Iterable, Mapping, Optional, Protocol
@@ -9,7 +9,7 @@ import xlsxwriter.format  # type: ignore
 import xlsxwriter.worksheet  # type: ignore
 
 
-class CompiledTableSection(Protocol):
+class CompiledSection(Protocol):
     """Contains information for writing and formatting a section of a table."""
 
     data: pd.DataFrame
@@ -24,23 +24,23 @@ class CompiledTableSection(Protocol):
     hide_section: bool
 
 
-class TableSectionWriter:
-    """Class for writing `CompiledTableSections` to an Excel file.
+class SectionWriter:
+    """Class for writing `CompiledSection`s to an Excel file.
 
-    The `TableSectionWriter` provides the method `write_sections` to write a list of
-    `CompiledTableSection`s to a worksheet in an Excel file.
+    The `SectionWriter` provides the method `write_sections` to write a list of
+    `CompiledSection`s to a worksheet in an Excel file.
 
     Attributes:
         workbook: The xlsxwriter.Workbook instance that represents the Excel file to
-            which `CompiledTableSection`s will be written.
+            which `CompiledSection`s will be written.
     """
 
     def __init__(self, workbook: xlsxwriter.Workbook):
-        """Initialize a `TableSectionWriter`.
+        """Initialize a `SectionWriter`.
 
         Args:
             workbook: The xlsxwriter.Workbook instance that represents the Excel file to
-                which `CompiledTableSection`s will be written.
+                which `CompiledSection`s will be written.
         """
         self.workbook = workbook
         self._xlsxwriter_formats: dict = {}  # use dictionary hash as key
@@ -48,16 +48,16 @@ class TableSectionWriter:
     def write_sections(
         self,
         worksheet: xlsxwriter.worksheet.Worksheet,
-        sections: Iterable[CompiledTableSection],
+        sections: Iterable[CompiledSection],
         settings: Optional[Mapping] = None,
         start_row: int = 0,
         start_column: int = 0,
     ) -> None:
-        """Write a list of `CompiledTableSection`s to the `worksheet` in an Excel file.
+        """Write a list of `CompiledSection`s to the `worksheet` in an Excel file.
 
         Args:
             worksheet: The Excel worksheet to write to.
-            sections: A list of `CompiledTableSection`s that will be written as a
+            sections: A list of `CompiledSection`s that will be written as a
                 continuous table to the `worksheet`.
             settings: Optional, specify general settings for the table. The following
                 settings are available: `write_supheader`, `supheader_height`, and
@@ -111,12 +111,12 @@ class TableSectionWriter:
     def _write_section(
         self,
         worksheet: xlsxwriter.worksheet.Worksheet,
-        section: CompiledTableSection,
+        section: CompiledSection,
         start_row: int,
         start_column: int,
         write_supheader: bool,
     ) -> None:
-        """Write a `CompiledTableSection` to the workbook."""
+        """Write a `CompiledSection` to the workbook."""
         num_values, num_rows = section.data.shape
         header_row = start_row
         values_row = start_row + 1

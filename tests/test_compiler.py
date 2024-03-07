@@ -77,8 +77,8 @@ def example_table() -> pd.DataFrame:
 
 
 @pytest.fixture()
-def standard_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
-    table_section = compiler.CompiledTableSection(
+def compiled_standard_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+    compiled_section = compiler.CompiledSection(
         data=example_table[["Column 1", "Column 2"]].copy(),
         column_formats={
             "Column 1": report_template.formats["float"],
@@ -101,12 +101,12 @@ def standard_table_section(report_template, example_table) -> compiler.CompiledT
         supheader_format=report_template.formats["supheader"],
         section_conditional_format=report_template.conditional_formats["cond_2"],
     )
-    return table_section
+    return compiled_section
 
 
 @pytest.fixture()
-def label_tag_sample_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
-    table_section = compiler.CompiledTableSection(
+def compiled_label_tag_sample_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+    compiled_section = compiler.CompiledSection(
         data=np.log2(example_table[["Tag Sample 1"]].copy()),
         column_formats={
             "Tag Sample 1": report_template.formats["float"],
@@ -125,12 +125,12 @@ def label_tag_sample_table_section(report_template, example_table) -> compiler.C
         supheader_format=report_template.formats["supheader"],
         section_conditional_format=report_template.conditional_formats["cond_1"],
     )
-    return table_section
+    return compiled_section
 
 
 @pytest.fixture()
-def tag_sample_table_section(report_template, example_table) -> compiler.CompiledTableSection:  # fmt: skip
-    table_section = compiler.CompiledTableSection(
+def compiled_tag_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+    compiled_section = compiler.CompiledSection(
         data=np.log2(example_table[["Tag Sample 1", "Tag Sample 2"]].copy()),
         column_formats={
             "Tag Sample 1": report_template.formats["float"],
@@ -153,7 +153,7 @@ def tag_sample_table_section(report_template, example_table) -> compiler.Compile
         supheader_format=report_template.formats["supheader"],
         section_conditional_format=report_template.conditional_formats["cond_1"],
     )
-    return table_section
+    return compiled_section
 
 
 class TestEvalData:
@@ -626,47 +626,47 @@ class TestEvalSectionConditionalFormats:
 
 
 def test_StandardSectionCompiler(
-    report_template, example_table, standard_table_section
+    report_template, example_table, compiled_standard_section
 ):
     section_compiler = compiler.StandardSectionCompiler(report_template)
     section_template = report_template.sections["Standard section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
-    for attr in standard_table_section.__dataclass_fields__:
+    for attr in compiled_standard_section.__dataclass_fields__:
         if attr == "data":
-            pd.testing.assert_frame_equal(compiled_section.data, standard_table_section.data, check_dtype=False)  # fmt: skip
+            pd.testing.assert_frame_equal(compiled_section.data, compiled_standard_section.data, check_dtype=False)  # fmt: skip
         else:
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
-            expected_section_attr = {attr: getattr(standard_table_section, attr)}
+            expected_section_attr = {attr: getattr(compiled_standard_section, attr)}
             assert compiled_attr == expected_section_attr
 
 
-def test_TagSectionCompiler(report_template, example_table, tag_sample_table_section):
+def test_TagSectionCompiler(report_template, example_table, compiled_tag_section):
     section_compiler = compiler.TagSectionCompiler(report_template)
     section_template = report_template.sections["Tag section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
-    for attr in tag_sample_table_section.__dataclass_fields__:
+    for attr in compiled_tag_section.__dataclass_fields__:
         if attr == "data":
-            pd.testing.assert_frame_equal(compiled_section.data, tag_sample_table_section.data, check_dtype=False)  # fmt: skip
+            pd.testing.assert_frame_equal(compiled_section.data, compiled_tag_section.data, check_dtype=False)  # fmt: skip
         else:
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
-            expected_section_attr = {attr: getattr(tag_sample_table_section, attr)}
+            expected_section_attr = {attr: getattr(compiled_tag_section, attr)}
             assert compiled_attr == expected_section_attr
 
 
-def test_LabelTagSectionCompiler(report_template, example_table, label_tag_sample_table_section):  # fmt: skip
+def test_LabelTagSectionCompiler(report_template, example_table, compiled_label_tag_sample_section):  # fmt: skip
     section_compiler = compiler.LabelTagSectionCompiler(report_template)
     section_template = report_template.sections["Label tag section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
-    for attr in label_tag_sample_table_section.__dataclass_fields__:
+    for attr in compiled_label_tag_sample_section.__dataclass_fields__:
         if attr == "data":
-            pd.testing.assert_frame_equal(compiled_section.data, label_tag_sample_table_section.data, check_dtype=False)  # fmt: skip
+            pd.testing.assert_frame_equal(compiled_section.data, compiled_label_tag_sample_section.data, check_dtype=False)  # fmt: skip
         else:
             # Include attribute name in a dictionary to get nicer error messages
             compiled_attr = {attr: getattr(compiled_section, attr)}
             expected_section_attr = {
-                attr: getattr(label_tag_sample_table_section, attr)
+                attr: getattr(compiled_label_tag_sample_section, attr)
             }
             assert compiled_attr == expected_section_attr
 
@@ -724,15 +724,15 @@ class TestComparisonSectionCompiler:
         assert compiled_sections[1].supheader == "ex1 / EX3"
 
 
-class TestPrepareTableSections:
+class TestPrepareCompiledSections:
     def test_only_non_empty_sections_are_returned(self, report_template):
         table = pd.DataFrame({"Tag Sample 1": [1], "Tag Sample 2": [1]})
-        compiled_sections = compiler.prepare_table_sections(report_template, table)
+        compiled_sections = compiler.prepare_compiled_sections(report_template, table)
         assert all([not s.data.empty for s in compiled_sections])
 
     def test_duplicate_columns_are_removed(self, report_template, example_table):
         report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
-        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
+        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
         observed_columns = []
         for section in compiled_sections:
             observed_columns.extend(section.data.columns)
@@ -741,33 +741,33 @@ class TestPrepareTableSections:
     def test_duplicate_columns_are_kept_when_setting_is_false(self, report_template, example_table):  # fmt: skip
         report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
         report_template.settings["remove_duplicate_columns"] = False
-        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
+        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
         assert compiled_sections[-1].data.columns.tolist() == ["Column 1"]
 
     def test_empty_sections_caused_by_removal_of_duplicate_columns_are_not_returned(
         self, report_template, example_table
     ):
         report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
-        compiled_sections = compiler.prepare_table_sections(report_template, example_table)  # fmt: skip
+        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
         assert all([not s.data.empty for s in compiled_sections])
 
     def test_addition_of_section_with_remaining_columns(self, report_template):  # fmt: skip
         table = pd.DataFrame({"Column 1": [1], "Another column": [1]})
         report_template.settings["append_remaining_columns"] = True
-        compiled_sections = compiler.prepare_table_sections(report_template, table)
+        compiled_sections = compiler.prepare_compiled_sections(report_template, table)
         assert len(compiled_sections) == 2
 
 
-class TestCompileTableSection:
+class TestCompileSection:
     def test_correctly_compiled_sections(
         self,
         report_template,
         example_table,
-        standard_table_section,
-        tag_sample_table_section,
+        compiled_standard_section,
+        compiled_tag_section,
     ):
-        compiled_sections = compiler.compile_table_sections(report_template, example_table)  # fmt: skip
-        expected_sections = [standard_table_section, tag_sample_table_section]
+        compiled_sections = compiler.compile_sections(report_template, example_table)  # fmt: skip
+        expected_sections = [compiled_standard_section, compiled_tag_section]
         for compiled_section, expected_section in zip(expected_sections, compiled_sections):  # fmt: skip
             for attr in expected_section.__dataclass_fields__:
                 if attr == "data":
@@ -790,60 +790,60 @@ class TestCompileTableSection:
         self, report_template, example_table, section
     ):
         report_template.sections = {"invalid": TemplateSection(section)}
-        compiled_sections = compiler.compile_table_sections(report_template, example_table)  # fmt: skip
+        compiled_sections = compiler.compile_sections(report_template, example_table)  # fmt: skip
         assert len(compiled_sections) == 0
 
 
-class TestCompileRemaininColumnTableSection:
+class TestCompileRemaininColumnSection:
     def test_correct_columns_selected_for_section(
-        self, report_template, example_table, standard_table_section
+        self, report_template, example_table, compiled_standard_section
     ):
-        compiled_section = compiler.compile_remaining_column_table_section(
-            report_template, [standard_table_section], example_table
+        compiled_section = compiler.compile_remaining_column_section(
+            report_template, [compiled_standard_section], example_table
         )
         expected_columns = [
-            c for c in example_table if c not in standard_table_section.data
+            c for c in example_table if c not in compiled_standard_section.data
         ]
-        assert not standard_table_section.data.columns.empty
+        assert not compiled_standard_section.data.columns.empty
         assert compiled_section.data.columns.tolist() == expected_columns
 
     def test_empty_section_returned_when_no_remaining_columns(
-        self, report_template, example_table, standard_table_section
+        self, report_template, example_table, compiled_standard_section
     ):
-        example_table = example_table[standard_table_section.data.columns]
-        compiled_section = compiler.compile_remaining_column_table_section(
-            report_template, [standard_table_section], example_table
+        example_table = example_table[compiled_standard_section.data.columns]
+        compiled_section = compiler.compile_remaining_column_section(
+            report_template, [compiled_standard_section], example_table
         )
         assert compiled_section.data.empty
 
 
-class TestPruneTableSections:
+class TestPruneCompiledSections:
     def test_duplicate_columns_removed_from_latter_sections(self):
         sections = [
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C3"])),
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C4"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C3"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C4"])),
         ]
-        compiler.prune_table_sections(sections)
+        compiler.prune_compiled_sections(sections)
         assert sections[0].data.columns.tolist() == ["C1", "C2"]
         assert sections[1].data.columns.tolist() == ["C3"]
         assert sections[2].data.columns.tolist() == ["C4"]
 
     def test_removal_of_all_columns_from_a_section_returns_an_empty_section(self):
         sections = [
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C2"])),
         ]
-        compiler.prune_table_sections(sections)
+        compiler.prune_compiled_sections(sections)
         assert sections[0].data.columns.tolist() == ["C1", "C2"]
         assert sections[1].data.columns.tolist() == []
 
     def test_unique_columns_not_removed(self):
         sections = [
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C3", "C4"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C3", "C4"])),
         ]
-        compiler.prune_table_sections(sections)
+        compiler.prune_compiled_sections(sections)
         for section in sections:
             assert len(section.data.columns) == 2
             assert len(sections[1].column_formats) == 2
@@ -854,10 +854,10 @@ class TestPruneTableSections:
 
     def test_column_removed_from_all_section_parameters(self):
         sections = [
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C2"])),
-            compiler.CompiledTableSection(data=pd.DataFrame(columns=["C1", "C3"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C2"])),
+            compiler.CompiledSection(data=pd.DataFrame(columns=["C1", "C3"])),
         ]
-        compiler.prune_table_sections(sections)
+        compiler.prune_compiled_sections(sections)
         assert sections[1].data.columns.tolist() == ["C3"]
         assert list(sections[1].column_formats) == ["C3"]
         assert list(sections[1].column_conditional_formats) == ["C3"]
@@ -866,11 +866,11 @@ class TestPruneTableSections:
         assert list(sections[1].header_formats) == ["C3"]
 
 
-def test_remove_empty_table_sections():
+def test_remove_empty_compiled_sections():
     sections = [
-        compiler.CompiledTableSection(data=pd.DataFrame({"C1": [1]})),
-        compiler.CompiledTableSection(data=pd.DataFrame({})),
-        compiler.CompiledTableSection(data=pd.DataFrame({"C2": [1]})),
+        compiler.CompiledSection(data=pd.DataFrame({"C1": [1]})),
+        compiler.CompiledSection(data=pd.DataFrame({})),
+        compiler.CompiledSection(data=pd.DataFrame({"C2": [1]})),
     ]
-    filtered_sections = compiler.remove_empty_table_sections(sections)
+    filtered_sections = compiler.remove_empty_compiled_sections(sections)
     assert all([not s.data.empty for s in filtered_sections])
