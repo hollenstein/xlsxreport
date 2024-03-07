@@ -363,7 +363,7 @@ class TestTableSectionWriteSection:
 
     @pytest.mark.parametrize("write_supheader", [True, False])
     def test_conditional_format_called_with_correct_arguments(self, table_section, write_supheader):  # fmt: skip
-        table_section.section_conditional = {"bold": True}
+        table_section.section_conditional_format = {"bold": True}
 
         self.section_writer._write_section(
             self.worksheet_mock,
@@ -381,7 +381,7 @@ class TestTableSectionWriteSection:
         )
 
     def test_conditional_format_not_called_when_conditionaL_format_is_empty(self, table_section):  # fmt: skip
-        table_section.section_conditional = {}
+        table_section.section_conditional_format = {}
         self.section_writer._write_section(self.worksheet_mock, table_section, 0, 0, True)  # fmt: skip
         self.worksheet_mock.conditional_format.assert_not_called()
 

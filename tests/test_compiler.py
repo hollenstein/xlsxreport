@@ -15,14 +15,14 @@ def report_template() -> ReportTemplate:
         "column_format": {"Column 1": "float"},
         "column_conditional_format": {"Column 1": "cond_1"},
         "supheader": "Supheader",
-        "conditional": "cond_2",
+        "conditional_format": "cond_2",
     }
 
     tag_sample_section_template = {
         "tag": "Tag",
         "format": "float",
         "supheader": "Supheader",
-        "conditional": "cond_1",
+        "conditional_format": "cond_1",
         "remove_tag": True,
         "log2": True,
     }
@@ -32,7 +32,7 @@ def report_template() -> ReportTemplate:
         "labels": ["Sample 1"],
         "format": "float",
         "supheader": "Supheader",
-        "conditional": "cond_1",
+        "conditional_format": "cond_1",
         "remove_tag": True,
         "log2": True,
     }
@@ -99,7 +99,7 @@ def standard_table_section(report_template, example_table) -> compiler.CompiledT
         },
         supheader=report_template.sections["Standard section 1"]["supheader"],
         supheader_format=report_template.formats["supheader"],
-        section_conditional=report_template.conditional_formats["cond_2"],
+        section_conditional_format=report_template.conditional_formats["cond_2"],
     )
     return table_section
 
@@ -123,7 +123,7 @@ def label_tag_sample_table_section(report_template, example_table) -> compiler.C
         headers={"Tag Sample 1": "Sample 1"},
         supheader="Supheader [log2]",
         supheader_format=report_template.formats["supheader"],
-        section_conditional=report_template.conditional_formats["cond_1"],
+        section_conditional_format=report_template.conditional_formats["cond_1"],
     )
     return table_section
 
@@ -151,7 +151,7 @@ def tag_sample_table_section(report_template, example_table) -> compiler.Compile
         headers={"Tag Sample 1": "Sample 1", "Tag Sample 2": "Sample 2"},
         supheader="Supheader [log2]",
         supheader_format=report_template.formats["supheader"],
-        section_conditional=report_template.conditional_formats["cond_1"],
+        section_conditional_format=report_template.conditional_formats["cond_1"],
     )
     return table_section
 
@@ -606,7 +606,7 @@ class TestEvalSupHeaderFormat:
 class TestEvalSectionConditionalFormats:
     @pytest.fixture(autouse=True)
     def _init_inputs(self):
-        self.section_template = {"conditional": "cond_1"}
+        self.section_template = {"conditional_format": "cond_1"}
         self.conditional_format_templates = {"cond_1": {"type": "2_color_scale"}}
 
     def test_with_no_column_conditional_format_defined_in_the_section_template(self):

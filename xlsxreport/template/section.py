@@ -11,7 +11,7 @@ from xlsxreport.template._repr import dict_to_string
 OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
     "format": {"type": "string"},
     "column_format": {"type": "dict"},
-    "conditional": {"type": "string"},
+    "conditional_format": {"type": "string"},
     "column_conditional_format": {"type": "dict"},
     "header_format": {"type": "dict"},
     "supheader": {"type": "string"},

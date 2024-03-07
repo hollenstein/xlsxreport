@@ -63,7 +63,7 @@ class CompiledTableSection:
     header_formats: dict = field(default_factory=dict)
     supheader: str = ""
     supheader_format: dict = field(default_factory=dict)
-    section_conditional: dict = field(default_factory=dict)
+    section_conditional_format: dict = field(default_factory=dict)
     hide_section: bool = False
 
     def __post_init__(self):
@@ -120,7 +120,7 @@ class StandardSectionCompiler:
         )
         supheader = section_template.get("supheader", "")
         supheader_format = eval_supheader_format(section_template, self.formats)
-        section_conditional = eval_section_conditional_format(
+        section_conditional_format = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
@@ -133,7 +133,7 @@ class StandardSectionCompiler:
             header_formats=header_formats,
             supheader=supheader,
             supheader_format=supheader_format,
-            section_conditional=section_conditional,
+            section_conditional_format=section_conditional_format,
             hide_section=hide_section,
         )
         return [compiled_section]
@@ -176,7 +176,7 @@ class TagSectionCompiler:
             section_template, self.settings["log2_tag"]
         )
         supheader_format = eval_supheader_format(section_template, self.formats)
-        section_conditional = eval_section_conditional_format(
+        section_conditional_format = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
@@ -189,7 +189,7 @@ class TagSectionCompiler:
             header_formats=header_formats,
             supheader=supheader,
             supheader_format=supheader_format,
-            section_conditional=section_conditional,
+            section_conditional_format=section_conditional_format,
             hide_section=hide_section,
         )
         return [compiled_section]
@@ -232,7 +232,7 @@ class LabelTagSectionCompiler:
             section_template, self.settings["log2_tag"]
         )
         supheader_format = eval_supheader_format(section_template, self.formats)
-        section_conditional = eval_section_conditional_format(
+        section_conditional_format = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
@@ -245,7 +245,7 @@ class LabelTagSectionCompiler:
             header_formats=header_formats,
             supheader=supheader,
             supheader_format=supheader_format,
-            section_conditional=section_conditional,
+            section_conditional_format=section_conditional_format,
             hide_section=hide_section,
         )
         return [compiled_section]
@@ -870,7 +870,7 @@ def eval_section_conditional_format(
 
     Args:
         section_template: A dictionary that can contain a conditional format name with
-            the key "conditional".
+            the key "conditional_format".
         format_templates: A dictionary containing the conditional format descriptions
             for each conditional format name. If a format name is not present in the
             `format_templates`, an empty dictionary is used instead.
@@ -878,9 +878,9 @@ def eval_section_conditional_format(
     Returns:
         A dictionary containing a conditional format description.
     """
-    section_format_name = section_template.get("conditional", None)
-    section_conditional = format_templates.get(section_format_name, {}).copy()
-    return section_conditional
+    section_format_name = section_template.get("conditional_format", None)
+    section_conditional_format = format_templates.get(section_format_name, {}).copy()
+    return section_conditional_format
 
 
 def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.bool_:

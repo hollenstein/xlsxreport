@@ -34,7 +34,7 @@ sections:
   unqiue_spectral_count: {
     tag: "(?<!Combined).Unique Spectral Count$",
     format: "int",
-    conditional: "count",
+    conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "Unique Spectral Count",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -44,7 +44,7 @@ sections:
   total_spectral_count: {
     tag: "(?<!Combined).Total Spectral Count$",
     format: "int",
-    conditional: "count",
+    conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "Total Spectral Count",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -54,7 +54,7 @@ sections:
   spectral_count: {
     tag: "(?<!Combined)(?<!Unique)(?<!Total).Spectral Count$",
     format: "int",
-    conditional: "count",
+    conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "Spectral Count",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -64,7 +64,7 @@ sections:
   intensity: {
     tag: "(?<!MaxLFQ).Intensity$",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "Intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -75,7 +75,7 @@ sections:
   lfq_intensity: {
     tag: ".MaxLFQ Intensity$",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "LFQ intensity",
     supheader_format: {"fg_color": "#eeeeee"},

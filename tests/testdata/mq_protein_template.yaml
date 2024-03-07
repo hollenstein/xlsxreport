@@ -39,7 +39,7 @@ sections:
   spectral_count: {
     tag: "^MS/MS count.",
     format: "int",
-    conditional: "count",
+    conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "MS/MS count",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -49,7 +49,7 @@ sections:
   ibaq_intensity: {
     tag: "^iBAQ.(?!peptides)",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "iBAQ intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -60,7 +60,7 @@ sections:
   intensity: {
     tag: "^Intensity.",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "Intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -71,7 +71,7 @@ sections:
   lfq_intensity: {
     tag: "^LFQ intensity.",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "LFQ intensity",
     supheader_format: {"fg_color": "#eeeeee"},

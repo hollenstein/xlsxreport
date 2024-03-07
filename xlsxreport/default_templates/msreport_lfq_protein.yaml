@@ -29,7 +29,7 @@ sections:
   spectral_count: {
     tag: "Spectral count",
     format: "int",
-    conditional: "count",
+    conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "Spectral count",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -39,7 +39,7 @@ sections:
   intensity: {
     tag: "Intensity",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "Intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -50,7 +50,7 @@ sections:
   ibaq_intensity: {
     tag: "iBAQ intensity",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "iBAQ intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -61,7 +61,7 @@ sections:
   expression: {
     tag: "Expression",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "Imputed LFQ intensity",
     supheader_format: {"fg_color": "#eeeeee"},
@@ -73,7 +73,7 @@ sections:
     tag: "Events.(?!total)",
     width: 25,
     format: "int",
-    conditional: "num_events",
+    conditional_format: "num_events",
     header_format: {"rotation": 90},
     supheader: "Quantitative events",
     supheader_format: {"fg_color": "#eeeeee"},

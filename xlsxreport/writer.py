@@ -20,7 +20,7 @@ class CompiledTableSection(Protocol):
     header_formats: dict
     supheader: str
     supheader_format: dict
-    section_conditional: dict
+    section_conditional_format: dict
     hide_section: bool
 
 
@@ -144,13 +144,13 @@ class TableSectionWriter:
                 conditional_format=section.column_conditional_formats[column],
                 column_width=section.column_widths[column],
             )
-        if section.section_conditional:
+        if section.section_conditional_format:
             worksheet.conditional_format(
                 values_row,
                 start_column,
                 values_row + num_values - 1,
                 start_column + num_rows - 1,
-                section.section_conditional,
+                section.section_conditional_format,
             )
         if section.hide_section:
             worksheet.set_column(
