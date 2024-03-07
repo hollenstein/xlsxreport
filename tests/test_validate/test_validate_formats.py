@@ -166,7 +166,7 @@ class TestValidateUnusedConditionalFormats:
 
     def test_only_unused_formats_create_errors(self):
         template_document = {
-            "sections": {"s1": {"conditional": "USED FORMAT"}},
+            "sections": {"s1": {"conditional_format": "USED FORMAT"}},
             "conditional_formats": {"USED FORMAT": {}, "UNUSED FORMAT": {}},
         }
         errors = validate.validate_unused_conditional_formats(template_document)
@@ -175,14 +175,14 @@ class TestValidateUnusedConditionalFormats:
         assert "USED FORMAT" not in errors[0].field
 
     def test_no_errors_when_format_section_is_absent(self):
-        template_document = {"sections": {"s1": {"conditional": "UNUSED FORMAT"}}}
+        template_document = {"sections": {"s1": {"conditional_format": "UNUSED FORMAT"}}}  # fmt: skip
         errors = validate.validate_unused_conditional_formats(template_document)
         assert len(errors) == 0
 
 
 class TestValidateUndefinedConditionalFormats:
     def test_correct_error_when_format_is_undefined(self):
-        template_document = {"sections": {"s1": {"conditional": "UNUSED FORMAT"}}}
+        template_document = {"sections": {"s1": {"conditional_format": "UNUSED FORMAT"}}}  # fmt: skip
         errors = validate.validate_undefined_conditional_formats(template_document)
         assert errors[0].error_type == validate.ValidationErrorType.UNDEFINED_FORMAT
         assert errors[0].error_level == validate.ErrorLevel.ERROR
@@ -191,9 +191,9 @@ class TestValidateUndefinedConditionalFormats:
     def test_only_undefined_formats_create_errors(self):
         template_document = {
             "sections": {
-                "s1": {"conditional": "UNDEFINED FORMAT 1"},
-                "s2": {"conditional": "UNDEFINED FORMAT2"},
-                "s3": {"conditional": "DEFINED FORMAT"},
+                "s1": {"conditional_format": "UNDEFINED FORMAT 1"},
+                "s2": {"conditional_format": "UNDEFINED FORMAT2"},
+                "s3": {"conditional_format": "DEFINED FORMAT"},
             },
             "conditional_formats": {"DEFINED FORMAT": {}},
         }

@@ -64,7 +64,7 @@ def test_errors_from_unused_and_undefined_formats():
 
 def test_errors_from_unused_and_undefined_conditional_formats():
     report_template = {
-        "sections": {"section": {"conditional": "UNDEFINED"}},
+        "sections": {"section": {"conditional_format": "UNDEFINED"}},
         "conditional_formats": {"UNUSED": {}},
     }
     errors = validate.validate_template_content(report_template)

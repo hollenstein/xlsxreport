@@ -493,8 +493,8 @@ def _retrieve_used_formats(sections_section: dict) -> set[str]:
 def _retrieve_used_conditional_formats(sections_section: dict) -> set[str]:
     used_formats = set()
     for section in sections_section.values():
-        if "conditional" in section:
-            used_formats.add(section["conditional"])
-        if "column_conditional" in section:
-            used_formats.update(section["column_conditional"].values())
+        if "conditional_format" in section:
+            used_formats.add(section["conditional_format"])
+        if "column_conditional_format" in section:
+            used_formats.update(section["column_conditional_format"].values())
     return used_formats
