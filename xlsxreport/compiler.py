@@ -1,4 +1,4 @@
-"""Contains functions for compiling table sections from a report template and a table."""
+"""Contains functions for compiling table sections from a table template and a table."""
 
 from __future__ import annotations
 from copy import deepcopy
@@ -21,8 +21,8 @@ NAN_REPLACEMENT_SYMBOL = ""
 WHITESPACE_CHARS = " ."
 
 
-class ReportTemplate(Protocol):
-    """Abstract class representing a report template."""
+class TableTemplate(Protocol):
+    """Abstract class representing a table template."""
 
     @property
     def sections(self) -> Mapping[str, TemplateSection]: ...
@@ -38,7 +38,7 @@ class ReportTemplate(Protocol):
 
 
 class TemplateSection(Protocol):
-    """Abstract class representing a section of a report template."""
+    """Abstract class representing a section of a table template."""
 
     category: SectionCategory
 
@@ -48,7 +48,7 @@ class TemplateSection(Protocol):
 class SectionCompiler(Protocol):
     """Protocol for section compilers."""
 
-    def __init__(self, report_template: ReportTemplate): ...
+    def __init__(self, table_template: TableTemplate): ...
 
     def compile(
         self, section_template: dict, table: pd.DataFrame
@@ -104,10 +104,10 @@ class CompiledSection:
 class StandardSectionCompiler:
     """Compiler for standard table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.formats = report_template.formats
-        self.conditional_formats = report_template.conditional_formats
-        self.settings = report_template.settings
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
 
     def compile(
         self, section_template: Mapping, table: pd.DataFrame
@@ -151,10 +151,10 @@ class StandardSectionCompiler:
 class TagSectionCompiler:
     """Compiler for tag table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.formats = report_template.formats
-        self.conditional_formats = report_template.conditional_formats
-        self.settings = report_template.settings
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
 
     def compile(
         self, section_template: Mapping, table: pd.DataFrame
@@ -207,10 +207,10 @@ class TagSectionCompiler:
 class LabelTagSectionCompiler:
     """Compiler for tag table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.formats = report_template.formats
-        self.conditional_formats = report_template.conditional_formats
-        self.settings = report_template.settings
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
 
     def compile(
         self, section_template: Mapping, table: pd.DataFrame
@@ -263,8 +263,8 @@ class LabelTagSectionCompiler:
 class ComparisonSectionCompiler:
     """Compiler for comparison table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.std_compiler = StandardSectionCompiler(report_template)
+    def __init__(self, table_template: TableTemplate):
+        self.std_compiler = StandardSectionCompiler(table_template)
 
     def compile(
         self, section_template: Mapping, table: pd.DataFrame
@@ -308,57 +308,55 @@ def get_section_compiler(section_category: SectionCategory) -> type[SectionCompi
 
 
 def prepare_compiled_sections(
-    report_template: ReportTemplate,
+    table_template: TableTemplate,
     table: pd.DataFrame,
 ) -> list[CompiledSection]:
-    """Compile non-empty table sections from a report template and a table.
+    """Compile non-empty table sections from a table template and a table.
 
-    First the table sections are compiled from the report template and the table. If the
+    First the table sections are compiled from the template and the table. If the
     "append_remaining_columns" setting is True, the remaining columns are compiled into
     a section that is appended to the list of compiled table sections. Duplicate columns
     are removed from the table sections if the "remove_duplicate_columns" setting is
     True. Finally, empty table sections are removed from the list of table sections.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
+        table_template: The template describing how table sections should be generated.
         table: The table to compile the sections from.
 
     Returns:
         A list of non-empty, compiled table sections.
     """
-    compiled_sections = compile_sections(report_template, table)
-    if report_template.settings["append_remaining_columns"]:
+    compiled_sections = compile_sections(table_template, table)
+    if table_template.settings["append_remaining_columns"]:
         remaining_section = compile_remaining_column_section(
-            report_template, compiled_sections, table
+            table_template, compiled_sections, table
         )
         compiled_sections.append(remaining_section)
-    if report_template.settings["remove_duplicate_columns"]:
+    if table_template.settings["remove_duplicate_columns"]:
         prune_compiled_sections(compiled_sections)
     return remove_empty_compiled_sections(compiled_sections)
 
 
 def compile_sections(
-    report_template: ReportTemplate, table: pd.DataFrame
+    table_template: TableTemplate, table: pd.DataFrame
 ) -> list[CompiledSection]:
-    """Compile table sections from a report template and a table.
+    """Compile table sections from a table template and a table.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
+        table_template: The template describing how table sections should be generated.
         table: The table to compile the sections from.
 
     Returns:
         A list of compiled table sections.
     """
     all_compiled_sections = []
-    for section in report_template.sections.values():
+    for section in table_template.sections.values():
         section_template = section.to_dict()
         if section.category == SectionCategory.UNKNOWN:
             continue
 
         _SectionCompiler = get_section_compiler(section.category)
-        section_compiler = _SectionCompiler(report_template)
+        section_compiler = _SectionCompiler(table_template)
         compiled_sections = section_compiler.compile(section_template, table)
         all_compiled_sections.extend(compiled_sections)
 
@@ -366,15 +364,14 @@ def compile_sections(
 
 
 def compile_remaining_column_section(
-    report_template: ReportTemplate,
+    table_template: TableTemplate,
     compiled_sections: Iterable[CompiledSection],
     table: pd.DataFrame,
 ) -> CompiledSection:
     """Compile a table section containing all columns not present in other sections.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
+        table_template: The template describing how table sections should be generated.
         compiled_sections: The table sections that have already been compiled.
         table: The table to compile the remaining column section from.
 
@@ -386,7 +383,7 @@ def compile_remaining_column_section(
         observed_columns.update(section.data.columns)
     selected_cols = [column for column in table if column not in observed_columns]
 
-    section_compiler = StandardSectionCompiler(report_template)
+    section_compiler = StandardSectionCompiler(table_template)
     _format_name = "_" * (max([len(i) for i in section_compiler.formats]) + 1)
     section_compiler.formats[_format_name] = REMAINING_COL_FORMAT
     section_template = {

@@ -8,9 +8,9 @@ import xlsxreport.appdir
 
 
 HELP = {
-    "setup": "Create XlsxReport app directory and copy default report template files.",
+    "setup": "Create XlsxReport app directory and copy default table template files.",
     "overwrite": (
-        "Overwrite existing report template files when creating the app directory "
+        "Overwrite existing table template files when creating the app directory "
         "with the '--setup' option."
     ),
     "reveal": "Reveal the app directory in the file explorer.",
@@ -22,7 +22,7 @@ HELP = {
 @click.option("--overwrite", is_flag=True, default=False, help=HELP["overwrite"])
 @click.option("--reveal", is_flag=True, default=False, help=HELP["reveal"])
 def appdir_command(setup, overwrite, reveal) -> None:
-    """Locate app directory, optionally create the directory and copy default report
+    """Locate app directory, optionally create the directory and copy default table
     template files."""
     appdir = xlsxreport.appdir.locate_appdir()
     if not setup:
@@ -41,11 +41,11 @@ def appdir_command(setup, overwrite, reveal) -> None:
 
         if overwrite:
             click.echo(
-                "Copying default report templates to the app directory, overwriting "
+                "Copying default table templates to the app directory, overwriting "
                 "existing files."
             )
         else:
-            click.echo("Copying missing default report templates to the app directory.")
+            click.echo("Copying missing default table templates to the app directory.")
         xlsxreport.appdir.setup_appdir(overwrite_templates=overwrite)
     if reveal:
         click.launch(appdir)

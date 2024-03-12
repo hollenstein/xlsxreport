@@ -5,8 +5,8 @@ from copy import deepcopy
 from xlsxreport.template._repr import dict_to_string
 
 
-class ReportTemplateFormats(UserDict):
-    """Representation of report template settings."""
+class TableTemplateFormats(UserDict):
+    """Container for table template format descriptions."""
 
     def __init__(self, data: dict[str, dict]):
         all_keys_are_strings = all([isinstance(key, str) for key in data])

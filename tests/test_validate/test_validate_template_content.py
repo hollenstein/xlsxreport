@@ -4,10 +4,10 @@ import xlsxreport.validate as validate
 
 
 def test_errors_from_expected_and_unexpected_main_section_entries():
-    report_template = {e.value: {} for e in validate.MainSections}
-    del report_template["formats"]
-    report_template["NOT A MAIN SECTION"] = {}
-    errors = validate.validate_template_content(report_template)
+    table_template = {e.value: {} for e in validate.MainSections}
+    del table_template["formats"]
+    table_template["NOT A MAIN SECTION"] = {}
+    errors = validate.validate_template_content(table_template)
 
     expected_error_entries = [
         (("formats",), validate.ValidationErrorType.MISSING_PARAMETER),
@@ -18,11 +18,11 @@ def test_errors_from_expected_and_unexpected_main_section_entries():
 
 
 def test_errors_from_invalid_format_and_conditional_format_descriptions():
-    report_template = {
+    table_template = {
         "formats": {"format": "NOT VALID"},
         "conditional_formats": {"format": "NOT VALID"},
     }
-    errors = validate.validate_template_content(report_template)
+    errors = validate.validate_template_content(table_template)
 
     expected_error_entries = [
         (("formats", "format"), validate.ValidationErrorType.INVALID_FORMAT),
@@ -33,10 +33,10 @@ def test_errors_from_invalid_format_and_conditional_format_descriptions():
 
 
 def test_errors_from_expected_and_unexpected_settings_entries():
-    report_template = {"settings": {s: {} for s in validate.SETTINGS_SCHEMA}}
-    del report_template["settings"]["header_height"]
-    report_template["settings"]["INVALID"] = ""
-    errors = validate.validate_template_content(report_template)
+    table_template = {"settings": {s: {} for s in validate.SETTINGS_SCHEMA}}
+    del table_template["settings"]["header_height"]
+    table_template["settings"]["INVALID"] = ""
+    errors = validate.validate_template_content(table_template)
 
     expected_error_entries = [
         (("settings", "header_height"), validate.ValidationErrorType.MISSING_PARAMETER),
@@ -47,11 +47,11 @@ def test_errors_from_expected_and_unexpected_settings_entries():
 
 
 def test_errors_from_unused_and_undefined_formats():
-    report_template = {
+    table_template = {
         "sections": {"section": {"format": "UNDEFINED"}},
         "formats": {"UNUSED": {}},
     }
-    errors = validate.validate_template_content(report_template)
+    errors = validate.validate_template_content(table_template)
 
     expected_error_entries = [
         (("formats", "UNDEFINED"), validate.ValidationErrorType.UNDEFINED_FORMAT),
@@ -63,11 +63,11 @@ def test_errors_from_unused_and_undefined_formats():
 
 
 def test_errors_from_unused_and_undefined_conditional_formats():
-    report_template = {
+    table_template = {
         "sections": {"section": {"conditional_format": "UNDEFINED"}},
         "conditional_formats": {"UNUSED": {}},
     }
-    errors = validate.validate_template_content(report_template)
+    errors = validate.validate_template_content(table_template)
 
     expected_error_entries = [
         (("conditional_formats", "UNDEFINED"), validate.ValidationErrorType.UNDEFINED_FORMAT),  # fmt: skip

@@ -3,7 +3,7 @@ import os
 import pytest
 import yaml
 
-from xlsxreport.template.template import ReportTemplate
+from xlsxreport.template.template import TableTemplate
 
 
 @pytest.fixture()
@@ -50,9 +50,9 @@ def create_yaml_from_string(tmp_path, content: str = ""):
     return file_path
 
 
-class TestReportTemplate:
+class TestTableTemplate:
     def test_to_dict_returns_correct_template_document(self, default_template):
-        template = ReportTemplate(
+        template = TableTemplate(
             sections=default_template["sections"],
             formats=default_template["formats"],
             conditional_formats=default_template["conditional_formats"],
@@ -61,27 +61,27 @@ class TestReportTemplate:
         assert template.to_dict() == default_template
 
     def test_from_dict_to_dict_roundtrip(self, default_template):
-        template = ReportTemplate.from_dict(default_template)
+        template = TableTemplate.from_dict(default_template)
         assert template.to_dict() == default_template
 
     def test_load_imports_all_sections_properly(self, default_template_path, default_template):  # fmt: skip
-        template = ReportTemplate.load(default_template_path)
+        template = TableTemplate.load(default_template_path)
         assert template.to_dict() == default_template
 
     def test_template_identical_after_load_save_reload(self, default_template_path, tmp_path):  # fmt: skip
-        template = ReportTemplate.load(default_template_path)
+        template = TableTemplate.load(default_template_path)
         saved_template_path = tmp_path / "template_save.yaml"
         template.save(saved_template_path)
-        loaded_template = ReportTemplate.load(saved_template_path)
+        loaded_template = TableTemplate.load(saved_template_path)
         assert template.to_dict() == loaded_template.to_dict()
 
     def test_init_raises_value_error_when_invalid_parameters_are_passed(self):
         with pytest.raises(ValueError):
-            _ = ReportTemplate(sections="not a dictionary")
+            _ = TableTemplate(sections="not a dictionary")
 
     def test_from_dict_with_invalid_template_document_raises_value_error(self):
         with pytest.raises(ValueError):
-            _ = ReportTemplate.from_dict({"sections": "not a dictionary"})
+            _ = TableTemplate.from_dict({"sections": "not a dictionary"})
 
     @pytest.mark.parametrize(
         "content",
@@ -90,4 +90,4 @@ class TestReportTemplate:
     def test_loading_an_invalid_yaml_file_raises_a_value_error(self, content, tmp_path):
         yaml_path = create_yaml_from_string(tmp_path, content)
         with pytest.raises(ValueError):
-            _ = ReportTemplate.load(yaml_path)
+            _ = TableTemplate.load(yaml_path)

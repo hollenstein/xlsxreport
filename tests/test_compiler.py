@@ -3,12 +3,12 @@ import pytest
 import pandas as pd
 
 import xlsxreport.compiler as compiler
-from xlsxreport.template import ReportTemplate
+from xlsxreport.template import TableTemplate
 from xlsxreport.template import TemplateSection
 
 
 @pytest.fixture()
-def report_template() -> ReportTemplate:
+def table_template() -> TableTemplate:
     standard_section_template = {
         "format": "str",
         "columns": ["Column 1", "Column 2", "Column 3"],
@@ -37,7 +37,7 @@ def report_template() -> ReportTemplate:
         "log2": True,
     }
 
-    report_template = ReportTemplate(
+    table_template = TableTemplate(
         sections={
             "Standard section 1": standard_section_template,
             "Tag section 1": tag_sample_section_template,
@@ -59,7 +59,7 @@ def report_template() -> ReportTemplate:
             "remove_duplicate_columns": True,
         },
     )
-    return report_template
+    return table_template
 
 
 @pytest.fixture()
@@ -77,15 +77,15 @@ def example_table() -> pd.DataFrame:
 
 
 @pytest.fixture()
-def compiled_standard_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+def compiled_standard_section(table_template, example_table) -> compiler.CompiledSection:  # fmt: skip
     compiled_section = compiler.CompiledSection(
         data=example_table[["Column 1", "Column 2"]].copy(),
         column_formats={
-            "Column 1": report_template.formats["float"],
-            "Column 2": report_template.formats["str"],
+            "Column 1": table_template.formats["float"],
+            "Column 2": table_template.formats["str"],
         },
         column_conditional_formats={
-            "Column 1": report_template.conditional_formats["cond_1"],
+            "Column 1": table_template.conditional_formats["cond_1"],
             "Column 2": {},
         },
         column_widths={
@@ -94,22 +94,22 @@ def compiled_standard_section(report_template, example_table) -> compiler.Compil
         },
         headers={"Column 1": "Column 1", "Column 2": "Column 2"},
         header_formats={
-            "Column 1": report_template.formats["header"],
-            "Column 2": report_template.formats["header"],
+            "Column 1": table_template.formats["header"],
+            "Column 2": table_template.formats["header"],
         },
-        supheader=report_template.sections["Standard section 1"]["supheader"],
-        supheader_format=report_template.formats["supheader"],
-        section_conditional_format=report_template.conditional_formats["cond_2"],
+        supheader=table_template.sections["Standard section 1"]["supheader"],
+        supheader_format=table_template.formats["supheader"],
+        section_conditional_format=table_template.conditional_formats["cond_2"],
     )
     return compiled_section
 
 
 @pytest.fixture()
-def compiled_label_tag_sample_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+def compiled_label_tag_sample_section(table_template, example_table) -> compiler.CompiledSection:  # fmt: skip
     compiled_section = compiler.CompiledSection(
         data=np.log2(example_table[["Tag Sample 1"]].copy()),
         column_formats={
-            "Tag Sample 1": report_template.formats["float"],
+            "Tag Sample 1": table_template.formats["float"],
         },
         column_conditional_formats={
             "Tag Sample 1": {},
@@ -118,23 +118,23 @@ def compiled_label_tag_sample_section(report_template, example_table) -> compile
             "Tag Sample 1": 10,
         },
         header_formats={
-            "Tag Sample 1": report_template.formats["header"],
+            "Tag Sample 1": table_template.formats["header"],
         },
         headers={"Tag Sample 1": "Sample 1"},
         supheader="Supheader [log2]",
-        supheader_format=report_template.formats["supheader"],
-        section_conditional_format=report_template.conditional_formats["cond_1"],
+        supheader_format=table_template.formats["supheader"],
+        section_conditional_format=table_template.conditional_formats["cond_1"],
     )
     return compiled_section
 
 
 @pytest.fixture()
-def compiled_tag_section(report_template, example_table) -> compiler.CompiledSection:  # fmt: skip
+def compiled_tag_section(table_template, example_table) -> compiler.CompiledSection:
     compiled_section = compiler.CompiledSection(
         data=np.log2(example_table[["Tag Sample 1", "Tag Sample 2"]].copy()),
         column_formats={
-            "Tag Sample 1": report_template.formats["float"],
-            "Tag Sample 2": report_template.formats["float"],
+            "Tag Sample 1": table_template.formats["float"],
+            "Tag Sample 2": table_template.formats["float"],
         },
         column_conditional_formats={
             "Tag Sample 1": {},
@@ -145,13 +145,13 @@ def compiled_tag_section(report_template, example_table) -> compiler.CompiledSec
             "Tag Sample 2": 10,
         },
         header_formats={
-            "Tag Sample 1": report_template.formats["header"],
-            "Tag Sample 2": report_template.formats["header"],
+            "Tag Sample 1": table_template.formats["header"],
+            "Tag Sample 2": table_template.formats["header"],
         },
         headers={"Tag Sample 1": "Sample 1", "Tag Sample 2": "Sample 2"},
         supheader="Supheader [log2]",
-        supheader_format=report_template.formats["supheader"],
-        section_conditional_format=report_template.conditional_formats["cond_1"],
+        supheader_format=table_template.formats["supheader"],
+        section_conditional_format=table_template.conditional_formats["cond_1"],
     )
     return compiled_section
 
@@ -625,11 +625,9 @@ class TestEvalSectionConditionalFormats:
         assert column_formats == expected_formats
 
 
-def test_StandardSectionCompiler(
-    report_template, example_table, compiled_standard_section
-):
-    section_compiler = compiler.StandardSectionCompiler(report_template)
-    section_template = report_template.sections["Standard section 1"].to_dict()
+def test_StandardSectionCompiler(table_template, example_table, compiled_standard_section):  # fmt: skip
+    section_compiler = compiler.StandardSectionCompiler(table_template)
+    section_template = table_template.sections["Standard section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in compiled_standard_section.__dataclass_fields__:
         if attr == "data":
@@ -641,9 +639,9 @@ def test_StandardSectionCompiler(
             assert compiled_attr == expected_section_attr
 
 
-def test_TagSectionCompiler(report_template, example_table, compiled_tag_section):
-    section_compiler = compiler.TagSectionCompiler(report_template)
-    section_template = report_template.sections["Tag section 1"].to_dict()
+def test_TagSectionCompiler(table_template, example_table, compiled_tag_section):
+    section_compiler = compiler.TagSectionCompiler(table_template)
+    section_template = table_template.sections["Tag section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in compiled_tag_section.__dataclass_fields__:
         if attr == "data":
@@ -655,9 +653,9 @@ def test_TagSectionCompiler(report_template, example_table, compiled_tag_section
             assert compiled_attr == expected_section_attr
 
 
-def test_LabelTagSectionCompiler(report_template, example_table, compiled_label_tag_sample_section):  # fmt: skip
-    section_compiler = compiler.LabelTagSectionCompiler(report_template)
-    section_template = report_template.sections["Label tag section 1"].to_dict()
+def test_LabelTagSectionCompiler(table_template, example_table, compiled_label_tag_sample_section):  # fmt: skip
+    section_compiler = compiler.LabelTagSectionCompiler(table_template)
+    section_template = table_template.sections["Label tag section 1"].to_dict()
     compiled_section = section_compiler.compile(section_template, example_table)[0]
     for attr in compiled_label_tag_sample_section.__dataclass_fields__:
         if attr == "data":
@@ -673,7 +671,7 @@ def test_LabelTagSectionCompiler(report_template, example_table, compiled_label_
 
 class TestComparisonSectionCompiler:
     @pytest.fixture(autouse=True)
-    def _init_inputs(self, report_template):
+    def _init_inputs(self, table_template):
         self.table = pd.DataFrame(
             {
                 "A column": [],
@@ -694,7 +692,7 @@ class TestComparisonSectionCompiler:
             "remove_tag": True,
             "replace_comparison_tag": " / ",
         }
-        self.section_compiler = compiler.ComparisonSectionCompiler(report_template)
+        self.section_compiler = compiler.ComparisonSectionCompiler(table_template)
 
     def test_that_two_sections_with_correct_columns_are_generated(self):
         compiled_sections = self.section_compiler.compile(self.section_template, self.table)  # fmt: skip
@@ -725,48 +723,48 @@ class TestComparisonSectionCompiler:
 
 
 class TestPrepareCompiledSections:
-    def test_only_non_empty_sections_are_returned(self, report_template):
+    def test_only_non_empty_sections_are_returned(self, table_template):
         table = pd.DataFrame({"Tag Sample 1": [1], "Tag Sample 2": [1]})
-        compiled_sections = compiler.prepare_compiled_sections(report_template, table)
+        compiled_sections = compiler.prepare_compiled_sections(table_template, table)
         assert all([not s.data.empty for s in compiled_sections])
 
-    def test_duplicate_columns_are_removed(self, report_template, example_table):
-        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
-        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
+    def test_duplicate_columns_are_removed(self, table_template, example_table):
+        table_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
+        compiled_sections = compiler.prepare_compiled_sections(table_template, example_table)  # fmt: skip
         observed_columns = []
         for section in compiled_sections:
             observed_columns.extend(section.data.columns)
         assert len(set(observed_columns)) == len(observed_columns)
 
-    def test_duplicate_columns_are_kept_when_setting_is_false(self, report_template, example_table):  # fmt: skip
-        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
-        report_template.settings["remove_duplicate_columns"] = False
-        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
+    def test_duplicate_columns_are_kept_when_setting_is_false(self, table_template, example_table):  # fmt: skip
+        table_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
+        table_template.settings["remove_duplicate_columns"] = False
+        compiled_sections = compiler.prepare_compiled_sections(table_template, example_table)  # fmt: skip
         assert compiled_sections[-1].data.columns.tolist() == ["Column 1"]
 
     def test_empty_sections_caused_by_removal_of_duplicate_columns_are_not_returned(
-        self, report_template, example_table
+        self, table_template, example_table
     ):
-        report_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
-        compiled_sections = compiler.prepare_compiled_sections(report_template, example_table)  # fmt: skip
+        table_template.sections["Another section"] = TemplateSection({"columns": ["Column 1"]})  # fmt: skip
+        compiled_sections = compiler.prepare_compiled_sections(table_template, example_table)  # fmt: skip
         assert all([not s.data.empty for s in compiled_sections])
 
-    def test_addition_of_section_with_remaining_columns(self, report_template):  # fmt: skip
+    def test_addition_of_section_with_remaining_columns(self, table_template):
         table = pd.DataFrame({"Column 1": [1], "Another column": [1]})
-        report_template.settings["append_remaining_columns"] = True
-        compiled_sections = compiler.prepare_compiled_sections(report_template, table)
+        table_template.settings["append_remaining_columns"] = True
+        compiled_sections = compiler.prepare_compiled_sections(table_template, table)
         assert len(compiled_sections) == 2
 
 
 class TestCompileSection:
     def test_correctly_compiled_sections(
         self,
-        report_template,
+        table_template,
         example_table,
         compiled_standard_section,
         compiled_tag_section,
     ):
-        compiled_sections = compiler.compile_sections(report_template, example_table)  # fmt: skip
+        compiled_sections = compiler.compile_sections(table_template, example_table)
         expected_sections = [compiled_standard_section, compiled_tag_section]
         for compiled_section, expected_section in zip(expected_sections, compiled_sections):  # fmt: skip
             for attr in expected_section.__dataclass_fields__:
@@ -786,20 +784,18 @@ class TestCompileSection:
             {"columns": ["Column 1", "Column 2"], "tag": "str"},
         ],
     )
-    def test_invalid_sections_are_not_compiled(
-        self, report_template, example_table, section
-    ):
-        report_template.sections = {"invalid": TemplateSection(section)}
-        compiled_sections = compiler.compile_sections(report_template, example_table)  # fmt: skip
+    def test_invalid_sections_are_not_compiled(self, table_template, example_table, section):  # fmt:skip
+        table_template.sections = {"invalid": TemplateSection(section)}
+        compiled_sections = compiler.compile_sections(table_template, example_table)
         assert len(compiled_sections) == 0
 
 
 class TestCompileRemaininColumnSection:
     def test_correct_columns_selected_for_section(
-        self, report_template, example_table, compiled_standard_section
+        self, table_template, example_table, compiled_standard_section
     ):
         compiled_section = compiler.compile_remaining_column_section(
-            report_template, [compiled_standard_section], example_table
+            table_template, [compiled_standard_section], example_table
         )
         expected_columns = [
             c for c in example_table if c not in compiled_standard_section.data
@@ -808,11 +804,11 @@ class TestCompileRemaininColumnSection:
         assert compiled_section.data.columns.tolist() == expected_columns
 
     def test_empty_section_returned_when_no_remaining_columns(
-        self, report_template, example_table, compiled_standard_section
+        self, table_template, example_table, compiled_standard_section
     ):
         example_table = example_table[compiled_standard_section.data.columns]
         compiled_section = compiler.compile_remaining_column_section(
-            report_template, [compiled_standard_section], example_table
+            table_template, [compiled_standard_section], example_table
         )
         assert compiled_section.data.empty
 

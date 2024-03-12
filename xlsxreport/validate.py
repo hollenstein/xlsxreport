@@ -1,4 +1,4 @@
-"""Module for validation of report templates and report template YAML files.
+"""Module for validation of table templates and their YAML file representation.
 
 Main API functions:
 - validate_template_file_integrity(filepath: str)
@@ -70,17 +70,17 @@ class ValidationError:
 
 # MAIN API FUNCTIONS
 def validate_template_file_integrity(filepath: str) -> list[ValidationError]:
-    """Validate the integrity of a report template YAML file.
+    """Validate the integrity of a table template YAML file.
 
-    All reported errors are of level CRITICAL, since a report template containing file
-    integrity errors cannot be imported as a `ReportTemplate`.
+    All reported errors are of level CRITICAL, since a YAML template containing file
+    integrity errors cannot be imported as a `xlsxreport.TableTemplate`.
 
     This function checks if the specified filepath can be loaded as a YAML file and if
     the root of the YAML document is a dictionary. It does currently not check for
     duplicated keys in the YAML document.
 
     Args:
-        filepath: The path to a YAML file containing a report template.
+        filepath: The path to a YAML file.
 
     Returns:
         A list of `ValidationError`s of type FILE_ERROR and level CRITICAL. Each entry
@@ -101,11 +101,11 @@ def validate_template_file_integrity(filepath: str) -> list[ValidationError]:
 def validate_document_entry_types(template_document: dict) -> list[ValidationError]:
     """Check if the types of the values in the YAML document are correct.
 
-    All reported type errors are of level CRITICAL, since a report template containing
-    type errors will cause the Excel report generation to fail.
+    All reported type errors are of level CRITICAL, since a table template containing
+    type errors will result in the Excel table generation to fail.
 
     Args:
-        template_document: A dictionary representation of a `ReportTemplate`. The values
+        template_document: A dictionary representation of a `TableTemplate`. The values
             of the keys "sections", "formats", "conditional_formats", and "settings" are
             validated according to the `TEMPLATE_SCHEMA`.
 
@@ -129,18 +129,18 @@ def validate_document_entry_types(template_document: dict) -> list[ValidationErr
 
 
 def validate_template_content(template_document: dict) -> list[ValidationError]:
-    """Validate the content of a report template YAML file.
+    """Validate the content of a table template YAML file.
 
     Reported `ValidationError`s are of level INFO, WARNING or ERROR, depending on the
     severity of the problem. INFO level errors do not indicate any problems but are only
     reported for information. WARNING level errors indicate that the template content is
     not optimal. ERROR level errors indicate that the template content is not valid. A
-    report template containing ERROR level errors can still be imported as a
-    `ReportTemplate` and be used to generate an Excel report, however, the Excel report
+    table template containing ERROR level errors can still be imported as a
+    `TableTemplate` and be used to generate an Excel table, however, the Excel table
     generation will not work as expected.
 
     Args:
-        template_document: A dictionary representation of a `ReportTemplate`. The keys
+        template_document: A dictionary representation of a `TableTemplate`. The keys
             "sections", "formats", "conditional_formats", and "settings" are used to
             validate the template content.
 
@@ -182,7 +182,7 @@ def validate_template_file_loading(filepath: str) -> list[ValidationError]:
     """Check if the specified filepath can be loaded as a YAML file
 
     Args:
-        filepath: The path to a YAML file containing a report template.
+        filepath: The path to a YAML file.
 
     Returns:
         A list of `ValidationError`s of type FILE_ERROR and level CRITICAL. Each entry

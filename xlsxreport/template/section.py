@@ -73,7 +73,7 @@ _template_section_schemas = {
 
 
 class TemplateSection:
-    """Representation of a report section."""
+    """Representation of a table section."""
 
     def __init__(self, data: dict):
         if not isinstance(data, dict):

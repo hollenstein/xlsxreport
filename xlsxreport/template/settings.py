@@ -7,8 +7,8 @@ import cerberus  # type: ignore
 from xlsxreport.schemas import SETTINGS_SCHEMA
 
 
-class ReportTemplateSettings(UserDict):
-    """Representation of report template settings."""
+class TableTemplateSettings(UserDict):
+    """Container for table template settings."""
 
     def __init__(self, data: dict):
         self._validator = cerberus.Validator(require_all=False, allow_unknown=False)

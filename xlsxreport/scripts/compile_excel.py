@@ -10,7 +10,7 @@ import xlsxwriter  # type: ignore
 from xlsxreport import (
     get_template_path,
     SectionWriter,
-    ReportTemplate,
+    TableTemplate,
     prepare_compiled_sections,
 )
 
@@ -41,7 +41,7 @@ def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> No
     """Create a formatted Excel report from a csv INFILE and a formatting TEMPLATE file.
 
     The TEMPLATE argument is first used to look for a file with the specified filepath.
-    If no file is found, the XlsxReport appdata directory is searched for a file with
+    If no file is found, the xlsxreport appdata directory is searched for a file with
     the corresponding name.
     """
     report_path = _get_report_output_path(infile, outfile, outpath)
@@ -64,7 +64,7 @@ def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> No
 
 
 def compile_excel(infile: str, template: str, outpath: str, sep: str = "\t") -> None:
-    """Creates a formatted Excel report from a csv infile and a report template file.
+    """Creates a formatted Excel report from a csv infile and a table template file.
 
     Args:
         infile: Path to the input csv file.
@@ -76,13 +76,13 @@ def compile_excel(infile: str, template: str, outpath: str, sep: str = "\t") -> 
         warnings.simplefilter(action="ignore", category=pd.errors.DtypeWarning)
         table = pd.read_csv(infile, sep=sep)
 
-    report_template = ReportTemplate.load(template)
-    compiled_sections = prepare_compiled_sections(report_template, table)
+    table_template = TableTemplate.load(template)
+    compiled_sections = prepare_compiled_sections(table_template, table)
     with xlsxwriter.Workbook(outpath) as workbook:
         worksheet = workbook.add_worksheet("Report")
         section_writer = SectionWriter(workbook)
         section_writer.write_sections(
-            worksheet, compiled_sections, settings=report_template.settings
+            worksheet, compiled_sections, settings=table_template.settings
         )
 
 

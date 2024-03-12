@@ -1,8 +1,8 @@
-"""Module for storing, loading and manipulating report templates.
+"""Module for storing, loading and manipulating table templates.
 
-The `ReportTemplate` class is a Python representation of a YAML report template file and
+The `TableTemplate` class is a Python representation of a YAML table template file and
 contains the configuration instructions for compiling a table into a formatted Excel.
-The `ReportTemplate` class provides methods for loading a report template from a YAML
+The `TableTemplate` class provides methods for loading a table template from a YAML
 file, and saving the template to a YAML file.
 """
 
@@ -15,32 +15,34 @@ from xlsxreport.validate import (
     validate_document_entry_types,
     validate_template_file_integrity,
 )
-from xlsxreport.template.sections import ReportTemplateSections
-from xlsxreport.template.settings import ReportTemplateSettings
-from xlsxreport.template.formats import ReportTemplateFormats
+from xlsxreport.template.sections import TableTemplateSections
+from xlsxreport.template.settings import TableTemplateSettings
+from xlsxreport.template.formats import TableTemplateFormats
 
 
-class ReportTemplate:
-    """Class to store the template of a report.
-
-    # Mention that
+class TableTemplate:
+    """Representation of a table template and its configuration.
 
     Attributes:
-        sections: A dictionary of sections in the report template. The keys are the
-            names of the template sections, the values are dictionaries with the section
+        sections: A mapping representing the sections of the table template. Each
+            key-value pair corresponds to a template section, where the key is the
+            section's name and the value is a `TemplateSection` containing the section
             parameters.
-        formats: A dictionary of formats in the report template. The keys are the names
-            of the formats, the values are dictionaries with the format parameters.
-        conditional_formats: A dictionary of conditional formats in the report template.
-            The keys are the names of the conditional formats, the values are
-            dictionaries with the conditional format parameters.
-        settings: A dictionary of settings for the report template.
+        formats: A mapping representing the formats of the table template. Each
+            key-value pair corresponds to a format, where the key is the format's name
+            and the value is dictionary containing the parameters for that format.
+        conditional_formats: A mapping representing the conditional formats of the table
+            template. Each key-value pair corresponds to a conditional format, where the
+            key is the format's name and the value is dictionary containing the
+            parameters for that format.
+        settings: A mapping that contains settings for the table template. Each
+            key-value pair represents a setting and its value.
     """
 
-    sections: ReportTemplateSections
-    formats: ReportTemplateFormats
-    conditional_formats: ReportTemplateFormats
-    settings: ReportTemplateSettings
+    sections: TableTemplateSections
+    formats: TableTemplateFormats
+    conditional_formats: TableTemplateFormats
+    settings: TableTemplateSettings
 
     def __init__(
         self,
@@ -49,14 +51,14 @@ class ReportTemplate:
         conditional_formats: Optional[dict] = None,
         settings: Optional[dict] = None,
     ):
-        """Initialize a ReportTemplate.
+        """Initialize a TableTemplate.
 
         Args:
-            sections: A dictionary of sections in the report template.
-            formats: A dictionary of formats in the report template.
-            conditional_formats: A dictionary of conditional formats in the report
-                template.
-            settings: A dictionary of settings for the report template.
+            sections: A dictionary containing template section descriptions.
+            formats: A dictionary containing format descriptions.
+            conditional_formats: A dictionary containing conditional format
+                descriptions.
+            settings: A dictionary containing table template settings.
         """
         document = {
             "sections": {} if sections is None else sections,
@@ -70,15 +72,13 @@ class ReportTemplate:
             error_message = "\n".join([error.message for error in errors])
             raise ValueError(f"invalid initialization parameters\n{error_message}")
 
-        self.sections = ReportTemplateSections(document["sections"])
-        self.formats = ReportTemplateFormats(document["formats"])
-        self.conditional_formats = ReportTemplateFormats(
-            document["conditional_formats"]
-        )
-        self.settings = ReportTemplateSettings(document["settings"])
+        self.sections = TableTemplateSections(document["sections"])
+        self.formats = TableTemplateFormats(document["formats"])
+        self.conditional_formats = TableTemplateFormats(document["conditional_formats"])
+        self.settings = TableTemplateSettings(document["settings"])
 
     def to_dict(self) -> dict[str, dict]:
-        """Returns a dictionary representation of the `ReportTemplate`."""
+        """Return a dictionary representation of the `TableTemplate`."""
         return {
             "sections": self.sections.to_dict(),
             "formats": self.formats.to_dict(),
@@ -87,16 +87,16 @@ class ReportTemplate:
         }
 
     @classmethod
-    def from_dict(cls, template_document: dict) -> ReportTemplate:
-        """Creates a `ReportTemplate` instance from a dictionary.
+    def from_dict(cls, template_document: dict) -> TableTemplate:
+        """Create a `TableTemplate` instance from a dictionary.
 
         Args:
-            template_document: A dictionary representation of a `ReportTemplate`. The
+            template_document: A dictionary representation of a `TableTemplate`. The
                 keys "sections", "formats", "conditional_formats", and "settings" are
-                used to initialize the `ReportTemplate` instance.
+                used to initialize the `TableTemplate` instance.
 
         Returns:
-            A `ReportTemplate` instance.
+            A `TableTemplate` instance.
         """
         return cls(
             sections=template_document.get("sections", {}),
@@ -106,8 +106,8 @@ class ReportTemplate:
         )
 
     @classmethod
-    def load(cls, filepath) -> ReportTemplate:
-        """Loads a report template YAML file and returns a `ReportTemplate` instance."""
+    def load(cls, filepath) -> TableTemplate:
+        """Load a table template YAML file and return a `TableTemplate` instance."""
         with open(filepath, "r", encoding="utf-8") as file:
             if errors := validate_template_file_integrity(filepath):
                 error_message = "\n".join([error.description for error in errors])
@@ -116,7 +116,7 @@ class ReportTemplate:
         return cls.from_dict(template_data)
 
     def save(self, filepath) -> None:
-        """Saves the `ReportTemplate` to a YAML file."""
+        """Save the `TableTemplate` to a YAML file."""
         with open(filepath, "w", encoding="utf-8") as file:
             yaml.dump(
                 self.to_dict(),

@@ -5,7 +5,9 @@ from typing import Any
 from xlsxreport.template.section import TemplateSection
 
 
-class ReportTemplateSections(UserDict):
+class TableTemplateSections(UserDict):
+    """Container for table template section descriptions."""
+
     __marker = object()
 
     def __init__(self, sections: dict[str, dict]):
