@@ -16,10 +16,10 @@ Exposes the following functions and classes:
 """
 
 from xlsxreport.appdir import get_template_path
+from xlsxreport.builder import ReportBuilder
 from xlsxreport.compiler import prepare_compiled_sections
 from xlsxreport.template import TableTemplate
 from xlsxreport.writer import SectionWriter
-
 
 __author__ = "David M. Hollenstein"
 __license__ = "Apache 2.0"
