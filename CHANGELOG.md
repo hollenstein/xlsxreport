@@ -45,7 +45,8 @@
     matching of columns and makes the additional selection of samples via a "sample_extraction_tag" obsolete.
 - Changed the default value of the "evaluate_log2_transformation" setting to False.
 - Changed the default value of the "write_supheader" setting to False.
-- Supheader cells are now merged even when no supheader name is specified.
+- When no supheader name is specified the supheader cells are not merged and no format
+  is applied .
 - When attempting to use an invalid format for compiling an Excel report, the compiler
   will now apply no format and issue a warning instead of raising an exception. This
   change ensures consistent behavior for both conditional and standard cell formats.
