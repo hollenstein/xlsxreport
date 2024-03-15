@@ -485,8 +485,8 @@ def _retrieve_used_formats(sections_section: dict) -> set[str]:
     for section in sections_section.values():
         if "format" in section:
             used_formats.add(section["format"])
-        if "column_formats" in section:
-            used_formats.update(section["column_formats"].values())
+        if "column_format" in section:
+            used_formats.update(section["column_format"].values())
     return used_formats
 
 
