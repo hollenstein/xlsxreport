@@ -56,15 +56,21 @@ class ReportBuilder:
     _tab_writers: dict[str, AbstractTabWriter]
     _toc_writers: dict[str, AbstractTocWriter]
 
-    def __init__(self):
+    def __init__(self, filepath: str):
+        """Initialize the ReportBuilder instance.
+
+        Args:
+            filepath: The path of the Excel file where the report will be written.
+        """
+        self._filepath = filepath
         self._tab_descriptions = {}
         self._tab_names = []
         self._tab_writers = {}
         self._toc_writers = {}
 
-    def build(self, excel_path: str) -> None:
-        """Build the report and write it to an Excel file."""
-        with xlsxwriter.Workbook(excel_path) as workbook:
+    def build(self) -> None:
+        """Build the report and write it to the Excel file."""
+        with xlsxwriter.Workbook(self._filepath) as workbook:
             for tab_name in self._tab_names:
                 worksheet = workbook.add_worksheet(tab_name)
                 tab_info = self._tab_descriptions[tab_name]
@@ -218,6 +224,12 @@ class ReportBuilder:
             )
         _validate_tab_name(tab_name)
         self._tab_names.append(tab_name)
+
+    def __enter__(self) -> ReportBuilder:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.build()
 
 
 class ReportTableWriter:
