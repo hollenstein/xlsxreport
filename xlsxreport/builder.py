@@ -4,7 +4,9 @@ from typing import Optional, Protocol
 import pandas as pd
 import xlsxwriter  # type: ignore
 
-from xlsxreport import prepare_compiled_sections, TableTemplate, SectionWriter
+from xlsxreport.compiler import prepare_compiled_sections
+from xlsxreport.template import TableTemplate
+from xlsxreport.writer import SectionWriter
 
 
 class AbstractTabInfo(Protocol):
