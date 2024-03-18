@@ -60,7 +60,7 @@ class TableTemplateSections(UserDict):
             self.data = _switch_key_positions(self.data, section_name, to)
 
     def add(self, section_name: str, section: dict | TemplateSection) -> None:
-        """Add a new section to the template.
+        """Add a new section to the template or overwrite an existing section.
 
         Args:
             section_name: The name of the new section.
