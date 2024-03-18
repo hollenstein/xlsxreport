@@ -105,8 +105,8 @@ class ReportBuilder:
                 naming rules.
             tab_description: The description of the tab that will be added to the table
                 of contents, default "".
-            tab_color: Optional, by default None. If a color is specified it will be
-                used as the tab color in the Excel file.
+            tab_color: Optional, allows specifying a tab color for the Excel file. Must
+                be a valid hex color code.
             add_to_toc: Whether to add the tab to a table of contents, default True.
         """
         self.add_tab_writer(
@@ -174,8 +174,8 @@ class ReportBuilder:
                 naming rules.
             tab_description: The description of the tab that will be added to the table
                 of contents, default "".
-            tab_color: Optional, if a color is specified it will be used as the tab
-                color in the Excel file.
+            tab_color: Optional, allows specifying a tab color for the Excel file. Must
+                be a valid hex color code.
             add_to_toc: Whether to add the tab to a table of contents, default True.
         """
         self._add_tab_name(tab_name)
@@ -201,8 +201,8 @@ class ReportBuilder:
                 naming rules.
             tab_description: The description of the tab that will be added to the table
                 of contents, default "".
-            tab_color: Optional, if a color is specified it will be used as the tab
-                color in the Excel file.
+            tab_color: Optional, allows specifying a tab color for the Excel file. Must
+                be a valid hex color code.
             add_to_toc: Whether to add the tab to a table of contents, default True.
         """
         self._add_tab_name(tab_name)
