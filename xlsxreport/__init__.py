@@ -23,4 +23,4 @@ from xlsxreport.writer import SectionWriter
 
 __author__ = "David M. Hollenstein"
 __license__ = "Apache 2.0"
-__version__ = "0.1.a1"
+__version__ = "0.1.b1"
