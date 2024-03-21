@@ -111,6 +111,10 @@ class ReportBuilder:
             tab_color: Optional, allows specifying a tab color for the Excel file. Must
                 be a valid hex color code.
             add_to_toc: Whether to add the tab to a table of contents, default True.
+
+        Returns:
+            The table template used for compiling the table sections that will be
+            written to the Excel file tab.
         """
         self.add_tab_writer(
             ReportTableWriter(table, table_template),
@@ -128,7 +132,7 @@ class ReportBuilder:
         tab_description: str = "",
         add_to_toc: bool = True,
         tab_color: Optional[str] = None,
-    ) -> None:
+    ) -> TableTemplate:
         """Add a tab to the Excel report containing a table with formatted headers.
 
         Args:
@@ -140,6 +144,10 @@ class ReportBuilder:
             add_to_toc: Whether to add the tab to a table of contents, default True.
             tab_color: Optional, allows specifying a tab color for the Excel file. Must
                 be a valid hex color code.
+
+        Returns:
+            The table template used for compiling the table sections that will be
+            written to the Excel file tab.
         """
         formats = {
             "header": {
@@ -159,6 +167,7 @@ class ReportBuilder:
         self.add_report_table(
             table, table_template, tab_name, tab_description, tab_color, add_to_toc
         )
+        return table_template
 
     def add_toc(
         self, tab_name: str = "TOC", tab_description: str = "Table of content"
@@ -277,7 +286,7 @@ class ReportTableWriter:
         self,
         workbook: xlsxwriter.Workbook,
         worksheet: xlsxwriter.Worksheet,
-    ):
+    ) -> None:
         """Write the formatted table to the Excel file.
 
         Args:
@@ -311,7 +320,7 @@ class TocWriter:
         self,
         workbook: xlsxwriter.Workbook,
         worksheet: xlsxwriter.Worksheet,
-    ):
+    ) -> None:
         """Write the table of contents (TOC) to the Excel file.
 
         Args:
