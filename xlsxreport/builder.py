@@ -49,6 +49,9 @@ class ReportBuilder:
     ReportBuilder successively. Each tab writer is responsible for writing the content
     of a tab to the Excel file. Once all tab writers have been added, calling the
     `build` method will generate the report and write it to an Excel file.
+
+    Using the ReportBuilder as a context manager will automatically call the `build`
+    method when the context is exited.
     """
 
     _tab_descriptions: dict[str, AbstractTabInfo]
@@ -126,6 +129,18 @@ class ReportBuilder:
         add_to_toc: bool = True,
         tab_color: Optional[str] = None,
     ) -> None:
+        """Add a tab to the Excel report containing a table with formatted headers.
+
+        Args:
+            table: The table to be added to the tab.
+            tab_name: The name of the Excel tab, must be unique and follow Excel tab
+                naming rules.
+            tab_description: The description of the tab that will be added to the table
+                of contents, default "".
+            add_to_toc: Whether to add the tab to a table of contents, default True.
+            tab_color: Optional, allows specifying a tab color for the Excel file. Must
+                be a valid hex color code.
+        """
         formats = {
             "header": {
                 "bold": True,
@@ -168,6 +183,11 @@ class ReportBuilder:
     ) -> None:
         """Add a tab writer instance to the ReportBuilder.
 
+        This method adds a tab writer instance to the ReportBuilder, which is
+        responsible for writing the content of a tab to the Excel file. The `write`
+        method of the tab writer is called during the report building process to write
+        the tab content to the specified tab of the Excel file.
+
         Args:
             writer: A tab writer instance that will be used to write the tab content.
             tab_name: The name of the Excel tab, must be unique and follow Excel tab
@@ -192,7 +212,14 @@ class ReportBuilder:
         tab_color: Optional[str] = None,
         add_to_toc: bool = True,
     ) -> None:
-        """Add a toc (table of content) writer instance to the ReportBuilder.
+        """Add a table of contents (TOC) writer instance to the ReportBuilder.
+
+        This method adds a TOC writer instance to the ReportBuilder, which is
+        responsible for writing a table of contents tab in the Excel report. The
+        `set_tab_descriptions` method of the TOC writer is called first during the
+        report building process to pass the descriptions of the report tabs.
+        Subsequently, the `write` method of the TOC writer is called to write the table
+        of contents to the specified tab of the Excel file.
 
         args:
             writer: The toc writer class that will be used to write the table of
@@ -213,6 +240,9 @@ class ReportBuilder:
 
     def _add_tab_name(self, tab_name: str) -> None:
         """Add a tab name to the ReportBuilder after checking if the tab name is valid.
+
+        During the report build process, the added tab names are used to create the tabs
+        in the Excel file.
 
         Args:
             tab_name: The name of the Excel tab, must be unique and follow Excel tab
@@ -274,6 +304,7 @@ class TocWriter:
         self.tab_descriptions = {}
 
     def set_tab_descriptions(self, tab_descriptions: dict[str, AbstractTabInfo]):
+        """Set the tab descriptions that are used for writing the table of contents."""
         self.tab_descriptions = tab_descriptions
 
     def write(
@@ -281,7 +312,7 @@ class TocWriter:
         workbook: xlsxwriter.Workbook,
         worksheet: xlsxwriter.Worksheet,
     ):
-        """Write the Table of Contents (TOC) to the Excel file.
+        """Write the table of contents (TOC) to the Excel file.
 
         Args:
             workbook: The xlsxwriter.Workbook instance that represents the Excel file.
@@ -300,8 +331,9 @@ def _write_toc(
     workbook: xlsxwriter.Workbook,
     worksheet: xlsxwriter.Worksheet,
     tab_descriptions: dict[str, AbstractTabInfo],
+    first_row: int = 0,
 ) -> None:
-    """Write a table of content to an Excel tab."""
+    """Write a table of content to an Excel worksheet."""
     header_format = workbook.add_format(
         {
             "font_size": 14,
@@ -325,8 +357,8 @@ def _write_toc(
     )
     bottom_format = workbook.add_format({"valign": "vcenter", "top": 2})
 
-    worksheet.merge_range(0, 0, 0, 1, "Table of content", header_format)
-    for row, (tab_name, tab_info) in enumerate(tab_descriptions.items(), 1):
+    worksheet.merge_range(first_row, 0, first_row, 1, "Table of content", header_format)
+    for row, (tab_name, tab_info) in enumerate(tab_descriptions.items(), first_row + 1):
         if not tab_info.add_to_toc:
             continue
         worksheet.write_url(
