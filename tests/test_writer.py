@@ -302,9 +302,9 @@ class TestSectionWriter_WriteSupheader_Integration:
         assert len(worksheet.merged_cells.ranges) == 0
         assert worksheet.cell(row=1, column=1).value == "Supheader"
 
-    def test_merge_still_applied_when_no_supheader_specified(self):
+    def test_no_merge_applied_when_no_supheader_specified(self):
         worksheet = self._create_worksheet_with_section_writer_and_write_supheader(num_columns=2, supheader="")  # fmt: skip
-        assert len(worksheet.merged_cells.ranges) == 1
+        assert len(worksheet.merged_cells.ranges) == 0
 
 
 class TestSectionWriter_WriteSection_Integration:
