@@ -223,21 +223,29 @@ def test_eval_tag_section_columns(tag, expected_selection):
     assert selected_columns == expected_selection
 
 
-@pytest.mark.parametrize(
-    "tag, labels, expected_selection",
-    [
-        ("Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2", "S3 Tag"]),
-        ("^Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2"]),
-        ("Tag", ["S2"], ["Tag S2"]),
-        (".Tag$", ["S1", "S2", "S3"], ["S3 Tag"]),
-        (".Tag$", ["S1", "S2"], []),
-    ],
-)
-def test_eval_label_tag_section_columns(tag, labels, expected_selection):
-    columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
-    section_template = {"tag": tag, "labels": labels}
-    selected_columns = compiler.eval_label_tag_section_columns(columns, section_template)  # fmt: skip
-    assert selected_columns == expected_selection
+class TestEvalLabelTagSectionColumns:
+    @pytest.mark.parametrize(
+        "tag, labels, expected_selection",
+        [
+            ("Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2", "S3 Tag"]),
+            ("^Tag", ["S1", "S2", "S3"], ["Tag S1", "Tag S2"]),
+            ("Tag", ["S2"], ["Tag S2"]),
+            (".Tag$", ["S1", "S2", "S3"], ["S3 Tag"]),
+            (".Tag$", ["S1", "S2"], []),
+        ],
+    )
+    def test_correct_columns_are_selected(self, tag, labels, expected_selection):
+        columns = ["Tag S1", "Tag S2", "S3 Tag", "Tag", "Col1", "Col2"]
+        section_template = {"tag": tag, "labels": labels}
+        selected_columns = compiler.eval_label_tag_section_columns(columns, section_template)  # fmt: skip
+        assert selected_columns == expected_selection
+
+    def test_that_labels_determine_column_order(self):
+        columns = ["Tag S1", "Tag S2", "Tag S3", "Tag", "Col1", "Col2"]
+        labels = ["S3", "S1", "S2"]
+        section_template = {"tag": "Tag", "labels": labels}
+        selected_columns = compiler.eval_label_tag_section_columns(columns, section_template)  # fmt: skip
+        assert selected_columns == ["Tag S3", "Tag S1", "Tag S2"]
 
 
 def test_eval_comparison_groups_extracts_correct_values():

@@ -510,22 +510,30 @@ def eval_tag_section_columns(
 def eval_label_tag_section_columns(
     columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
-    """Extract columns using a regex pattern.
+    """Extract columns using a regex pattern and labels.
 
     Args:
         columns: A list of column names to select from.
-        section_template: A dictionary containing the key "tag", which is a regular
-            expression pattern used to select the section columns.
+        section_template: A dictionary containing the key "tag" and the key "labels".
+            The "tag" is a regular expression pattern that is matched against the column
+            names to preselect columns. The preselected columns are then further
+            filtered by checking if any of the "labels" are a substring of the column.
 
     Returns:
-        A list of sample columns matching the pattern in `section_template["tag"]`.
+        A list of column names selected from the `columns` by matching the "tag" and
+        containing any of the "labels". The order of the returned columns is determined
+        by the order of the "labels".
     """
+    tag = section_template["tag"]
     selected_columns = []
-    column_query = [c for c in columns if re.search(section_template["tag"], c)]
-    for column in column_query:
-        match = re.sub(section_template["tag"], "", column).strip(WHITESPACE_CHARS)
-        if match in section_template["labels"]:
-            selected_columns.append(column)
+    tag_columns = [c for c in columns if re.search(tag, c)]
+    labels_query = [re.sub(tag, "", c).strip(WHITESPACE_CHARS) for c in tag_columns]
+    for label in section_template["labels"]:
+        for column, label_query in zip(tag_columns, labels_query):
+            if label_query == label:
+                selected_columns.append(column)
+                tag_columns.remove(column)
+                labels_query.remove(label_query)
     return selected_columns
 
 
