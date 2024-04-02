@@ -16,7 +16,10 @@ def locate_appdir() -> str:
 
 def get_appdir_templates() -> list[str]:
     """Returns a list of template filenames located in the user app data directory."""
-    return [fn.name for fn in pathlib.Path(locate_appdir()).glob("*.yaml")]
+    templates = []
+    templates.extend([fn.name for fn in pathlib.Path(locate_appdir()).glob(f"*.yaml")])
+    templates.extend([fn.name for fn in pathlib.Path(locate_appdir()).glob(f"*.yml")])
+    return templates
 
 
 def setup_appdir(overwrite_templates: bool = False) -> None:
