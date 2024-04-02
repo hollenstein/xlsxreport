@@ -31,12 +31,12 @@ HELP = {
 @click.command()
 @click.argument("infile", type=click.Path(exists=True, readable=True))
 @click.argument("template")
-@click.option("--outfile", help=HELP["outfile"])
+@click.option("-o", "--outfile", help=HELP["outfile"])
 @click.option(
     "--outpath", type=click.Path(exists=True, writable=True), help=HELP["outpath"]
 )
-@click.option("--sep", default="\t", help=HELP["sep"])
-@click.option("--reveal", is_flag=True, default=False, help=HELP["reveal"])
+@click.option("-s", "--sep", default="\t", help=HELP["sep"])
+@click.option("-r", "--reveal", is_flag=True, default=False, help=HELP["reveal"])
 def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> None:
     """Create a formatted Excel report from a csv INFILE and a formatting TEMPLATE file.
 

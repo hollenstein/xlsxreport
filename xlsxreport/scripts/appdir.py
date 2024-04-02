@@ -20,7 +20,7 @@ HELP = {
 @click.command()
 @click.option("--setup", is_flag=True, default=False, help=HELP["setup"])
 @click.option("--overwrite", is_flag=True, default=False, help=HELP["overwrite"])
-@click.option("--reveal", is_flag=True, default=False, help=HELP["reveal"])
+@click.option("-r", "--reveal", is_flag=True, default=False, help=HELP["reveal"])
 def appdir_command(setup, overwrite, reveal) -> None:
     """Locate app directory, optionally create the directory and copy default table
     template files."""
