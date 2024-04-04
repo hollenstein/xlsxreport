@@ -36,13 +36,33 @@ sections:
       "MS/MS count": "count",
     },
   }
+  quality_filter: {
+    format: "int",
+    width: 55,
+    border: True,
+    columns: ["Only identified by site", "Reverse", "Potential contaminant"],
+    header_format: {"rotation": 90},
+    supheader: "Quality filter",
+    supheader_format: {"fg_color": "#a3ce7e"},
+  }
+  lfq_intensity: {
+    tag: "^LFQ intensity.",
+    format: "float",
+    conditional_format: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "LFQ intensity",
+    supheader_format: {"fg_color": "#7da4ce"},
+    remove_tag: True,
+    log2: True,
+    border: True,
+  }
   spectral_count: {
     tag: "^MS/MS count.",
     format: "int",
     conditional_format: "count",
     header_format: {"rotation": 90},
     supheader: "MS/MS count",
-    supheader_format: {"fg_color": "#eeeeee"},
+    supheader_format: {"fg_color": "#ff927c"},
     remove_tag: True,
     border: True,
   }
@@ -67,25 +87,6 @@ sections:
     remove_tag: True,
     log2: True,
     border: True,
-  }
-  lfq_intensity: {
-    tag: "^LFQ intensity.",
-    format: "float",
-    conditional_format: "intensity",
-    header_format: {"rotation": 90},
-    supheader: "LFQ intensity",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    log2: True,
-    border: True,
-  }
-  quality_filter: {
-    format: "int",
-    width: 70,
-    border: True,
-    columns: ["Only identified by site", "Reverse", "Potential contaminant"],
-    supheader: "Quality filter",
-    supheader_format: {"fg_color": "#ffffb3"},
   }
 
 
