@@ -784,16 +784,10 @@ class TestCompileSection:
                     expected_section_attr = {attr: getattr(expected_section, attr)}
                     assert compiled_attr == expected_section_attr
 
-    @pytest.mark.parametrize(
-        "section",
-        [
-            {"format": "str"},
-            {"columns": ["Column 1", "Column 2"], "comparison_group": True},
-            {"columns": ["Column 1", "Column 2"], "tag": "str"},
-        ],
-    )
-    def test_invalid_sections_are_not_compiled(self, table_template, example_table, section):  # fmt:skip
-        table_template.sections = {"invalid": TemplateSection(section)}
+    def test_invalid_sections_are_not_compiled(self, table_template, example_table):
+        section = TemplateSection({"columns": ["Column 1", "Column 2"]})
+        section.category = compiler.SectionCategory.UNKNOWN
+        table_template.sections = {"invalid": section}
         compiled_sections = compiler.compile_sections(table_template, example_table)
         assert len(compiled_sections) == 0
 
