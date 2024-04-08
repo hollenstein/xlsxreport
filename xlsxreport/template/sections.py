@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections import UserDict
-from typing import Any
+from typing import Any, Optional
 
 from xlsxreport.template.section import TemplateSection
 
@@ -10,7 +10,8 @@ class TableTemplateSections(UserDict):
 
     __marker = object()
 
-    def __init__(self, sections: dict[str, dict]):
+    def __init__(self, sections: Optional[dict[str, dict]] = None):
+        sections = sections if sections is not None else {}
         self.data: dict[str, TemplateSection] = {
             k: TemplateSection(v) for k, v in sections.items()
         }
@@ -25,15 +26,19 @@ class TableTemplateSections(UserDict):
         self.add(key, value)
 
     def __repr__(self):
+        if not self.data:
+            return "Empty TableTemplateSections"
+
         length = max([len(key) for key in self.data])
         section_count = len(self.data)
         num_digits = len(str(section_count - 1))
 
         section_strings = []
         for i, (name, section) in enumerate(self.data.items(), 0):
+            trailing_name_spaces = " " * (length - len(name))
             section_strings.append(
                 f"[{i:{num_digits}}] "
-                f"{name:<{length}} : "
+                f"{name}:{trailing_name_spaces} "
                 f"{section.category.name} section"
             )
         return "\n".join(section_strings)

@@ -18,6 +18,7 @@ from xlsxreport.validate import (
 from xlsxreport.template.sections import TableTemplateSections
 from xlsxreport.template.settings import TableTemplateSettings
 from xlsxreport.template.formats import TableTemplateFormats
+from xlsxreport.template._repr import dict_to_string
 
 
 class TableTemplate:
@@ -76,6 +77,18 @@ class TableTemplate:
         self.formats = TableTemplateFormats(document["formats"])
         self.conditional_formats = TableTemplateFormats(document["conditional_formats"])
         self.settings = TableTemplateSettings(document["settings"])
+
+    def __repr__(self):
+        sections = ", ".join(self.sections.keys())
+        formats = ", ".join(self.formats.keys())
+        conditional_formats = ", ".join(self.conditional_formats.keys())
+        return (
+            f"TableTemplate(\n"
+            f"    sections=[{sections}],\n"
+            f"    formats=[{formats}],\n"
+            f"    conditional_formats=[{conditional_formats}]\n"
+            f")"
+        )
 
     def to_dict(self) -> dict[str, dict]:
         """Return a dictionary representation of the `TableTemplate`."""

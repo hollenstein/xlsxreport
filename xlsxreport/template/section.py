@@ -8,7 +8,7 @@ import cerberus  # type: ignore
 from xlsxreport.template._repr import dict_to_string
 
 
-OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
+OPTIONAL_SECTION_PARAMS: dict[str, dict] = {
     "format": {"type": "string"},
     "column_format": {"type": "dict"},
     "conditional_format": {"type": "string"},
@@ -21,32 +21,32 @@ OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
 }
 
 
-STANDARD_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
-    "columns": {"required": True, "type": "list"},
+STANDARD_SECTION_SCHEMA: dict[str, dict] = {
+    "columns": {"required": True, "type": "list", "schema": {"type": "string"}},
     **OPTIONAL_SECTION_PARAMS,
 }
 
 
-TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+TAG_SECTION_SCHEMA: dict[str, dict] = {
     "tag": {"required": True, "type": "string"},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
 }
 
-LABEL_TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+LABEL_TAG_SECTION_SCHEMA: dict[str, dict] = {
     "tag": {"required": True, "type": "string"},
-    "labels": {"required": True, "type": "list"},
+    "labels": {"required": True, "type": "list", "schema": {"type": "string"}},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
 }
 
 
-COMPARISON_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+COMPARISON_SECTION_SCHEMA: dict[str, dict] = {
     "comparison_group": {"required": True, "type": "boolean"},
     "tag": {"required": True, "type": "string"},
-    "columns": {"required": True, "type": "list"},
+    "columns": {"required": True, "type": "list", "schema": {"type": "string"}},
     "replace_comparison_tag": {"type": "string"},
     "remove_tag": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
@@ -73,15 +73,23 @@ _template_section_schemas = {
 
 
 class TemplateSection:
-    """Representation of a table section."""
+    """Representation of a table section.
+
+    Attributes:
+        category: The section category of the template section.
+        data: A dictionary containing the template section parameters.
+        schema: A dictionary containing the template section schema.
+    """
 
     def __init__(self, data: dict):
         if not isinstance(data, dict):
-            raise TypeError("Section data must be a dictionary")
-        self.category = _identify_section_category(data)
-        self.schema = deepcopy(_template_section_schemas[self.category])
-        self.data = data
+            raise TypeError("'data' must be a dictionary")
+        if (category := _identify_section_category(data)) == SectionCategory.UNKNOWN:
+            raise ValueError(
+                "The parameters in 'data' do not comply with any section schema."
+            )
 
+        self._set_section_attributes(category, data)
         self._validator = cerberus.Validator(require_all=False, allow_unknown=False)
 
     def __contains__(self, key: str) -> bool:
@@ -97,13 +105,19 @@ class TemplateSection:
     def __setitem__(self, key: str, value: str | float | bool | list | dict) -> None:
         updated_data = self.to_dict()
         updated_data.update({key: value})
-        if not self._validator.validate(updated_data, self.schema):
-            raise ValueError(
-                f"Invalid {self.category.name} section parameter: "
-                f"{self._validator.errors}"
-            )
 
-        self.data[key] = value
+        if key in self.schema:
+            if not self._validator.validate(updated_data, self.schema):
+                raise ValueError(f"Invalid parameter value: {self._validator.errors}")
+            self.data[key] = value
+            return
+
+        category = _identify_section_category(updated_data)
+        if category == SectionCategory.UNKNOWN:
+            raise ValueError(
+                f"Setting '{key}' to {value} results in an invalid template section."
+            )
+        self._set_section_attributes(category, updated_data)
 
     def __repr__(self) -> str:
         prefix = f"{self.category.name} section: "
@@ -126,6 +140,12 @@ class TemplateSection:
     def to_dict(self) -> dict:
         """Return a copy of the section as a dictionary."""
         return deepcopy(self.data)
+
+    def _set_section_attributes(self, category: SectionCategory, data: dict) -> None:
+        """Set data, section category, and category schema."""
+        self.category = category
+        self.data = deepcopy(data)
+        self.schema = deepcopy(_template_section_schemas[self.category])
 
 
 def _identify_section_category(section: dict) -> SectionCategory:
