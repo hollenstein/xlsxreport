@@ -31,9 +31,10 @@ class TableTemplateSections(UserDict):
 
         section_strings = []
         for i, (name, section) in enumerate(self.data.items(), 0):
+            trailing_name_spaces = " " * (length - len(name))
             section_strings.append(
                 f"[{i:{num_digits}}] "
-                f"{name:<{length}} : "
+                f"{name}:{trailing_name_spaces} "
                 f"{section.category.name} section"
             )
         return "\n".join(section_strings)
