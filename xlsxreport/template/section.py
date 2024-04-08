@@ -8,7 +8,7 @@ import cerberus  # type: ignore
 from xlsxreport.template._repr import dict_to_string
 
 
-OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
+OPTIONAL_SECTION_PARAMS: dict[str, dict] = {
     "format": {"type": "string"},
     "column_format": {"type": "dict"},
     "conditional_format": {"type": "string"},
@@ -21,32 +21,32 @@ OPTIONAL_SECTION_PARAMS: dict[str, dict[str, str | float | bool]] = {
 }
 
 
-STANDARD_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
-    "columns": {"required": True, "type": "list"},
+STANDARD_SECTION_SCHEMA: dict[str, dict] = {
+    "columns": {"required": True, "type": "list", "schema": {"type": "string"}},
     **OPTIONAL_SECTION_PARAMS,
 }
 
 
-TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+TAG_SECTION_SCHEMA: dict[str, dict] = {
     "tag": {"required": True, "type": "string"},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
 }
 
-LABEL_TAG_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+LABEL_TAG_SECTION_SCHEMA: dict[str, dict] = {
     "tag": {"required": True, "type": "string"},
-    "labels": {"required": True, "type": "list"},
+    "labels": {"required": True, "type": "list", "schema": {"type": "string"}},
     "remove_tag": {"type": "boolean", "default": False},
     "log2": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
 }
 
 
-COMPARISON_SECTION_SCHEMA: dict[str, dict[str, str | float | bool]] = {
+COMPARISON_SECTION_SCHEMA: dict[str, dict] = {
     "comparison_group": {"required": True, "type": "boolean"},
     "tag": {"required": True, "type": "string"},
-    "columns": {"required": True, "type": "list"},
+    "columns": {"required": True, "type": "list", "schema": {"type": "string"}},
     "replace_comparison_tag": {"type": "string"},
     "remove_tag": {"type": "boolean", "default": False},
     **OPTIONAL_SECTION_PARAMS,
