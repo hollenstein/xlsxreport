@@ -31,6 +31,38 @@ sections:
       "Combined Total Peptides": "count",
     },
   }
+  lfq_intensity: {
+    tag: ".MaxLFQ Intensity$",
+    format: "float",
+    conditional_format: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "LFQ intensity",
+    supheader_format: {"fg_color": "#7da4ce"},
+    remove_tag: True,
+    log2: True,
+    border: True,
+  }
+  spectral_count: {
+    tag: "(?<!Combined)(?<!Unique)(?<!Total).Spectral Count$",
+    format: "int",
+    conditional_format: "count",
+    header_format: {"rotation": 90},
+    supheader: "Spectral Count",
+    supheader_format: {"fg_color": "#ff927c"},
+    remove_tag: True,
+    border: True,
+  }
+  intensity: {
+    tag: "(?<!MaxLFQ).Intensity$",
+    format: "float",
+    conditional_format: "intensity",
+    header_format: {"rotation": 90},
+    supheader: "Intensity",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    log2: True,
+    border: True,
+  }
   unqiue_spectral_count: {
     tag: "(?<!Combined).Unique Spectral Count$",
     format: "int",
@@ -51,39 +83,6 @@ sections:
     remove_tag: True,
     border: True,
   }
-  spectral_count: {
-    tag: "(?<!Combined)(?<!Unique)(?<!Total).Spectral Count$",
-    format: "int",
-    conditional_format: "count",
-    header_format: {"rotation": 90},
-    supheader: "Spectral Count",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    border: True,
-  }
-  intensity: {
-    tag: "(?<!MaxLFQ).Intensity$",
-    format: "float",
-    conditional_format: "intensity",
-    header_format: {"rotation": 90},
-    supheader: "Intensity",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    log2: True,
-    border: True,
-  }
-  lfq_intensity: {
-    tag: ".MaxLFQ Intensity$",
-    format: "float",
-    conditional_format: "intensity",
-    header_format: {"rotation": 90},
-    supheader: "LFQ intensity",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    log2: True,
-    border: True,
-  }
-
 
 
 formats:
