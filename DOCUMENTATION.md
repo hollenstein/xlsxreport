@@ -57,7 +57,7 @@ settings:
 Each entry in the `sections` area is defined by a unique name and contains a set of parameters that describe a group of columns that will be written to the excel file as a section. There are currently three different categories of template sections, each provides a different way how the columns for the section are selected. In addition, the parameters specified in a `template section` describe how the column values and headers will be formatted, if conditional formats are applied, and other settings. The order of `template sections` in the template file determines the order in which the sections, and thus the columns, are written to the excel file.
 
 #### Default sections
-In a `default section` columns are directly selected by specifying a list of column names with the `columns` parameter. The specified order of columns defines in which order the columns will be written to the Excel sheet. Formats and conditional formats can be applied to the whole section or to individual columns. The parameters `tag` and `comparison_group` are not allowed in this section. The parameters `log2`, `replace_comparison_tag`, and `remove_tag` have no effect on this section type.
+In a `default section` columns are directly selected by specifying a list of column names with the `columns` parameter. The specified order of columns defines in which order the columns will be written to the Excel sheet. Formats and conditional formats can be applied to the whole section or to individual columns. The parameters `tag` is not allowed in this section. The parameters `log2`, `replace_comparison_tag`, and `remove_tag` have no effect on this section type.
 
 ##### Additional section parameters
 - Required: `columns: list[str]`<br>
@@ -105,8 +105,7 @@ and a CSV file with the following columns
 --- *Note: this section needs to be rewritten* ---
 
 The **comparison group** allows defining a block of differential expression
-comparison columns. Adding the parameter "comparison_group: True" defines a
-comparison group. The columns that belong to a comparison group have a column
+comparison columns. A comparison group is defined by the parameters `tag` and `columns`. The columns that belong to a comparison group have a column
 name that consists of one part that describes the content of the column, for
 example "P-value" or "Fold change", and another part that describes which
 samples or experiments are compared, for example "Control vs. Condition". To

@@ -44,7 +44,6 @@ LABEL_TAG_SECTION_SCHEMA: dict[str, dict] = {
 
 
 COMPARISON_SECTION_SCHEMA: dict[str, dict] = {
-    "comparison_group": {"required": True, "type": "boolean"},
     "tag": {"required": True, "type": "string"},
     "columns": {"required": True, "type": "list", "schema": {"type": "string"}},
     "replace_comparison_tag": {"type": "string"},
