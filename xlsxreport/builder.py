@@ -48,16 +48,19 @@ class ReportBuilder:
     To create a multi-tab Excel report, multiple tab writers can be added to the
     ReportBuilder successively. Each tab writer is responsible for writing the content
     of a tab to the Excel file. Once all tab writers have been added, calling the
-    `build` method will generate the report and write it to an Excel file.
-
-    Using the ReportBuilder as a context manager will automatically call the `build`
-    method when the context is exited.
+    `build` method will create a workbook and add the report tabs. After building the
+    report, the `close` method needs to be called to write the Excel file.
+    Alternatively, the ReportBuilder can be used as a context manager, which will
+    automatically build and close the report when the context is exited.
     """
 
+    workbook: Optional[xlsxwriter.Workbook]
+    filepath: str
     _tab_descriptions: dict[str, AbstractTabInfo]
     _tab_names: list[str]
     _tab_writers: dict[str, AbstractTabWriter]
     _toc_writers: dict[str, AbstractTocWriter]
+    _built: bool
 
     def __init__(self, filepath: str):
         """Initialize the ReportBuilder instance.
@@ -65,29 +68,65 @@ class ReportBuilder:
         Args:
             filepath: The path of the Excel file where the report will be written.
         """
-        self._filepath = filepath
+        self.workbook = None
+        self.filepath = filepath
         self._tab_descriptions = {}
         self._tab_names = []
         self._tab_writers = {}
         self._toc_writers = {}
+        self._report_built = False
+
+    def __enter__(self) -> ReportBuilder:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.build()
+        self.close()
 
     def build(self) -> None:
-        """Build the report and write it to the Excel file."""
-        with xlsxwriter.Workbook(self._filepath) as workbook:
-            for tab_name in self._tab_names:
-                worksheet = workbook.add_worksheet(tab_name)
-                tab_info = self._tab_descriptions[tab_name]
-                if tab_info.tab_color is not None:
-                    worksheet.set_tab_color(tab_info.tab_color)
+        """Open a Workbook object and write the report tabs to the Workbook.
 
-            for tab_name, toc_writer in self._toc_writers.items():
-                worksheet = workbook.get_worksheet_by_name(tab_name)
-                toc_writer.set_tab_descriptions(self._tab_descriptions)
-                toc_writer.write(workbook, worksheet)
+        This method needs to be called after all tab writers have been added to the
+        ReportBuilder to open a Workbook object and add the report tabs. To write the
+        Excel file and close the Workbook object, the `close` method needs to be called
+        after building the report. If this method is called after the report has already
+        been built, a ValueError is raised.
+        """
+        if self._report_built:
+            raise ValueError("Report has already been built")
 
-            for tab_name, tab_writer in self._tab_writers.items():
-                worksheet = workbook.get_worksheet_by_name(tab_name)
-                tab_writer.write(workbook, worksheet)
+        self.workbook = xlsxwriter.Workbook(self.filepath)
+        for tab_name in self._tab_names:
+            worksheet = self.workbook.add_worksheet(tab_name)
+            tab_info = self._tab_descriptions[tab_name]
+            if tab_info.tab_color is not None:
+                worksheet.set_tab_color(tab_info.tab_color)
+
+        for tab_name, toc_writer in self._toc_writers.items():
+            worksheet = self.workbook.get_worksheet_by_name(tab_name)
+            toc_writer.set_tab_descriptions(self._tab_descriptions)
+            toc_writer.write(self.workbook, worksheet)
+
+        for tab_name, tab_writer in self._tab_writers.items():
+            worksheet = self.workbook.get_worksheet_by_name(tab_name)
+            tab_writer.write(self.workbook, worksheet)
+
+        self._report_built = True
+
+    def close(self) -> None:
+        """Close the report and write the Excel file.
+
+        This method needs to be called after the report has been built to write the
+        Excel file. After calling this method, the Workbook is closed and cannot be
+        accessed anymore. If this method is called before the report has been built or
+        after the report has been closed, a ValueError is raised.
+        """
+        if not self._report_built or self.workbook is None:
+            raise ValueError("Workbook has not been created, call build method first")
+        self.workbook.close()
+
+        self._report_built = False
+        self._workbook = None
 
     def add_report_table(
         self,
@@ -263,12 +302,6 @@ class ReportBuilder:
             )
         _validate_tab_name(tab_name)
         self._tab_names.append(tab_name)
-
-    def __enter__(self) -> ReportBuilder:
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        self.build()
 
 
 class ReportTableWriter:
