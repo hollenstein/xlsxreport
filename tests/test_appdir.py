@@ -75,9 +75,10 @@ class TestGetTemplatePath:
 
     @patch("pathlib.Path.is_file")
     @patch("xlsxreport.appdir.get_appdir_templates")
-    def test_invalid_filepath_not_found_in_appdir(
+    def test_invalid_filepath_raises_file_not_found_error(
         self, mock_get_appdir_templates, mock_isfile
     ):
         mock_isfile.return_value = False
         mock_get_appdir_templates.return_value = []
-        assert appdir.get_template_path("non_existing_file") is None
+        with pytest.raises(FileNotFoundError):
+            appdir.get_template_path("non.existing.file")

@@ -1,3 +1,4 @@
+import errno
 import os
 import pathlib
 import shutil
@@ -34,22 +35,27 @@ def setup_appdir(overwrite_templates: bool = False) -> None:
     _copy_default_templates(data_dir, overwrite_templates)
 
 
-def get_template_path(template: str) -> Union[str, None]:
+def get_template_path(template: str) -> str:
     """Returns the path to the specified template file.
 
     Args:
-        template: The name of the template file to locate in the app directory or the
-            path to the template file.
+        template: The path to the template file or the name of the template file to
+            locate in the app directory. If a valid filepath to an existing file is
+            provided, the specified path is returned without checking if the file exists
+            also exists in the app directory.
 
     Returns:
-        The path to the specified template file or None if the file was not found.
+        The path to the specified template file.
+
+    Raises:
+        FileNotFoundError: If the specified template file does not exist.
     """
     if pathlib.Path(template).is_file():
         return template
     elif template in get_appdir_templates():
         return pathlib.Path(locate_appdir(), template).as_posix()
     else:
-        return None
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), template)
 
 
 def _copy_default_templates(directory: str, overwrite: bool) -> None:

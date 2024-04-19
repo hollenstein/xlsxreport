@@ -45,12 +45,13 @@ def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> No
     the corresponding name.
     """
     report_path = _get_report_output_path(infile, outfile, outpath)
-    template_path = get_template_path(template)
-    if template_path is None:
+    try:
+        template_path = get_template_path(template)
+    except FileNotFoundError as error:
         raise click.ClickException(
             f"Invalid value for 'TEMPLATE': Path '{click.format_filename(template)}' "
             "does not exist."
-        )
+        ) from error
 
     click.echo(f"Generating formatted Excel report:")
     click.echo(f"----------------------------------")

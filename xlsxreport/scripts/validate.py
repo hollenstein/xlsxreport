@@ -1,4 +1,5 @@
 """Command to validate a YAML template file."""
+
 import click
 import yaml
 
@@ -20,12 +21,13 @@ def validate_command(template: str):
     If no file is found, the XlsxReport appdata directory is searched for a file with
     the corresponding name.
     """
-    template_path = get_template_path(template)
-    if template_path is None:
+    try:
+        template_path = get_template_path(template)
+    except FileNotFoundError as error:
         raise click.ClickException(
             f"Invalid value for 'TEMPLATE': Path '{click.format_filename(template)}' "
             "does not exist."
-        )
+        ) from error
 
     click.echo(f"Validating YAML template file: {click.format_filename(template_path)}")
 
