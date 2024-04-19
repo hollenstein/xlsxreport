@@ -85,7 +85,7 @@ class TemplateSection:
             raise TypeError("'data' must be a dictionary")
         if (category := _identify_section_category(data)) == SectionCategory.UNKNOWN:
             raise ValueError(
-                "The parameters in 'data' do not comply with any section schema."
+                "The specified parameters do not comply with any section schema."
             )
 
         self._set_section_attributes(category, data)

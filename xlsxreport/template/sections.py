@@ -12,9 +12,16 @@ class TableTemplateSections(UserDict):
 
     def __init__(self, sections: Optional[dict[str, dict]] = None):
         sections = sections if sections is not None else {}
-        self.data: dict[str, TemplateSection] = {
-            k: TemplateSection(v) for k, v in sections.items()
-        }
+        self.data: dict[str, TemplateSection] = {}
+
+        for section_name, section_params in sections.items():
+            try:
+                self.data[section_name] = TemplateSection(section_params)
+            except ValueError:
+                raise ValueError(
+                    f"The parameters for the section '{section_name}' do not comply "
+                    f"with any section schema."
+                )
 
     def __getitem__(self, key: str | int) -> TemplateSection:
         if isinstance(key, str):
