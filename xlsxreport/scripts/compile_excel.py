@@ -5,6 +5,7 @@ import warnings
 
 import click
 import pandas as pd
+import pathlib
 import xlsxwriter  # type: ignore
 
 from xlsxreport import (
@@ -26,6 +27,7 @@ HELP = {
     "sep": "Delimiter to use for the input file, default is \\t.",
     "reveal": "Open the compiled Excel report file in the default application.",
 }
+PATH_COLOR = "yellow"
 
 
 @click.command()
@@ -49,15 +51,15 @@ def compile_excel_command(infile, template, outfile, outpath, sep, reveal) -> No
         template_path = get_template_path(template)
     except FileNotFoundError as error:
         raise click.ClickException(
-            f"Invalid value for 'TEMPLATE': Path '{click.format_filename(template)}' "
-            "does not exist."
+            f"Invalid value for 'TEMPLATE': {_format_filename(template)} "
+            " does not exist."
         ) from error
 
     click.echo(f"Generating formatted Excel report:")
     click.echo(f"----------------------------------")
-    click.echo(f"Input file:    {click.format_filename(infile)}")
-    click.echo(f"Template file: {click.format_filename(template_path)}")
-    click.echo(f"Report file:   {click.format_filename(report_path)}")
+    click.echo(f"Input file:    {_format_filename(infile)}")
+    click.echo(f"Template file: {_format_filename(template_path)}")
+    click.echo(f"Report file:   {_format_filename(report_path)}")
 
     compile_excel(infile, template_path, report_path, sep)
     if reveal:
@@ -98,3 +100,9 @@ def _get_report_output_path(infile: str, outfile: str, outpath: str) -> str:
         outfilename = ".".join(infilename.split(".")[:-1]) + ".report.xlsx"
         report_path = os.path.join(os.path.dirname(infile), outfilename)
     return report_path
+
+
+def _format_filename(filename: str) -> str:
+    return click.style(
+        pathlib.Path(click.format_filename(filename)).as_posix(), fg=PATH_COLOR
+    )

@@ -3,6 +3,7 @@
 import os
 
 import click
+import pathlib
 
 import xlsxreport.appdir
 
@@ -16,6 +17,7 @@ HELP = {
     "reveal": "Reveal the app directory in the file explorer.",
     "templates": "List the table template files in the app directory.",
 }
+PATH_COLOR = "yellow"
 
 
 @click.command()
@@ -29,17 +31,19 @@ def appdir_command(setup, overwrite, reveal, templates) -> None:
     appdir = xlsxreport.appdir.locate_appdir()
     if setup:
         if not os.path.isdir(appdir):
-            click.echo(f"Creating XlsxReport app directory at:\n  {appdir}")
+            click.echo(
+                f"Creating XlsxReport app directory at: {_format_filename(appdir)}"
+            )
         else:
-            click.echo(f"XlsxReport app directory found at:\n  {appdir}")
+            click.echo(f"XlsxReport app directory found at: {_format_filename(appdir)}")
 
         if overwrite:
             click.echo(
-                "  Copying default table templates to the app directory, overwriting "
+                "Copying default table templates to the app directory, overwriting "
                 "existing files"
             )
         else:
-            click.echo("  Copying missing default table templates to the app directory")
+            click.echo("Copying missing default table templates to the app directory")
         xlsxreport.appdir.setup_appdir(overwrite_templates=overwrite)
     elif not os.path.isdir(appdir):
         click.echo(
@@ -49,10 +53,16 @@ def appdir_command(setup, overwrite, reveal, templates) -> None:
         return
 
     if not any([setup, reveal, templates]):
-        click.echo(appdir)
+        click.echo(_format_filename(appdir))
     if reveal:
         click.launch(appdir)
     if templates:
         click.echo("Table template files in the app directory:")
         for template in xlsxreport.appdir.get_appdir_templates():
-            click.echo(f"  {template}")
+            click.echo(f"  {_format_filename(template)}")
+
+
+def _format_filename(filename: str) -> str:
+    return click.style(
+        pathlib.Path(click.format_filename(filename)).as_posix(), fg=PATH_COLOR
+    )

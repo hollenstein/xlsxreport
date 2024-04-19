@@ -2,6 +2,7 @@
 
 import click
 import yaml
+import pathlib
 
 from xlsxreport import get_template_path
 from xlsxreport.validate import (
@@ -10,6 +11,14 @@ from xlsxreport.validate import (
     validate_document_entry_types,
     validate_template_content,
 )
+
+PATH_COLOR = "yellow"
+ERROR_COLORS = {
+    ErrorLevel.INFO: "cyan",
+    ErrorLevel.WARNING: "bright_blue",
+    ErrorLevel.ERROR: "bright_red",
+    ErrorLevel.CRITICAL: "red",
+}
 
 
 @click.command()
@@ -25,11 +34,11 @@ def validate_command(template: str):
         template_path = get_template_path(template)
     except FileNotFoundError as error:
         raise click.ClickException(
-            f"Invalid value for 'TEMPLATE': Path '{click.format_filename(template)}' "
-            "does not exist."
+            f"Invalid value for 'TEMPLATE': {_format_filename(template)}"
+            " does not exist."
         ) from error
 
-    click.echo(f"Validating YAML template file: {click.format_filename(template_path)}")
+    click.echo(f"Validating YAML template file: {_format_filename(template_path)}")
 
     if integrity_errors := validate_template_file_integrity(template_path):
         output = ["Error loading YAML file, validation cannot proceed."]
@@ -42,7 +51,8 @@ def validate_command(template: str):
 
     if type_errors := validate_document_entry_types(template_document):
         output = ["Type errors detected, validation cannot proceed."]
-        output.extend([err.message for err in type_errors])
+        # output.extend([err.message for err in type_errors])
+        output.extend(_format_error_messages(type_errors))
         click.echo("\n".join(output))
         return
 
@@ -62,8 +72,24 @@ def validate_command(template: str):
             ]
         else:
             raise ValueError("Template contains unexpected critical errors.")
-        output.extend([err.message for err in content_errors])
+        output.extend(_format_error_messages(content_errors))
         click.echo("\n".join(output))
         return
 
     click.echo("Template is valid for Excel report generation.")
+
+
+def _format_error_messages(errors):
+    messages = []
+    for error in errors:
+        code, message = error.message.split(" ", maxsplit=1)
+        messages.append(
+            "  " + click.style(code, fg=ERROR_COLORS[error.error_level]) + " " + message
+        )
+    return messages
+
+
+def _format_filename(filename: str) -> str:
+    return click.style(
+        pathlib.Path(click.format_filename(filename)).as_posix(), fg=PATH_COLOR
+    )
