@@ -11,6 +11,7 @@ Exposes the following functions and classes:
         table (pandas.DataFrame) and a `TableTemplate`.
     - TableTemplate (class): Python representation of a YAML template file. Can be
         used to load, edit, and save table template files.
+    - ReportBuilder (class): Provides an interface for building multi-tab Excel reports.
     - SectionWriter (class): Provides an interface for writing a list of
         `CompiledSection`s to an Excel file by using the `xlsxwriter` package.
 """
