@@ -2,7 +2,8 @@
 
 ----------------------------------------------------------------------------------------
 
-## Upcoming release
+## Upcoming release - Version [0.0.10] - Interface and template rewrite
+Released: pending
 
 ### Added
 - Added the `validate` module, which offers functions for validating YAML template file
@@ -68,7 +69,8 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.8 - Refactoring and new settings
+## Version [0.0.8] - Refactoring and new settings
+Released: 2023-11-22
 
 ### Changed
 - `groups` in the yaml config file with the setting "border: True" will now always have
@@ -103,7 +105,8 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.7 - Fix comparison group issue
+## Version [0.0.7] - Fix comparison group issue
+Released: 2023-10-11
 
 ### Fixes
   - Fixes a mix up of columns in comparison groups that was caused when an experiment 
@@ -112,14 +115,16 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.6 - Fix missing supheader
+## Version [0.0.6] - Fix missing supheader
+Released: 2023-03-14
 
 ### Fixes
   - Supheader not being written when a block contains only one column.
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.5 - Improvements for MsReport report generation
+## Version [0.0.5] - Improvements for MsReport report generation
+Released: 2023-01-27
 
 ### Changed
 - (!) Renamed console script "xlsx_report" to "xlsxreport"
@@ -138,7 +143,8 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.4 - Group and hide remaining columns
+## Version [0.0.4] - Group and hide remaining columns
+Released: 2022-10-19
 
 - Changes behavior of the "append_remaining_columns" option. Now the
   unspecified columns that are added to the end of the excel sheet
@@ -146,13 +152,15 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.3 - Installation fix
+## Version [0.0.3] - Installation fix
+Released: 2022-10-10
 
 - Fixes issues of missing .yaml config files for installation.
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.2 - Adds remaining columns to report
+## Version [0.0.2] - Adds remaining columns to report
+Released: 2022-09-08
 
 - Added option to add all unspecified columns to the end of the excel sheet.
 - Added documentation of the config file format.
@@ -164,6 +172,7 @@
 
 ----------------------------------------------------------------------------------------
 
-## 0.0.1 - First functional version
+## Version [0.0.1] - First functional version
+Released: 2022-09-07
 
 - Initial unstable version of XlsxWriter
