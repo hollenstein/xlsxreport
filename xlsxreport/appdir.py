@@ -1,35 +1,72 @@
+import errno
 import os
+import pathlib
 import shutil
-from typing import Union
+from typing import Iterator, Union
 
-import appdirs
-
-
-def locate_data_dir():
-    APPNAME = "XlsxReport"
-    return appdirs.user_data_dir(appname=APPNAME, appauthor=False)
+import platformdirs
 
 
-def setup_data_dir():
-    """Creates a user specific app data directory and copies default config files."""
-    data_dir = locate_data_dir()
+APPNAME = "XlsxReport"
+
+
+def locate_appdir() -> str:
+    """Returns the path to the user specific app data directory."""
+    return platformdirs.user_data_dir(appname=APPNAME, appauthor=False)
+
+
+def get_appdir_templates() -> list[str]:
+    """Returns a list of template filenames located in the user app data directory."""
+    templates = []
+    templates.extend([fn.name for fn in pathlib.Path(locate_appdir()).glob(f"*.yaml")])
+    templates.extend([fn.name for fn in pathlib.Path(locate_appdir()).glob(f"*.yml")])
+    return templates
+
+
+def setup_appdir(overwrite_templates: bool = False) -> None:
+    """Creates a user specific app data directory and copies default template files.
+
+    Args:
+        overwrite_templates: If True, existing template files will be overwritten.
+    """
+    data_dir = locate_appdir()
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
-
-    config_dir = os.path.join(os.path.dirname(__file__), "default_config")
-    for filename in os.listdir(config_dir):
-        src_path = os.path.join(config_dir, filename)
-        dest_path = os.path.join(data_dir, filename)
-        shutil.copy(src_path, dest_path)
+    _copy_default_templates(data_dir, overwrite_templates)
 
 
-def get_config_file(filename: str) -> Union[str, None]:
-    """Returns the file path if filename is present in the app data directory."""
-    file_path = None
-    data_dir = locate_data_dir()
+def get_template_path(template: str) -> str:
+    """Returns the path to the specified template file.
 
-    for subdir, dirs, files in os.walk(data_dir):
-        for file in files:
-            if file == filename:
-                file_path = os.path.join(subdir, file)
-    return file_path
+    Args:
+        template: The path to the template file or the name of the template file to
+            locate in the app directory. If a valid filepath to an existing file is
+            provided, the specified path is returned without checking if the file exists
+            also exists in the app directory.
+
+    Returns:
+        The path to the specified template file.
+
+    Raises:
+        FileNotFoundError: If the specified template file does not exist.
+    """
+    if pathlib.Path(template).is_file():
+        return template
+    elif template in get_appdir_templates():
+        return pathlib.Path(locate_appdir(), template).as_posix()
+    else:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), template)
+
+
+def _copy_default_templates(directory: str, overwrite: bool) -> None:
+    """Copies default template files to the specified directory."""
+    for source in _get_default_template_files():
+        destiny = pathlib.Path(directory, source.name)
+        if not pathlib.Path.is_file(destiny) or overwrite:
+            shutil.copyfile(source, destiny)
+
+
+def _get_default_template_files() -> Iterator[pathlib.Path]:
+    """Returns a list of default template files included in the XlsxReport package."""
+    default_template_dir = pathlib.Path(__file__).parent / "default_templates"
+    return default_template_dir.iterdir()

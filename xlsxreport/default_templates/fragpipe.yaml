@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
-groups:
+
+sections:
   features: {
     format: "str",
     width: 78,
@@ -26,59 +27,60 @@ groups:
       "Combined Spectral Count": "int", 
       "Combined Unique Spectral Count": "int", 
     },
-    column_conditional: {
+    column_conditional_format: {
       "Combined Total Peptides": "count",
     },
   }
-  unqiue_spectral_count: {
-    tag: "Unique Spectral Count",
-    format: "int",
-    conditional: "count",
-    header_format: {"rotation": 90},
-    supheader: "Unique Spectral Count",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True, border: True,
-  }
-  total_spectral_count: {
-    tag: "Total Spectral Count",
-    format: "int",
-    conditional: "count",
-    header_format: {"rotation": 90},
-    supheader: "Total Spectral Count",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    border: True,
-  }
-  spectral_count: {
-    tag: "Spectral Count",
-    format: "int",
-    conditional: "count",
-    header_format: {"rotation": 90},
-    supheader: "Spectral Count",
-    supheader_format: {"fg_color": "#eeeeee"},
-    remove_tag: True,
-    border: True,
-  }
   lfq_intensity: {
-    tag: "MaxLFQ Intensity",
+    tag: ".MaxLFQ Intensity$",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "LFQ intensity",
-    supheader_format: {"fg_color": "#eeeeee"},
+    supheader_format: {"fg_color": "#7da4ce"},
     remove_tag: True,
     log2: True,
     border: True,
   }
+  spectral_count: {
+    tag: "(?<!Combined)(?<!Unique)(?<!Total).Spectral Count$",
+    format: "int",
+    conditional_format: "count",
+    header_format: {"rotation": 90},
+    supheader: "Spectral Count",
+    supheader_format: {"fg_color": "#ff927c"},
+    remove_tag: True,
+    border: True,
+  }
   intensity: {
-    tag: "Intensity",
+    tag: "(?<!MaxLFQ).Intensity$",
     format: "float",
-    conditional: "intensity",
+    conditional_format: "intensity",
     header_format: {"rotation": 90},
     supheader: "Intensity",
     supheader_format: {"fg_color": "#eeeeee"},
     remove_tag: True,
     log2: True,
+    border: True,
+  }
+  unqiue_spectral_count: {
+    tag: "(?<!Combined).Unique Spectral Count$",
+    format: "int",
+    conditional_format: "count",
+    header_format: {"rotation": 90},
+    supheader: "Unique Spectral Count",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
+    border: True,
+  }
+  total_spectral_count: {
+    tag: "(?<!Combined).Total Spectral Count$",
+    format: "int",
+    conditional_format: "count",
+    header_format: {"rotation": 90},
+    supheader: "Total Spectral Count",
+    supheader_format: {"fg_color": "#eeeeee"},
+    remove_tag: True,
     border: True,
   }
 
@@ -111,12 +113,13 @@ conditional_formats:
   }
 
 
-args:
-  border_weight: 2
+settings:
   supheader_height: 40
   header_height: 95
   column_width: 45
-  nan_symbol: "-"
   log2_tag: "[log2]"
-  sample_extraction_tag: "MaxLFQ Intensity"
   append_remaining_columns: True
+  write_supheader: True
+  remove_duplicate_columns: True
+  add_autofilter: True
+  freeze_cols: 1

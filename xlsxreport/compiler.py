@@ -1,34 +1,64 @@
-"""Contains functions for compiling table sections from a report template and a table."""
+"""Contains functions for compiling table sections from a table template and a table."""
+
 from __future__ import annotations
+from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Iterable, Optional, Protocol, Sequence
+from collections.abc import Mapping, MutableMapping
+import re
 
 import numpy as np
 import pandas as pd
 
-from xlsxreport.template import ReportTemplate
+from xlsxreport.template import SectionCategory
 
 
 BORDER_TYPE: int = 2  # 2 = thick line, see xlsxwriter.format.Format().set_border()
 DEFAULT_COL_WIDTH: float = 64
-DEFAULT_FORMAT: dict = {"num_format": "@"}
-REMAINING_COL_FORMAT = {"align": "left", "num_format": "0"}
+DEFAULT_FORMAT = {"num_format": "General"}
+REMAINING_COL_FORMAT = {"num_format": "General"}
 NAN_REPLACEMENT_SYMBOL = ""
 WHITESPACE_CHARS = " ."
 
 
-class SectionCategory(Enum):
-    """Enum for section categories."""
+class TableTemplate(Protocol):
+    """Abstract class representing a table template."""
 
-    UNKNOWN = -1
-    STANDARD = 1
-    TAG_SAMPLE = 2
-    COMPARISON = 3
+    @property
+    def sections(self) -> Mapping[str, TemplateSection]: ...
+
+    @property
+    def formats(self) -> MutableMapping[str, Mapping]: ...
+
+    @property
+    def conditional_formats(self) -> Mapping[str, Mapping]: ...
+
+    @property
+    def settings(self) -> Mapping: ...
+
+
+class TemplateSection(Protocol):
+    """Abstract class representing a section of a table template."""
+
+    category: SectionCategory
+
+    def to_dict(self) -> dict: ...
+
+
+class SectionCompiler(Protocol):
+    """Protocol for section compilers."""
+
+    def __init__(self, table_template: TableTemplate): ...
+
+    def compile(
+        self, section_template: dict, table: pd.DataFrame
+    ) -> list[CompiledSection]:
+        """Compile a table section from a section template and a table."""
+        ...
 
 
 @dataclass
-class TableSection:
+class CompiledSection:
     """Contains information for writing and formatting a section of a table.
 
     Note that the `data` DataFrame must not contain any NaN values.
@@ -36,25 +66,33 @@ class TableSection:
 
     data: pd.DataFrame
     column_formats: dict = field(default_factory=dict)
-    column_conditionals: dict = field(default_factory=dict)
+    column_conditional_formats: dict = field(default_factory=dict)
     column_widths: dict = field(default_factory=dict)
     headers: dict = field(default_factory=dict)
     header_formats: dict = field(default_factory=dict)
     supheader: str = ""
     supheader_format: dict = field(default_factory=dict)
-    section_conditional: dict = field(default_factory=dict)
+    section_conditional_format: dict = field(default_factory=dict)
     hide_section: bool = False
 
     def __post_init__(self):
         nan_columns = self.data.columns[self.data.isnull().any()].tolist()
         if nan_columns:
-            raise ValueError(f"`data` contains NaN values in columns: {nan_columns}")
+            raise ValueError(
+                f"Compiled section contains NaN values in columns: {nan_columns}"
+            )
+        if self.data.columns.size != self.data.columns.nunique():
+            duplicates = self.data.columns[self.data.columns.duplicated()].unique()
+            duplicate_message = ", ".join([f"'{c}'" for c in duplicates])
+            raise ValueError(
+                f"Compiled section contains duplicate columns: {duplicate_message}"
+            )
 
         for col in self.data.columns:
             if col not in self.column_formats:
                 self.column_formats[col] = {}
-            if col not in self.column_conditionals:
-                self.column_conditionals[col] = {}
+            if col not in self.column_conditional_formats:
+                self.column_conditional_formats[col] = {}
             if col not in self.column_widths:
                 self.column_widths[col] = DEFAULT_COL_WIDTH
             if col not in self.headers:
@@ -63,28 +101,17 @@ class TableSection:
                 self.header_formats[col] = {}
 
 
-class SectionCompiler(Protocol):
-    """Protocol for section compilers."""
-
-    def __init__(self, report_template: ReportTemplate):
-        ...
-
-    def compile(
-        self, section_template: dict, table: pd.DataFrame
-    ) -> TableSection | list[TableSection]:
-        """Compile a table section from a section template and a table."""
-        ...
-
-
 class StandardSectionCompiler:
     """Compiler for standard table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.formats = report_template.formats
-        self.conditional_formats = report_template.conditional_formats
-        self.settings = report_template.settings
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
 
-    def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
+    def compile(
+        self, section_template: Mapping, table: pd.DataFrame
+    ) -> list[CompiledSection]:
         """Compile a table section from a standard section template and a table."""
         selected_cols = eval_standard_section_columns(table.columns, section_template)
         data = eval_data(table, selected_cols)
@@ -94,7 +121,7 @@ class StandardSectionCompiler:
         col_conditionals = eval_column_conditional_formats(
             selected_cols, section_template, self.conditional_formats
         )
-        default_width = self.settings.get("column_width", DEFAULT_COL_WIDTH)
+        default_width = self.settings["column_width"]
         col_widths = eval_column_widths(selected_cols, section_template, default_width)
         headers = {c: c for c in selected_cols}
         header_formats = eval_header_formats(
@@ -102,43 +129,43 @@ class StandardSectionCompiler:
         )
         supheader = section_template.get("supheader", "")
         supheader_format = eval_supheader_format(section_template, self.formats)
-        section_conditional = eval_section_conditional_format(
+        section_conditional_format = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
-
-        return TableSection(
+        compiled_section = CompiledSection(
             data=data,
             column_formats=col_formats,
-            column_conditionals=col_conditionals,
+            column_conditional_formats=col_conditionals,
             column_widths=col_widths,
             headers=headers,
             header_formats=header_formats,
             supheader=supheader,
             supheader_format=supheader_format,
-            section_conditional=section_conditional,
+            section_conditional_format=section_conditional_format,
             hide_section=hide_section,
         )
+        return [compiled_section]
 
 
-class TagSampleSectionCompiler:
-    """Compiler for tag sample table sections."""
+class TagSectionCompiler:
+    """Compiler for tag table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.formats = report_template.formats
-        self.conditional_formats = report_template.conditional_formats
-        self.settings = report_template.settings
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
 
-    def compile(self, section_template: dict, table: pd.DataFrame) -> TableSection:
+    def compile(
+        self, section_template: Mapping, table: pd.DataFrame
+    ) -> list[CompiledSection]:
         """Compile a table section from a standard section template and a table."""
-        selected_cols = eval_tag_sample_section_columns(
-            table.columns, section_template, self.settings["sample_extraction_tag"]
-        )
+        selected_cols = eval_tag_section_columns(table.columns, section_template)
         data = eval_data_with_log2_transformation(
             table,
             selected_cols,
             section_template,
-            self.settings.get("evaluate_log2_transformation", False),
+            self.settings["evaluate_log2_transformation"],
         )
         col_formats = eval_column_formats(
             selected_cols, section_template, self.formats, DEFAULT_FORMAT
@@ -146,50 +173,106 @@ class TagSampleSectionCompiler:
         col_conditionals = eval_column_conditional_formats(
             selected_cols, section_template, self.conditional_formats
         )
-        default_width = self.settings.get("column_width", DEFAULT_COL_WIDTH)
+        default_width = self.settings["column_width"]
         col_widths = eval_column_widths(selected_cols, section_template, default_width)
         headers = eval_tag_sample_headers(
-            selected_cols, section_template, self.settings.get("log2_tag", "")
+            selected_cols, section_template, self.settings["log2_tag"]
         )
         header_formats = eval_header_formats(
             selected_cols, section_template, self.formats
         )
         supheader = eval_tag_sample_supheader(
-            section_template, self.settings.get("log2_tag", "")
+            section_template, self.settings["log2_tag"]
         )
         supheader_format = eval_supheader_format(section_template, self.formats)
-        section_conditional = eval_section_conditional_format(
+        section_conditional_format = eval_section_conditional_format(
             section_template, self.conditional_formats
         )
         hide_section = section_template.get("hide_section", False)
-
-        return TableSection(
+        compiled_section = CompiledSection(
             data=data,
             column_formats=col_formats,
-            column_conditionals=col_conditionals,
+            column_conditional_formats=col_conditionals,
             column_widths=col_widths,
             headers=headers,
             header_formats=header_formats,
             supheader=supheader,
             supheader_format=supheader_format,
-            section_conditional=section_conditional,
+            section_conditional_format=section_conditional_format,
             hide_section=hide_section,
         )
+        return [compiled_section]
+
+
+class LabelTagSectionCompiler:
+    """Compiler for tag table sections."""
+
+    def __init__(self, table_template: TableTemplate):
+        self.formats = table_template.formats
+        self.conditional_formats = table_template.conditional_formats
+        self.settings = table_template.settings
+
+    def compile(
+        self, section_template: Mapping, table: pd.DataFrame
+    ) -> list[CompiledSection]:
+        """Compile a table section from a standard section template and a table."""
+        selected_cols = eval_label_tag_section_columns(table.columns, section_template)
+        data = eval_data_with_log2_transformation(
+            table,
+            selected_cols,
+            section_template,
+            self.settings["evaluate_log2_transformation"],
+        )
+        col_formats = eval_column_formats(
+            selected_cols, section_template, self.formats, DEFAULT_FORMAT
+        )
+        col_conditionals = eval_column_conditional_formats(
+            selected_cols, section_template, self.conditional_formats
+        )
+        default_width = self.settings["column_width"]
+        col_widths = eval_column_widths(selected_cols, section_template, default_width)
+        headers = eval_tag_sample_headers(
+            selected_cols, section_template, self.settings["log2_tag"]
+        )
+        header_formats = eval_header_formats(
+            selected_cols, section_template, self.formats
+        )
+        supheader = eval_tag_sample_supheader(
+            section_template, self.settings["log2_tag"]
+        )
+        supheader_format = eval_supheader_format(section_template, self.formats)
+        section_conditional_format = eval_section_conditional_format(
+            section_template, self.conditional_formats
+        )
+        hide_section = section_template.get("hide_section", False)
+        compiled_section = CompiledSection(
+            data=data,
+            column_formats=col_formats,
+            column_conditional_formats=col_conditionals,
+            column_widths=col_widths,
+            headers=headers,
+            header_formats=header_formats,
+            supheader=supheader,
+            supheader_format=supheader_format,
+            section_conditional_format=section_conditional_format,
+            hide_section=hide_section,
+        )
+        return [compiled_section]
 
 
 class ComparisonSectionCompiler:
     """Compiler for comparison table sections."""
 
-    def __init__(self, report_template: ReportTemplate):
-        self.standard_compiler = StandardSectionCompiler(report_template)
+    def __init__(self, table_template: TableTemplate):
+        self.std_compiler = StandardSectionCompiler(table_template)
 
     def compile(
-        self, section_template: dict, table: pd.DataFrame
-    ) -> list[TableSection]:
+        self, section_template: Mapping, table: pd.DataFrame
+    ) -> list[CompiledSection]:
         """Compile table sections from a comparison section template and a table."""
 
         comparison_groups = eval_comparison_groups(table.columns, section_template)
-        table_sections = []
+        compiled_sections = []
         for comparison_group in comparison_groups:
             selected_cols = eval_comparison_group_columns(
                 table.columns, section_template, comparison_group
@@ -201,146 +284,139 @@ class ComparisonSectionCompiler:
                 section_template, comparison_group
             )
 
-            std_section_template = section_template.copy()
+            std_section_template = deepcopy(dict(section_template))
             std_section_template["columns"] = selected_cols
-            std_section_template["column_conditional"] = col_conditionals
+            std_section_template["column_conditional_format"] = col_conditionals
             std_section_template["supheader"] = supheader
 
-            table_section = self.standard_compiler.compile(std_section_template, table)
-            table_section.headers = eval_comparison_group_headers(
+            compiled_section = self.std_compiler.compile(std_section_template, table)[0]
+            compiled_section.headers = eval_comparison_group_headers(
                 selected_cols, section_template, comparison_group
             )
-            table_sections.append(table_section)
+            compiled_sections.append(compiled_section)
 
-        return table_sections
+        return compiled_sections
 
 
-def get_section_compiler(section_template: dict) -> type[SectionCompiler]:
-    """Get the section compiler function for a section template."""
-    section_category = identify_template_section_category(section_template)
-    if section_category == SectionCategory.UNKNOWN:
-        raise ValueError("Unknown section category.")
-    elif section_category == SectionCategory.STANDARD:
-        return StandardSectionCompiler
-    elif section_category == SectionCategory.TAG_SAMPLE:
-        return TagSampleSectionCompiler
-    elif section_category == SectionCategory.COMPARISON:
-        return ComparisonSectionCompiler
-    else:
+def get_section_compiler(section_category: SectionCategory) -> type[SectionCompiler]:
+    """Get the appropriate section compiler for a section category."""
+    if section_category not in _CATEGORY_COMPILER_MAP:
         raise NotImplementedError(
             f"Section compiler not implemented for category {section_category}."
         )
+    return _CATEGORY_COMPILER_MAP[section_category]
 
 
-def prepare_table_sections(
-    report_template: ReportTemplate,
+def prepare_compiled_sections(
+    table_template: TableTemplate,
     table: pd.DataFrame,
-) -> list[TableSection]:
-    """Compile non-empty table sections from a report template and a table.
+) -> list[CompiledSection]:
+    """Compile non-empty table sections from a table template and a table.
+
+    First the table sections are compiled from the template and the table. If the
+    "append_remaining_columns" setting is True, the remaining columns are compiled into
+    a section that is appended to the list of compiled table sections. Duplicate columns
+    are removed from the table sections if the "remove_duplicate_columns" setting is
+    True. Finally, empty table sections are removed from the list of table sections.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
+        table_template: The template describing how table sections should be generated.
         table: The table to compile the sections from.
 
     Returns:
         A list of non-empty, compiled table sections.
     """
-    compiled_table_sections = compile_table_sections(report_template, table)
-    if report_template.settings.get("append_remaining_columns", False):
-        remaining_section = compile_remaining_column_table_section(
-            report_template, compiled_table_sections, table
+    compiled_sections = compile_sections(table_template, table)
+    if table_template.settings["append_remaining_columns"]:
+        remaining_section = compile_remaining_column_section(
+            table_template, compiled_sections, table
         )
-        compiled_table_sections.append(remaining_section)
-    if report_template.settings.get("remove_duplicate_columns", True):
-        prune_table_sections(compiled_table_sections)
-    return remove_empty_table_sections(compiled_table_sections)
+        compiled_sections.append(remaining_section)
+    if table_template.settings["remove_duplicate_columns"]:
+        prune_compiled_sections(compiled_sections)
+    return remove_empty_compiled_sections(compiled_sections)
 
 
-def compile_table_sections(
-    report_template: ReportTemplate, table: pd.DataFrame
-) -> list[TableSection]:
-    """Compile table sections from a report template and a table.
+def compile_sections(
+    table_template: TableTemplate, table: pd.DataFrame
+) -> list[CompiledSection]:
+    """Compile table sections from a table template and a table.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
+        table_template: The template describing how table sections should be generated.
         table: The table to compile the sections from.
 
     Returns:
         A list of compiled table sections.
     """
-    table_sections = []
-    for section_template in report_template.sections.values():
-        section_category = identify_template_section_category(section_template)
-        if section_category == SectionCategory.UNKNOWN:
+    all_compiled_sections = []
+    for section in table_template.sections.values():
+        section_template = section.to_dict()
+        if section.category == SectionCategory.UNKNOWN:
             continue
 
-        SectionCompilerClass = get_section_compiler(section_template)
-        section_compiler = SectionCompilerClass(report_template)
-        compiled_section = section_compiler.compile(section_template, table)
-        if isinstance(compiled_section, TableSection):
-            table_sections.append(compiled_section)
-        else:
-            table_sections.extend(compiled_section)
+        _SectionCompiler = get_section_compiler(section.category)
+        section_compiler = _SectionCompiler(table_template)
+        compiled_sections = section_compiler.compile(section_template, table)
+        all_compiled_sections.extend(compiled_sections)
 
-    return table_sections
+    return all_compiled_sections
 
 
-def compile_remaining_column_table_section(
-    report_template: ReportTemplate,
-    table_sections: Iterable[TableSection],
+def compile_remaining_column_section(
+    table_template: TableTemplate,
+    compiled_sections: Iterable[CompiledSection],
     table: pd.DataFrame,
-) -> TableSection:
+) -> CompiledSection:
     """Compile a table section containing all columns not present in other sections.
 
     Args:
-        report_template: The report template describing how table sections should be
-            generated.
-        table_sections: The table sections that have already been compiled.
+        table_template: The template describing how table sections should be generated.
+        compiled_sections: The table sections that have already been compiled.
         table: The table to compile the remaining column section from.
 
     Returns:
         A compiled table section containing all columns not present in other sections.
     """
-    observed_columns = set()
-    for section in table_sections:
+    observed_columns: set = set()
+    for section in compiled_sections:
         observed_columns.update(section.data.columns)
     selected_cols = [column for column in table if column not in observed_columns]
 
-    section_compiler = StandardSectionCompiler(report_template)
-    section_compiler.formats[-1] = REMAINING_COL_FORMAT
+    section_compiler = StandardSectionCompiler(table_template)
+    _format_name = "_" * (max([len(i) for i in section_compiler.formats]) + 1)
+    section_compiler.formats[_format_name] = REMAINING_COL_FORMAT
     section_template = {
         "columns": selected_cols,
-        "format": -1,
+        "format": _format_name,
         "width": DEFAULT_COL_WIDTH,
         "hide_section": True,
     }
-    section = section_compiler.compile(section_template, table)
-    del section_compiler.formats[-1]
+    section = section_compiler.compile(section_template, table)[0]
+    del section_compiler.formats[_format_name]
     return section
 
 
-def prune_table_sections(table_sections: Iterable[TableSection]) -> None:
+def prune_compiled_sections(compiled_sections: Iterable[CompiledSection]) -> None:
     """Remove duplicate columns from table sections, keeping only the first occurance."""
-    observed_columns = set()
-    for section in table_sections:
+    observed_columns: set = set()
+    for section in compiled_sections:
         to_remove = [col for col in section.data.columns if col in observed_columns]
         section.data = section.data.drop(columns=to_remove)
         for col in to_remove:
             del section.column_formats[col]
-            del section.column_conditionals[col]
+            del section.column_conditional_formats[col]
             del section.column_widths[col]
             del section.headers[col]
             del section.header_formats[col]
         observed_columns.update(section.data.columns)
 
 
-def remove_empty_table_sections(
-    table_sections: Iterable[TableSection],
-) -> list[TableSection]:
+def remove_empty_compiled_sections(
+    compiled_sections: Iterable[CompiledSection],
+) -> list[CompiledSection]:
     """Returns a list of non-empty table sections."""
-    return [section for section in table_sections if not section.data.empty]
+    return [section for section in compiled_sections if not section.data.empty]
 
 
 def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
@@ -353,14 +429,17 @@ def eval_data(table: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     Returns:
         A copy of the table with only the selected columns NaN values replaced.
     """
-    data = table[columns].astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
+    data = table[columns]
+    nan_values = data.isna()
+    data = data.astype("object")
+    data[nan_values] = NAN_REPLACEMENT_SYMBOL
     return data
 
 
 def eval_data_with_log2_transformation(
     table: pd.DataFrame,
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     evaluate_log_state: bool,
 ) -> pd.DataFrame:
     """Selects columns from the table and applies a log2 transformation if specified.
@@ -378,21 +457,24 @@ def eval_data_with_log2_transformation(
         optionally values are log2 transformed.
     """
     data = table[columns].copy()
-    apply_log_transformation = section_template.get("log2", False)
-    if evaluate_log_state and _intensities_in_logspace(data):
-        apply_log_transformation = False
+    apply_log_transform = section_template.get("log2", False)
+    if apply_log_transform and evaluate_log_state and _intensities_in_logspace(data):
+        apply_log_transform = False
 
-    if apply_log_transformation:
+    if apply_log_transform:
         if not data.select_dtypes(exclude=["number"]).columns.empty:
             raise ValueError("Cannot log2 transform non-numeric columns.")
         data = data.mask(data <= 0, np.nan)
-        data = np.log2(data)
-    data = data.astype("object").fillna(NAN_REPLACEMENT_SYMBOL)
+        data = np.log2(data)  # type: ignore
+
+    nan_values = data.isna()
+    data = data.astype("object")
+    data[nan_values] = NAN_REPLACEMENT_SYMBOL
     return data
 
 
 def eval_standard_section_columns(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
     """Select columns from the template that are present in the table.
 
@@ -408,35 +490,56 @@ def eval_standard_section_columns(
     return selected_columns
 
 
-def eval_tag_sample_section_columns(
-    columns: Iterable[str], section_template: dict, extraction_tag: str
+def eval_tag_section_columns(
+    columns: Iterable[str], section_template: Mapping
 ) -> list[str]:
-    """Extract tag sample columns.
+    """Extract columns using a regex pattern.
 
     Args:
         columns: A list of column names to select from.
-        section_template: A dictionary containing the columns to be selected as the
-            values of the "columns" key.
-        extraction_tag: The tag used to extract sample names from the columns.
+        section_template: A dictionary containing the key "tag", which is a regular
+            expression pattern used to select the section columns.
 
     Returns:
-        A list of sample columns that contain the `section_template["tag"]`.
+        A list of sample columns matching the pattern in `section_template["tag"]`.
     """
-    samples = []
-    for col in columns:
-        if extraction_tag not in col or col == extraction_tag:
-            continue
-        samples.append(col.replace(extraction_tag, "").strip(WHITESPACE_CHARS))
-
-    selected_columns = []
-    for col in columns:
-        sample_query = col.replace(section_template["tag"], "").strip(WHITESPACE_CHARS)
-        if section_template["tag"] in col and sample_query in samples:
-            selected_columns.append(col)
+    selected_columns = [c for c in columns if re.search(section_template["tag"], c)]
     return selected_columns
 
 
-def eval_comparison_groups(columns: Iterable[str], section_template: dict) -> list[str]:
+def eval_label_tag_section_columns(
+    columns: Iterable[str], section_template: Mapping
+) -> list[str]:
+    """Extract columns using a regex pattern and labels.
+
+    Args:
+        columns: A list of column names to select from.
+        section_template: A dictionary containing the key "tag" and the key "labels".
+            The "tag" is a regular expression pattern that is matched against the column
+            names to preselect columns. The preselected columns are then further
+            filtered by checking if any of the "labels" are a substring of the column.
+
+    Returns:
+        A list of column names selected from the `columns` by matching the "tag" and
+        containing any of the "labels". The order of the returned columns is determined
+        by the order of the "labels".
+    """
+    tag = section_template["tag"]
+    selected_columns = []
+    tag_columns = [c for c in columns if re.search(tag, c)]
+    labels_query = [re.sub(tag, "", c).strip(WHITESPACE_CHARS) for c in tag_columns]
+    for label in section_template["labels"]:
+        for column, label_query in zip(tag_columns, labels_query):
+            if label_query == label:
+                selected_columns.append(column)
+                tag_columns.remove(column)
+                labels_query.remove(label_query)
+    return selected_columns
+
+
+def eval_comparison_groups(
+    columns: Iterable[str], section_template: Mapping
+) -> list[str]:
     """Extract comparison groups from the columns of a table.
 
     Args:
@@ -466,7 +569,7 @@ def eval_comparison_groups(columns: Iterable[str], section_template: dict) -> li
 
 
 def eval_comparison_group_columns(
-    columns: Iterable[str], section_template: dict, comparison_group: str
+    columns: Iterable[str], section_template: Mapping, comparison_group: str
 ) -> list[str]:
     """Extract columns from a table that belong to a comparison group.
 
@@ -492,7 +595,7 @@ def eval_comparison_group_columns(
 
 
 def eval_comparison_group_headers(
-    columns: Iterable[str], section_template: dict, comparison_group: str
+    columns: Iterable[str], section_template: Mapping, comparison_group: str
 ) -> dict[str, str]:
     """Returns header names for each column.
 
@@ -525,7 +628,7 @@ def eval_comparison_group_headers(
 
 
 def eval_comparison_group_supheader(
-    section_template: dict, comparison_group: str
+    section_template: Mapping, comparison_group: str
 ) -> str:
     """Returns the supheader name for a comparison group.
 
@@ -550,7 +653,7 @@ def eval_comparison_group_supheader(
 
 
 def eval_comparison_group_conditional_format_names(
-    columns: Iterable[str], section_template: dict
+    columns: Iterable[str], section_template: Mapping
 ) -> dict[str, str]:
     """Returns conditional format names for each column.
 
@@ -560,13 +663,14 @@ def eval_comparison_group_conditional_format_names(
 
     Args:
         columns: A list of column names.
-        section_template: A dictionary with a "column_conditional" key containing a
-            dictionary with column names as keys and conditional format names as values.
+        section_template: A dictionary with a "column_conditional_format" key containing
+            a dictionary with column names as keys and conditional format names as
+            values.
 
     Returns:
         A dictionary containing conditional format names for each column.
     """
-    conditional_formats = section_template.get("column_conditional", {})
+    conditional_formats = section_template.get("column_conditional_format", {})
     col_conditionals = {}
     for tag, format_name in conditional_formats.items():
         for column in columns:
@@ -577,18 +681,18 @@ def eval_comparison_group_conditional_format_names(
 
 def eval_tag_sample_headers(
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     log2_tag: str = "",
 ) -> dict[str, str]:
     """Returns header names for each column.
 
     Args:
         columns: A list of column names to select from.
-        section_template: A dictionary with "tag" containing the substring that will be
-            removed from the headers if "remove_tag" is True. The "log2" key determines
-            whether to add the `log2_tag` to the headers, however, if "remove_tag" is
-            True the `log2_tag` will never be added. The "remove_tag" and "log"
-            keys are optional and by default False.
+        section_template: A dictionary with "tag" containing the regex pattern that will
+            be removed from the headers if "remove_tag" is True. The "log2" key
+            determines whether to add the `log2_tag` to the headers, however, if
+            "remove_tag" is True the `log2_tag` will never be added. The "remove_tag"
+            and "log" keys are optional and by default False.
         log2_tag: The substring that will be added to the column names if `log2` is
             True.
 
@@ -597,46 +701,45 @@ def eval_tag_sample_headers(
     """
     tag = section_template["tag"]
     remove_tag = section_template.get("remove_tag", False)
-    add_log2_tag = section_template.get("log2", False) and not remove_tag
+    add_log2_tag = section_template.get("log2", False) and not remove_tag and log2_tag
     if remove_tag:
-        headers = {col: col.replace(tag, "").strip() for col in columns}
+        headers = {col: re.sub(tag, "", col).strip() for col in columns}
     else:
         headers = {col: col for col in columns}
 
-    if add_log2_tag:
+    if add_log2_tag and log2_tag:
         headers = {c: f"{h} {log2_tag}" for c, h in headers.items()}
     return headers
 
 
 def eval_tag_sample_supheader(
-    section_template: dict,
+    section_template: Mapping,
     log2_tag: str,
 ) -> str:
     """Returns the supheader name for a tag sample section.
 
     Args:
-        columns: A list of column names to select from.
-        section_template: A dictionary with "tag" containing the substring that will be
-            removed from the headers if "remove_tag" is True. The "log2" key determines
-            whether to add the `log2_tag` to the headers, however, if "remove_tag" is
-            True the `log2_tag` will never be added. The "remove_tag" and "log"
-            keys are optional and by default False.
-        log2_tag: The substring that will be added to the column names if `log2` is
-            True.
+        section_template: A dictionary with "supheader" containing the supheader name,
+            if "supheader" is not present an empty string is used. The "log2" key
+            determines whether to add the `log2_tag` to the supheader name. The "log"
+            key is optional and by default False.
+        log2_tag: The substring that will be added to the column names if
+            `section_template["log"]` is True.
 
     Returns:
         The supheader name for the section.
     """
-    supheader = section_template.get("supheader", section_template["tag"])
-    if section_template.get("log2", False):
+    add_log2_tag = section_template.get("log2", False) and log2_tag
+    supheader = section_template.get("supheader", "")
+    if add_log2_tag and supheader:
         supheader = f"{supheader} {log2_tag}"
     return supheader
 
 
 def eval_column_formats(
     columns: Sequence[str],
-    section_template: dict,
-    format_templates: dict,
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
     default_format: Optional[dict] = None,
 ) -> dict[str, dict]:
     """Returns format descriptions for each column in the section.
@@ -665,7 +768,7 @@ def eval_column_formats(
         if "column_format" in section_template:
             format_name = section_template["column_format"].get(col, section_format)
 
-        column_formats[col] = format_templates.get(format_name, default_format).copy()
+        column_formats[col] = dict(format_templates.get(format_name, default_format))
     if section_template.get("border", False):
         column_formats[columns[0]]["left"] = BORDER_TYPE
         column_formats[columns[-1]]["right"] = BORDER_TYPE
@@ -674,8 +777,8 @@ def eval_column_formats(
 
 def eval_column_conditional_formats(
     columns: Iterable[str],
-    section_template: dict,
-    format_templates: dict,
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
 ) -> dict[str, dict]:
     """Returns conditional format descriptions for each column in the section.
 
@@ -690,19 +793,20 @@ def eval_column_conditional_formats(
     Returns:
         A dictionary containing conditional format descriptions for each column.
     """
-    default_format = {}
-    column_formats = {}
+    column_formats: dict = {}
     for col in columns:
-        format_name = None
-        if "column_conditional" in section_template:
-            format_name = section_template["column_conditional"].get(col, None)
-        column_formats[col] = format_templates.get(format_name, default_format).copy()
+        col_format: dict = {}
+        if "column_conditional_format" in section_template:
+            if col in section_template["column_conditional_format"]:
+                format_name = section_template["column_conditional_format"][col]
+                col_format = dict(format_templates.get(format_name, col_format))
+        column_formats[col] = col_format
     return column_formats
 
 
 def eval_column_widths(
     columns: Iterable[str],
-    section_template: dict,
+    section_template: Mapping,
     default_width: float = 64,
 ) -> dict[str, float]:
     """Returns column widths for each column in the section.
@@ -723,7 +827,9 @@ def eval_column_widths(
 
 
 def eval_header_formats(
-    columns: Sequence[str], section_template: dict, format_templates: dict
+    columns: Sequence[str],
+    section_template: Mapping,
+    format_templates: Mapping[str, Mapping],
 ) -> dict[str, dict]:
     """Returns format descriptions for each column header in the section.
 
@@ -742,9 +848,9 @@ def eval_header_formats(
     """
     if not columns:
         return {}
-    temmplate_format = format_templates.get("header", {})
+    template_format = format_templates.get("header", {})
     section_format = section_template.get("header_format", {})
-    header_format = dict(temmplate_format, **section_format)
+    header_format = dict(template_format, **section_format)
     column_header_formats = {col: header_format.copy() for col in columns}
     if section_template.get("border", False):
         column_header_formats[columns[0]]["left"] = BORDER_TYPE
@@ -752,7 +858,9 @@ def eval_header_formats(
     return column_header_formats
 
 
-def eval_supheader_format(section_template: dict, format_templates: dict) -> dict:
+def eval_supheader_format(
+    section_template: Mapping, format_templates: Mapping[str, Mapping]
+) -> dict:
     """Returns a format descriptions for the supheader.
 
     Supheader format description defined in the `section_template` updates the one from
@@ -768,9 +876,9 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
     Returns:
         A dictionary describing the supheader format.
     """
-    temmplate_format = format_templates.get("supheader", {})
+    template_format = format_templates.get("supheader", {})
     section_format = section_template.get("supheader_format", {})
-    supheader_format = dict(temmplate_format, **section_format)
+    supheader_format = dict(template_format, **section_format)
     if section_template.get("border", False):
         supheader_format.update({"left": BORDER_TYPE, "right": BORDER_TYPE})
 
@@ -778,13 +886,13 @@ def eval_supheader_format(section_template: dict, format_templates: dict) -> dic
 
 
 def eval_section_conditional_format(
-    section_template: dict, format_templates: dict
+    section_template: Mapping, format_templates: Mapping[str, Mapping]
 ) -> dict:
     """Returns a conditional format description of a section.
 
     Args:
         section_template: A dictionary that can contain a conditional format name with
-            the key "conditional".
+            the key "conditional_format".
         format_templates: A dictionary containing the conditional format descriptions
             for each conditional format name. If a format name is not present in the
             `format_templates`, an empty dictionary is used instead.
@@ -792,34 +900,12 @@ def eval_section_conditional_format(
     Returns:
         A dictionary containing a conditional format description.
     """
-    section_format_name = section_template.get("conditional", None)
-    section_conditional = format_templates.get(section_format_name, {}).copy()
-    return section_conditional
+    section_format_name = section_template.get("conditional_format", None)
+    section_conditional_format = dict(format_templates.get(section_format_name, {}))
+    return section_conditional_format
 
 
-def identify_template_section_category(section_template: dict) -> SectionCategory:
-    """Identify the category of a section template.
-
-    Args:
-        section_template: A dictionary containing the section template.
-
-    Returns:
-        A SectionCategory enum value.
-    """
-    is_comp_group = section_template.get("comparison_group", False)
-    has_tag = "tag" in section_template
-    has_columns = "columns" in section_template
-
-    if is_comp_group and has_columns and has_tag:
-        return SectionCategory.COMPARISON
-    if has_tag and not has_columns and not is_comp_group:
-        return SectionCategory.TAG_SAMPLE
-    if has_columns and not has_tag and not is_comp_group:
-        return SectionCategory.STANDARD
-    return SectionCategory.UNKNOWN
-
-
-def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> bool:
+def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> np.bool_:
     """Evaluates whether intensities are likely to be log transformed.
 
     Assumes that intensities are log transformed if all values are smaller or
@@ -839,3 +925,11 @@ def _intensities_in_logspace(data: pd.DataFrame | np.ndarray | Iterable) -> bool
     data = np.array(data, dtype=float)
     mask = np.isfinite(data)
     return np.all(data[mask].flatten() <= 64)
+
+
+_CATEGORY_COMPILER_MAP: dict[SectionCategory, type[SectionCompiler]] = {
+    SectionCategory.STANDARD: StandardSectionCompiler,
+    SectionCategory.TAG: TagSectionCompiler,
+    SectionCategory.LABEL_TAG: LabelTagSectionCompiler,
+    SectionCategory.COMPARISON: ComparisonSectionCompiler,
+}
