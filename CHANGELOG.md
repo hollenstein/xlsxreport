@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------------------------
 
 ## Version [0.0.10] - Interface and template rewrite
-Released: pending
+Released: 2024-04-23
 
 This release introduces a new public interface for reading YAML template files, applying the template to a table (which now creates compiled table sections), and for writing compiled table sections to an Excel worksheet. In addition, with the `ReportBuilder` class a convenient high-level interface is introduced for creating (multi-tab) Excel reports from tables and table templates. Moreover, the YAML table templates have been partially redesigned, breaking backward compatibility.
 
