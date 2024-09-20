@@ -2,6 +2,7 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fhollenstein%2Fprofasta%2Fmain%2Fpyproject.toml)
 [![pypi](https://img.shields.io/pypi/v/xlsxreport)](https://pypi.org/project/xlsxreport)
+[![Run pytest](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml/badge.svg?branch=main)](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml)
 
 **XlsxReport** is a Python library that automates the creation of formatted Excel reports from tabular data.
 
@@ -24,7 +25,7 @@ XlsxReport uses YAML template files to define the content, structure, and format
 
 XlsxReport is actively developed as part of the computational toolbox for the [Mass Spectrometry Facility](https://www.maxperutzlabs.ac.at/research/facilities/mass-spectrometry-facility) at the Max Perutz Labs (University of Vienna).
 
-## Getting started
+## Getting Started with a simple example
 
 With XlsxReport, generating reproducibly formatted Excel reports from your data analysis pipeline is a breeze - simply create a YAML table template once and execute a single terminal command to create Excel reports whenever needed.
 
