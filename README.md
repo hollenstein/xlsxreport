@@ -14,24 +14,27 @@
 - [Installation](#installation)
     - [Setting up the application data directory](#setting-up-the-application-data-directory)
     - [Installation when using Anaconda](#installation-when-using-anaconda)
-- [Upcoming features and work in progress](#upcoming-features-and-work-in-progress)
+- [Additional project information](#additional-project-information)
+    - [Documenation](#documenation)
+    - [Upcoming features and work in progress](#upcoming-features-and-work-in-progress)
+    - [Do you have feedback or need help?](#do-you-have-feedback-or-need-help)
 
 
 ## What is XlsxReport?
 
 Well-formatted Excel reports are important for presenting and sharing data in a clear and structured manner with collaborators, in publications, and for the manual inspection of results. However, creating these reports manually is time-consuming, tedious, and has to be repeated for every new dataset and analysis. XlsxReport was developed to streamline the process of turning tabular data into formatted Excel reports. By automating this task, XlsxReport allows the creation of consistent, publication-ready Excel reports with minimal effort.
 
-XlsxReport uses YAML template files to define the content, structure, and formatting of the generated Excel reports. The library provides a command-line interface and a Python API, allowing users to create Excel reports by applying table templates to tabular data. Although XlsxReport has been developed for quantitative mass spectrometry data, its versatile design makes it suitable for any type of tabular data.
+XlsxReport uses YAML template files to define the content, structure, and formatting of the generated Excel reports. The library provides a command line interface and a Python API, allowing users to create Excel reports by applying table templates to tabular data. Although XlsxReport has been developed for quantitative mass spectrometry data, its versatile design makes it suitable for any type of tabular data.
 
 XlsxReport is actively developed as part of the computational toolbox for the [Mass Spectrometry Facility](https://www.maxperutzlabs.ac.at/research/facilities/mass-spectrometry-facility) at the Max Perutz Labs (University of Vienna).
 
 ## Getting Started with a simple example
 
-With XlsxReport, generating reproducibly formatted Excel reports from your data analysis pipeline is a breeze - simply create a YAML table template once and execute a single terminal command to create Excel reports whenever needed.
+With XlsxReport, generating reproducibly formatted Excel reports from your data analysis pipeline is a breeze - simply create a YAML table template once and execute a single command on the command line to create Excel reports whenever needed.
 
 Give it a try by using the provided example files in the `examples` directory. The `examples` directory contains a "proteinGroups.txt" file from MaxQuant, which can be turned into a formatted Excel report with the included default table template file "maxquant.yaml".
 
-After installing XlsxReport and setting up the application data directory as described below, you can create an Excel report by running the following command in the terminal:
+After installing XlsxReport and setting up the application data directory as described below, you can create an Excel report by running the following command in the command line:
 
 ```shell
 xlsxreport compile examples/proteinGroups.txt maxquant.yaml
@@ -95,11 +98,39 @@ xlsxreport appdir --reveal
 
 ### Installation when using Anaconda
 
-To install the XlsxReport package using Anaconda, you need to either activate a custom conda environment or install it into the default base environment. Open the Anaconda Navigator, activate the desired conda environment or use the base environment, and then open a terminal by running the "CMD.exe" application. Finally, use the `pip install` command as previously before.
+To install the XlsxReport package using Anaconda, you need to either activate a custom conda environment or install it into the default base environment. Open the Anaconda Navigator, activate the desired conda environment or use the base environment, and then open a command line by running the "CMD.exe" application. Finally, use the `pip install` command as previously before.
 
 
-## Upcoming features and work in progress
+## Additional project information
 
-The library has reached a stable state and we are currently working on **extending the documentation** and adding **minor feature enhancements**. In addition, we are planning to also release a **simple GUI** for creating Excel reports that provides the same functionality as the command-line interface.
+
+### Documenation
+
+The documentation of XlsxReport is work in progress. In the meantime, you can find a detailed description of the table template and its formatting options in the [DOCUMENATION.md](https://github.com/hollenstein/xlsxreport/blob/main/DOCUMENTATION.md) file on the GitHub repository.
+
+The Python API is currently documented only in the source code. The stable public API comprises the functions and classes that are directly present in the `xlsxreport` namespace, please refer to the `xlsxreport/__init__.py` file for more information
+
+For more information about the **command line interface**, you can run the following command:
+
+```shell
+xlsxreport --help
+```
+
+To get help for a specific command (`appdir`, `compile`, or `validate`), you can run:
+
+```shell
+xlsxreport <command> --help
+```
+
+You can find a comprehensive record of changes in the [CHANGELOG.md](https://github.com/hollenstein/xlsxreport/blob/main/CHANGELOG.md) file.
+
+
+### Upcoming features and work in progress
+
+The library has reached a stable state and we are currently working on **extending the documentation** and adding **minor feature enhancements**. In addition, we are planning to release a **simple GUI** for creating Excel reports that provides the same functionality as the command line interface and lowers the barrier for users who are not comfortable with using the command line.
+
+### Do you have feedback or need help?
 
 If you have any feature requests, suggestions, or bug reports, please feel free to open an issue on the [GitHub issue tracker](https://github.com/hollenstein/xlsxreport/issues).
+
+You don't know how to use the library, or you have a question? Please feel free to contact us via email or on GitHub. We are happy to help you get started with XlsxReport and answer any questions you might have.
