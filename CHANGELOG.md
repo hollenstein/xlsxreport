@@ -2,7 +2,8 @@
 
 ----------------------------------------------------------------------------------------
 
-## Version - UPCOMING
+## Version [0.1.1] - Documentation and CI with GitHub Actions
+Released: 2024-09-21
 
 ### Internal
 - Added GitHub Actions for automatic testing of the package.
