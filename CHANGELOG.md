@@ -2,6 +2,18 @@
 
 ----------------------------------------------------------------------------------------
 
+## Version - UPCOMING
+
+### Internal
+- Added GitHub Actions for automatic testing of the package.
+
+### Documentation
+- Updated the README.md file to provide more useful information about what XlsxReport is and the status of the project.
+- Updated the DOCUMENTATION.md file with detailed information on how the table template works and which formatting options are available.
+- Added an example output file from MaxQuant that can be used together with the "maxquant.yaml" template to create a formatted Excel report.
+
+----------------------------------------------------------------------------------------
+
 ## Version [0.1.0] - Interface and template rewrite
 Released: 2024-04-23
 
