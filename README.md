@@ -1,5 +1,6 @@
 # XlsxReport
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![DOI](https://zenodo.org/badge/580370569.svg)](https://doi.org/10.5281/zenodo.15129818)
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fhollenstein%2Fprofasta%2Fmain%2Fpyproject.toml)
 [![pypi](https://img.shields.io/pypi/v/xlsxreport)](https://pypi.org/project/xlsxreport)
 [![Run pytest](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml/badge.svg?branch=main)](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml)
@@ -18,6 +19,7 @@
     - [Documenation](#documenation)
     - [Upcoming features and work in progress](#upcoming-features-and-work-in-progress)
     - [Do you have feedback or need help?](#do-you-have-feedback-or-need-help)
+- [How to cite](#how-to-cite)
 
 
 ## What is XlsxReport?
@@ -134,3 +136,10 @@ The library has reached a stable state and we are currently working on **extendi
 If you have any feature requests, suggestions, or bug reports, please feel free to open an issue on the [GitHub issue tracker](https://github.com/hollenstein/xlsxreport/issues).
 
 You don't know how to use the library, or you have a question? Please feel free to contact us via email or on GitHub. We are happy to help you get started with XlsxReport and answer any questions you might have.
+
+
+## How to cite
+
+If you use XlsxReport to generate Excel reports for your research or publications, please include the following citation and consider giving the project a star on GitHub.
+
+> Hollenstein, D. M., & Hartl, M. (2025). hollenstein/xlsxreport: v0.1.0 (0.1.0). Zenodo. https://doi.org/10.5281/zenodo.15129819
