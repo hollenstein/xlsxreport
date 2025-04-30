@@ -1,6 +1,6 @@
 # XlsxReport
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![DOI](https://zenodo.org/badge/580370569.svg)](https://doi.org/10.5281/zenodo.15129818)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15129818.svg)](https://doi.org/10.5281/zenodo.15129818)
 ![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fhollenstein%2Fprofasta%2Fmain%2Fpyproject.toml)
 [![pypi](https://img.shields.io/pypi/v/xlsxreport)](https://pypi.org/project/xlsxreport)
 [![Run pytest](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml/badge.svg?branch=main)](https://github.com/hollenstein/xlsxreport/actions/workflows/run-pytest.yml)
@@ -142,4 +142,4 @@ You don't know how to use the library, or you have a question? Please feel free 
 
 If you use XlsxReport to generate Excel reports for your research or publications, please include the following citation and consider giving the project a star on GitHub.
 
-> Hollenstein, D. M., & Hartl, M. (2025). hollenstein/xlsxreport: v0.1.0 (0.1.0). Zenodo. https://doi.org/10.5281/zenodo.15129819
+> Hollenstein, D. M., & Hartl, M. (2025). hollenstein/xlsxreport: v0.1.0 (0.1.0). Zenodo. https://doi.org/10.5281/zenodo.15129818
